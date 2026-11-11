@@ -29,9 +29,9 @@ goes further than the official port ever did:
 | OpenWrt / Linux | 23.05 / 5.15 | **25.12 / 6.12** |
 | Security updates | ❌ end of life | ✅ follows the 25.12 branch |
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
-| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | 🧪 implemented, hardware test in progress |
-| ECO button | ❌ | 🧪 VPN on/off, hardware test in progress |
-| Sensors (temperature, voltage) | ❌ | 🧪 hardware test in progress |
+| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
+| ECO button | ❌ | ✅ VPN on/off |
+| Sensors (temperature, voltage) | ❌ | ✅ |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
 
 ## 🧩 Hardware
@@ -46,11 +46,12 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 <p align="center"><img src="assets/leds-buttons.svg" alt="LEDs and buttons" width="100%"></p>
 
-> 🧪 The LED driver, the LED daemon and the button handlers are built into the image but are still being tested on real hardware. The ECO button was located and verified by GPIO probing.
+> ✅ Tested on real hardware: LED colours and order, SFR spiral, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
+> 🧪 WPS (switch pushed past "on") is detected but does not start pairing yet: hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
 - **SFR** button → the three top LEDs turn into a rotating green / orange / red **spiral**; press again for the status view.
 - **ECO** button → turns the **WireGuard VPN** (interface `vpn`) on and off; LED **b** shows the tunnel state.
-- **Wi-Fi switch** → radio on / off; pushed further → **WPS** pairing for two minutes.
+- **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
 

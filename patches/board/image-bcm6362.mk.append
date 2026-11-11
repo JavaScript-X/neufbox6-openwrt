@@ -1,6 +1,9 @@
 
 define Device/sfr_neufbox-6-sercomm-r0
   $(Device/bcm63xx-cfe)
+  # CFE refuses to unpack more than ~4 MiB and runs at ~0x81400000: let it unpack only the
+  # lzma-loader (compressed kernel inside), which unpacks the 11 MiB kernel to 0x80010000.
+  KERNEL := kernel-bin | append-dtb | lzma | loader-lzma bin | lzma
   DEVICE_VENDOR := SFR
   DEVICE_MODEL := Neufbox 6
   DEVICE_VARIANT := Sercomm r0

@@ -1,0 +1,13 @@
+
+define Device/sfr_neufbox-6-sercomm-r0
+  $(Device/bcm63xx-cfe)
+  DEVICE_VENDOR := SFR
+  DEVICE_MODEL := Neufbox 6
+  DEVICE_VARIANT := Sercomm r0
+  CHIP_ID := 6362
+  CFE_BOARD_ID := NB6-SER-r0
+  FLASH_MB := 16
+  CFE_EXTRAS += --rsa-signature "$(VERSION_DIST)-$(firstword $(subst -,$(space),$(REVISION)))"
+  DEVICE_PACKAGES += $(USB2_PACKAGES) kmod-switch-rtl8367
+endef
+TARGET_DEVICES += sfr_neufbox-6-sercomm-r0

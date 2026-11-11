@@ -1,0 +1,32 @@
+#!/bin/sh
+# First boot defaults for the SFR Neufbox 6 port:
+#  - white:wan  LED blinks with WAN traffic, white:wlan LED blinks with Wi-Fi traffic (netdev triggers)
+#  - WPS push button enabled on the Wi-Fi access point(s)
+#  - nb6-leds service enabled (LEDs a/b/c + voip)
+
+[ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = "sfr,neufbox-6-sercomm-r0" ] || exit 0
+
+uci -q delete system.led_wan
+uci set system.led_wan=led
+uci set system.led_wan.name='WAN traffic'
+uci set system.led_wan.sysfs='white:wan'
+uci set system.led_wan.trigger='netdev'
+uci set system.led_wan.dev='extsw.2'
+uci set system.led_wan.mode='link tx rx'
+
+uci -q delete system.led_wlan
+uci set system.led_wlan=led
+uci set system.led_wlan.name='Wi-Fi traffic'
+uci set system.led_wlan.sysfs='white:wlan'
+uci set system.led_wlan.trigger='netdev'
+uci set system.led_wlan.dev='phy0-ap0'
+uci set system.led_wlan.mode='link tx rx'
+uci commit system
+
+for iface in $(uci -q show wireless | sed -n "s/^wireless\.\([^.]*\)=wifi-iface$/\1/p"); do
+	uci set wireless.$iface.wps_pushbutton='1'
+done
+uci commit wireless
+
+/etc/init.d/nb6-leds enable
+exit 0

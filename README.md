@@ -29,9 +29,9 @@ goes further than the official port ever did:
 | OpenWrt / Linux | 23.05 / 5.15 | **25.12 / 6.12** |
 | Security updates | ❌ end of life | ✅ follows the 25.12 branch |
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
-| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
-| ECO button | ❌ | ✅ VPN on/off |
-| Sensors (temperature, voltage) | ❌ | ✅ |
+| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | 🧪 implemented, hardware test in progress |
+| ECO button | ❌ | 🧪 VPN on/off, hardware test in progress |
+| Sensors (temperature, voltage) | ❌ | 🧪 hardware test in progress |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
 
 ## 🧩 Hardware
@@ -45,6 +45,8 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 ## 💡 LEDs and buttons
 
 <p align="center"><img src="assets/leds-buttons.svg" alt="LEDs and buttons" width="100%"></p>
+
+> 🧪 The LED driver, the LED daemon and the button handlers are built into the image but are still being tested on real hardware. The ECO button was located and verified by GPIO probing.
 
 - **SFR** button → the three top LEDs turn into a rotating green / orange / red **spiral**; press again for the status view.
 - **ECO** button → turns the **WireGuard VPN** (interface `vpn`) on and off; LED **b** shows the tunnel state.

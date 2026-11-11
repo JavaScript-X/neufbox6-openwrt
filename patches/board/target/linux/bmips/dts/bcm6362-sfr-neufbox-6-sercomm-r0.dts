@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * SFR Neufbox 6 (Sercomm, board id NB6-SER-r0) - BCM6361/BCM6362, 64 MiB RAM,
+ * 16 MiB SPI NOR (MX25L12845E), Realtek RTL8367R gigabit switch on GPIO SMI,
+ * connected to internal switch port 4 over RGMII.
+ * Ported from OpenWrt 23.05 target/linux/bcm63xx (bcm6361-sfr-neufbox-6-sercomm-r0.dts
+ * + board_nb6 in 517-board_bcm6362.patch).
+ */
+
+#include "bcm6362.dtsi"
+
+/ {
+	model = "SFR Neufbox 6 (Sercomm)";
+	compatible = "sfr,neufbox-6-sercomm-r0", "brcm,bcm6362";
+};
+
+&ehci {
+	status = "okay";
+};
+
+&ethernet {
+	status = "okay";
+
+	nvmem-cells = <&macaddr_cfe_6a0 0>;
+	nvmem-cell-names = "mac-address";
+};
+
+&hsspi {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <20000000>;
+		spi-tx-bus-width = <2>;
+		spi-rx-bus-width = <2>;
+		reg = <0>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "cfe";
+				reg = <0x000000 0x010000>;
+				read-only;
+
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					macaddr_cfe_6a0: macaddr@6a0 {
+						compatible = "mac-base";
+						reg = <0x6a0 0x6>;
+						#nvmem-cell-cells = <1>;
+					};
+				};
+			};
+
+			partition@10000 {
+				compatible = "brcm,bcm963xx-imagetag";
+				label = "firmware";
+				reg = <0x010000 0xfe0000>;
+			};
+
+			partition@ff0000 {
+				label = "nvram";
+				reg = <0xff0000 0x010000>;
+				read-only;
+			};
+		};
+	};
+};
+
+&ohci {
+	status = "okay";
+};
+
+&switch0 {
+	ports {
+		/* internal switch port 4 -> RTL8367R extif0 (RGMII, 1000 full, delays set on the Realtek side) */
+		port@4 {
+			reg = <4>;
+			label = "extsw";
+
+			phy-mode = "rgmii";
+
+			fixed-link {
+				speed = <1000>;
+				full-duplex;
+			};
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

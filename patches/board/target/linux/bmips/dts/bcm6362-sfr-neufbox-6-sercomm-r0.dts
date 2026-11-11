@@ -46,6 +46,16 @@
 		};
 	};
 
+	/* Realtek RTL8367R, swconfig driver (kmod-switch-rtl8367).
+	 * extif: <cpu_port txdelay rxdelay mode(1=RGMII) force txpause rxpause link duplex speed(2=1000)>
+	 * Same values as 23.05 ("realtek,extif0 = <1 5 1 1 1 1 1 1 2>") with cpu port 9 prepended. */
+	rtl8367r {
+		compatible = "realtek,rtl8367";
+		gpio-sda = <&gpio 18 GPIO_ACTIVE_HIGH>;
+		gpio-sck = <&gpio 20 GPIO_ACTIVE_HIGH>;
+
+		realtek,extif = <9 1 5 1 1 1 1 1 1 2>;
+	};
 };
 
 &ehci {

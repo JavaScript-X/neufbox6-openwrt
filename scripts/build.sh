@@ -32,11 +32,15 @@ echo "== $(date -u) apply Neufbox 6 port"
 bash "$PORT/scripts/apply-board.sh" "$PORT/patches/board" "$SRC"
 bash "$PORT/scripts/apply-wifi.sh" "$PORT/patches/wifi" "$SRC"
 
+echo "== $(date -u) image files (LED daemon, button handlers, first-boot defaults)"
+rm -rf files && cp -r "$PORT/files" files
+chmod 755 files/usr/sbin/* files/etc/init.d/* files/etc/rc.button/* files/etc/uci-defaults/*
+
 echo "== $(date -u) config"
 cp "$PORT/config/nb6.config" .config
 rm -rf tmp
 make defconfig >/dev/null
-grep -E "DEVICE_sfr|B43_FW_DSL|kmod-b43=|kmod-switch-rtl8367=" .config
+grep -E "DEVICE_sfr|B43_FW_DSL|kmod-b43=|kmod-switch-rtl8367=|wpad-mbedtls=|kmod-wireguard=" .config
 
 echo "== $(date -u) download"
 make -j"$JOBS" download >/dev/null

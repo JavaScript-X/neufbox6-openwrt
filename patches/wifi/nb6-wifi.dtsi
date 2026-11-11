@@ -1,0 +1,38 @@
+// Experimental: BCM6362 integrated 2.4 GHz Wi-Fi for the SFR Neufbox 6 (NB6-SER-r0).
+// Appended to bcm6362-sfr-neufbox-6-sercomm-r0.dts by apply-wifi.sh.
+// Based on Alessio Ferri's D-Link DSL-3580L work (bcma SoC host + b43 N-PHY r8 / radio 2057 r8).
+//
+// SPROM: canonical brcm/bcm6362-sprom.bin (package broadcom-6362-sprom) + fixups taken from the
+// NB6's own calibration file /etc/wlan/bcmNB6-SER-r0_map.bin (SFR firmware NB6-MAIN-R3.5.15rc2):
+// the 20 words that differ from the canonical blob, plus the dev_id override used on the DSL-3580L.
+
+/ {
+	bcm6362-sprom {
+		compatible = "brcm,bcma-sprom";
+
+		bcma-bus = <&wlan>;
+
+		nvmem-cells = <&macaddr_cfe_6a0 1>;
+		nvmem-cell-names = "mac-address";
+
+		brcm,sprom = "brcm/bcm6362-sprom.bin";
+		brcm,sprom-fixups =
+			/* dev_id override (b43 knows 0x435f = BCM6362) */
+			<0x30 0x435f>,
+			/* NB6-SER-r0 board values (from SFR bcmNB6-SER-r0_map.bin) */
+			<0x5e 0x001e>,
+			/* PA calibration chain 0/1, 2.4 GHz */
+			<0x60 0x2042>, <0x61 0xffc1>, <0x62 0x1506>, <0x63 0xfbde>,
+			/* PA calibration chain 0/1, 5 GHz block (dual-band PHY layout) */
+			<0x70 0x2042>, <0x71 0xff85>, <0x72 0x14b2>, <0x73 0xfb7f>,
+			/* per-rate power offsets CCK/OFDM/MCS */
+			<0xa0 0x0000>, <0xa1 0x0000>, <0xa2 0x0000>,
+			<0xa9 0x0000>, <0xaa 0x4422>, <0xab 0x2200>,
+			<0xac 0x4422>, <0xad 0x2200>, <0xae 0x4422>,
+			<0xaf 0x2200>, <0xb0 0x4422>;
+	};
+};
+
+&wlan {
+	status = "okay";
+};

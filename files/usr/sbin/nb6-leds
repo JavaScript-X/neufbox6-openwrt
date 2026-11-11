@@ -31,8 +31,11 @@ color() { # $1 = 1|2|3  $2 = green|orange|red|off
 		red)    r=31; g=0 ;;
 		*)      r=0;  g=0 ;;
 	esac
-	echo $r > $L/red:service$1/brightness 2>/dev/null
-	echo $g > $L/green:service$1/brightness 2>/dev/null
+	# only touch the LEDs whose value changes: every write is an I2C transaction to the
+	# SFR microcontroller, and fewer writes means fewer NAK retries (and less lag)
+	eval "pr=\$last_r$1 pg=\$last_g$1"
+	[ "$r" = "$pr" ] || { echo $r > $L/red:service$1/brightness 2>/dev/null; eval "last_r$1=$r"; }
+	[ "$g" = "$pg" ] || { echo $g > $L/green:service$1/brightness 2>/dev/null; eval "last_g$1=$g"; }
 }
 
 internet_state() {
@@ -93,13 +96,14 @@ blink() { [ $((tick % 2)) -eq 0 ] && echo "$1" || echo off; }
 
 spiral_step=0
 spiral() {
-	set -- green orange red
+	# the step follows the clock (one step per second), so a late step does not delay
+	# the next ones: the rotation catches up by itself
+	spiral_step=$(( $(date +%s) % 3 ))
 	for led in 1 2 3; do
 		i=$(( (spiral_step + led - 1) % 3 ))
 		case $i in 0) c=green ;; 1) c=orange ;; 2) c=red ;; esac
 		color $led $c
 	done
-	spiral_step=$(( (spiral_step + 1) % 3 ))
 }
 
 # first run: take over the LEDs from the microcontroller's own animation
@@ -109,7 +113,7 @@ tick=0
 while true; do
 	if [ -e $STATE/spiral ]; then
 		spiral
-		sleep 1
+		sleep 1   # BusyBox sleep has no sub-second support
 		continue
 	fi
 

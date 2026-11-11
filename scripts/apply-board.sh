@@ -36,5 +36,10 @@ for opt in CONFIG_I2C=y CONFIG_I2C_BOARDINFO=y CONFIG_I2C_ALGOBIT=y CONFIG_I2C_G
   sed -i "/^$sym=/d;/^# $sym is not set/d" "$K"
   echo "$opt" >> "$K"
 done
+# new symbols exposed by CONFIG_PWM=y that the target config does not answer
+for sym in CONFIG_PWM_BRCMSTB; do
+  sed -i "/^$sym=/d;/^# $sym is not set/d" "$K"
+  echo "# $sym is not set" >> "$K"
+done
 sort -o "$K" "$K"
 echo "applied:"; ls -1 "$B/dts/" | grep neufbox; grep -n -A3 neufbox "$N"; tail -12 "$B/image/bcm6362.mk"

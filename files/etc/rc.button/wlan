@@ -1,0 +1,19 @@
+#!/bin/sh
+# Wi-Fi slide switch (KEY_WLAN, GPIO 12, active low):
+#   "pressed"  = switch in the ON position  -> Wi-Fi radios on
+#   "released" = switch in the OFF position -> Wi-Fi radios off
+. /lib/functions.sh
+
+case "$ACTION" in
+	pressed)  state=0 ;;
+	released) state=1 ;;
+	*) exit 0 ;;
+esac
+
+set_radio() { uci set wireless.$1.disabled=$state; }
+config_load wireless
+config_foreach set_radio wifi-device
+uci commit wireless
+wifi reload
+logger -t nb6-buttons "Wi-Fi switch: $([ $state = 0 ] && echo on || echo off)"
+return 0

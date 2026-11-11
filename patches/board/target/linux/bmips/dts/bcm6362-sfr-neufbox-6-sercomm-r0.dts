@@ -74,6 +74,65 @@
 		};
 	};
 
+	/* PWM channel numbers from the 2020 "sfr,neufbox6" binding (Alvaro Fernandez Rojas) */
+	leds-nb6 {
+		compatible = "pwm-leds";
+
+		led_service1_red: led-0 {
+			label = "red:service1";
+			pwms = <&nb6_pwm 0 31>;
+			max-brightness = <31>;
+		};
+
+		led-1 {
+			label = "red:service2";
+			pwms = <&nb6_pwm 1 31>;
+			max-brightness = <31>;
+		};
+
+		led-2 {
+			label = "red:service3";
+			pwms = <&nb6_pwm 2 31>;
+			max-brightness = <31>;
+		};
+
+		led_service1_green: led-3 {
+			label = "green:service1";
+			pwms = <&nb6_pwm 3 31>;
+			max-brightness = <31>;
+		};
+
+		led-4 {
+			label = "green:service2";
+			pwms = <&nb6_pwm 4 31>;
+			max-brightness = <31>;
+		};
+
+		led-5 {
+			label = "green:service3";
+			pwms = <&nb6_pwm 5 31>;
+			max-brightness = <31>;
+		};
+
+		led-6 {
+			label = "white:wan";
+			pwms = <&nb6_pwm 6 31>;
+			max-brightness = <31>;
+		};
+
+		led-7 {
+			label = "white:voip";
+			pwms = <&nb6_pwm 7 31>;
+			max-brightness = <31>;
+		};
+
+		led-8 {
+			label = "white:wlan";
+			pwms = <&nb6_pwm 8 31>;
+			max-brightness = <31>;
+		};
+	};
+
 	/* Realtek RTL8367R, swconfig driver (kmod-switch-rtl8367).
 	 * extif: <cpu_port txdelay rxdelay mode(1=RGMII) force txpause rxpause link duplex speed(2=1000)>
 	 * Same values as 23.05 ("realtek,extif0 = <1 5 1 1 1 1 1 1 2>") with cpu port 9 prepended. */

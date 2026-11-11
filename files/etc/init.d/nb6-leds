@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+# SFR Neufbox 6 front LEDs (see /usr/sbin/nb6-leds)
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+	procd_open_instance
+	procd_set_param command /usr/sbin/nb6-leds
+	procd_set_param respawn 3600 5 5
+	procd_close_instance
+}
+
+stop_service() {
+	for led in 1 2 3; do
+		echo 0 > /sys/class/leds/red:service$led/brightness 2>/dev/null
+		echo 0 > /sys/class/leds/green:service$led/brightness 2>/dev/null
+	done
+}

@@ -13,6 +13,9 @@ uci set system.led_wan.sysfs='white:wan'
 uci set system.led_wan.trigger='netdev'
 uci set system.led_wan.dev='extsw.2'
 uci set system.led_wan.mode='link tx rx'
+# blink every 500 ms: each LED change is an I2C write to the SFR microcontroller,
+# the default 50 ms floods it ("sendbytes: NAK bailout")
+uci set system.led_wan.interval='500'
 
 uci -q delete system.led_wlan
 uci set system.led_wlan=led
@@ -21,6 +24,7 @@ uci set system.led_wlan.sysfs='white:wlan'
 uci set system.led_wlan.trigger='netdev'
 uci set system.led_wlan.dev='phy0-ap0'
 uci set system.led_wlan.mode='link tx rx'
+uci set system.led_wlan.interval='500'
 uci commit system
 
 for iface in $(uci -q show wireless | sed -n "s/^wireless\.\([^.]*\)=wifi-iface$/\1/p"); do

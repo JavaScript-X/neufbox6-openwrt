@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-label="Boot flow and RAM map">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#51627a"/></marker>
+    <style>
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;fill:#1b2a41}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;fill:#51627a;font-size:13px}
+      .h{font-size:16px;font-weight:700}
+    </style>
+  </defs>
+  <rect width="1200" height="520" rx="20" fill="#f6f8fb"/>
+  <text x="40" y="50" class="t" font-size="26" font-weight="800">Why the image needs a loader</text>
+  <text x="40" y="78" class="s" font-size="15">CFE can only unpack ~4 MB and lives at ~0x81400000 — the 6.12 kernel is 11.3 MB once unpacked.</text>
+
+  <!-- steps -->
+  <g>
+    <rect x="40" y="110" width="250" height="120" rx="14" fill="#fff4e5" stroke="#e08a1e" stroke-width="2"/>
+    <text x="165" y="140" class="t h" text-anchor="middle">① CFE (2010)</text>
+    <text x="165" y="164" class="s" text-anchor="middle">reads the image tag in flash</text>
+    <text x="165" y="184" class="s" text-anchor="middle">LZMA-unpacks the small loader</text>
+    <text x="165" y="204" class="s" text-anchor="middle">to 0x81000000 (≈3.4 MB)</text>
+
+    <rect x="330" y="110" width="250" height="120" rx="14" fill="#e7efff" stroke="#3b6fd8" stroke-width="2"/>
+    <text x="455" y="140" class="t h" text-anchor="middle">② lzma-loader</text>
+    <text x="455" y="164" class="s" text-anchor="middle">copies itself to 0x82000000</text>
+    <text x="455" y="184" class="s" text-anchor="middle">far above CFE</text>
+
+    <rect x="620" y="110" width="250" height="120" rx="14" fill="#e7efff" stroke="#3b6fd8" stroke-width="2"/>
+    <text x="745" y="140" class="t h" text-anchor="middle">③ unpack the kernel</text>
+    <text x="745" y="164" class="s" text-anchor="middle">11.3 MB → 0x80010000</text>
+    <text x="745" y="184" class="s" text-anchor="middle">no size limit, CFE untouched</text>
+
+    <rect x="910" y="110" width="250" height="120" rx="14" fill="#eafaf0" stroke="#2e9e5b" stroke-width="2"/>
+    <text x="1035" y="140" class="t h" text-anchor="middle">④ Linux 6.12</text>
+    <text x="1035" y="164" class="s" text-anchor="middle">"machine is SFR Neufbox 6"</text>
+    <text x="1035" y="184" class="s" text-anchor="middle">earlycon on ttyS0</text>
+    <path d="M290 170H330" stroke="#51627a" stroke-width="2" marker-end="url(#a)"/>
+    <path d="M580 170H620" stroke="#51627a" stroke-width="2" marker-end="url(#a)"/>
+    <path d="M870 170H910" stroke="#51627a" stroke-width="2" marker-end="url(#a)"/>
+  </g>
+
+  <!-- RAM map: 0x80000000..0x84000000 (64 MB), 1 MB = 17.5 px -->
+  <text x="40" y="290" class="t h">RAM (64 MB, 0x80000000 – 0x84000000)</text>
+  <g transform="translate(40 305)">
+    <rect width="1120" height="56" rx="8" fill="#ffffff" stroke="#b8c2d1"/>
+    <!-- kernel 0x80010000 .. +11.3 MB -->
+    <rect x="1" y="1" width="198" height="54" rx="6" fill="#bfe8cf"/>
+    <text x="100" y="33" class="t" font-size="13" text-anchor="middle">kernel 11.3 MB</text>
+    <!-- loader at 16 MB -->
+    <rect x="280" y="1" width="60" height="54" fill="#c9dbff"/>
+    <text x="310" y="27" class="t" font-size="11" text-anchor="middle">loader</text>
+    <text x="310" y="43" class="t" font-size="11" text-anchor="middle">3.4 MB</text>
+    <!-- CFE at 20 MB .. 21.2 MB -->
+    <rect x="350" y="1" width="21" height="54" fill="#e08a1e"/>
+    <!-- loader copy at 32 MB -->
+    <rect x="560" y="1" width="60" height="54" fill="#c9dbff"/>
+    <text x="590" y="33" class="t" font-size="11" text-anchor="middle">loader</text>
+  </g>
+  <g class="s" font-size="12">
+    <text x="40" y="380">0x80000000</text>
+    <text x="300" y="380">0x81000000</text>
+    <text x="378" y="398" fill="#b4640a">CFE ≈0x81400000</text>
+    <text x="580" y="380">0x82000000</text>
+    <text x="1080" y="380">0x84000000</text>
+  </g>
+
+  <text x="40" y="440" class="t h">Two dead ends before that</text>
+  <text x="40" y="466" class="s" font-size="14">• load at 0x81000000 with the "relocate" stub → the 11 MB kernel overwrites CFE while it unpacks → silent hang</text>
+  <text x="40" y="490" class="s" font-size="14">• load at 0x81800000 (above CFE) → "Failed to decompress image. Corrupted image?" (CFE ~4 MB limit)</text>
+</svg>

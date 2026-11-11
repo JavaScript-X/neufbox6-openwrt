@@ -7,7 +7,13 @@ cd "$T"
 
 # 1. Alessio Ferri's OpenWrt commits: b43-tools update + rev22 squash support, bcma SoC host for the 6362 WLAN
 for c in 88300c83f3 06bf4fa978 5ba97f31bc; do
-  git apply --check "$W/openwrt-commits/$c.patch" 2>/dev/null && git apply "$W/openwrt-commits/$c.patch" && echo "applied $c" || echo "skip $c (already applied?)"
+  if git apply --check "$W/openwrt-commits/$c.patch" 2>/dev/null; then
+    git apply "$W/openwrt-commits/$c.patch" && echo "applied $c"
+  elif git apply --reverse --check "$W/openwrt-commits/$c.patch" 2>/dev/null; then
+    echo "already applied: $c"
+  else
+    echo "ERROR: $c does not apply on this OpenWrt tree"; git apply --check "$W/openwrt-commits/$c.patch"; exit 1
+  fi
 done
 
 # 2. b43 firmware from the D-Link DSL-3580L GPL wl driver (ucode22_mimo) - adapted to 25.12's broadcom.mk
@@ -55,6 +61,9 @@ EOF
 D=package/kernel/mac80211/patches/brcm
 n=900; for f in "$W"/b43-upstream/*.patch; do cp "$f" "$D/$n-b43-$(basename "$f" .patch | cut -d- -f2-).patch"; n=$((n+1)); done
 n=920; for f in "$W"/b43-fixes/*.patch; do cp "$f" "$D/$n-$(basename "$f")"; n=$((n+1)); done
+# local patches (940+): BCM6362 integrated WLAN is 2.4 GHz only
+cp "$W"/b43-local/*.patch "$D/"
+
 # kmod-bcma: its KCONFIG uses $(if $(CONFIG_TARGET_bmips_bcm6362),y,n), evaluated before .config
 # is loaded -> always n. Force the SoC host + BCM6362 WLAN host driver on.
 python3 "$(dirname "$0")/fix-bcma-kconfig.py" package/kernel/linux/modules/other.mk

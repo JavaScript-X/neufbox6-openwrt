@@ -6,7 +6,7 @@ P=$1; T=$2
 B=$T/target/linux/bmips
 
 cp "$P/target/linux/bmips/dts/bcm6362-sfr-neufbox-6-sercomm-r0.dts" "$B/dts/"
-cp "$P/target/linux/bmips/patches-6.12/900-rtl8367r-fix-RGMII-support.patch" "$B/patches-6.12/"
+cp "$P"/target/linux/bmips/patches-6.12/*.patch "$B/patches-6.12/"
 
 grep -q "sfr_neufbox-6-sercomm-r0" "$B/image/bcm6362.mk" || cat "$P/image-bcm6362.mk.append" >> "$B/image/bcm6362.mk"
 

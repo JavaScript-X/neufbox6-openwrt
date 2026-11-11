@@ -44,6 +44,14 @@
 			linux,code = <KEY_WPS_BUTTON>;
 			debounce-interval = <60>;
 		};
+
+		/* "ECO" button on top of the box (found by probing: GPIO 16, low when pressed) */
+		eco {
+			label = "eco";
+			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
+			linux,code = <BTN_1>;
+			debounce-interval = <60>;
+		};
 	};
 
 	/* Realtek RTL8367R, swconfig driver (kmod-switch-rtl8367).

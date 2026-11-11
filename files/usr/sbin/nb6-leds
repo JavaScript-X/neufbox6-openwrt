@@ -109,7 +109,7 @@ tick=0
 while true; do
 	if [ -e $STATE/spiral ]; then
 		spiral
-		sleep 0.35
+		sleep 1
 		continue
 	fi
 

@@ -8,8 +8,8 @@ if ! uci -q get network.$VPN_IF >/dev/null; then
 	logger -t nb6-buttons "ECO button: no '$VPN_IF' interface configured"
 	# 3 short red flashes on LED b
 	for i in 1 2 3; do
-		echo 31 > /sys/class/leds/red:service2/brightness; sleep 0.2
-		echo 0 > /sys/class/leds/red:service2/brightness; sleep 0.2
+		echo 31 > /sys/class/leds/red:service2/brightness; sleep 1
+		echo 0 > /sys/class/leds/red:service2/brightness; sleep 1
 	done
 	return 0
 fi

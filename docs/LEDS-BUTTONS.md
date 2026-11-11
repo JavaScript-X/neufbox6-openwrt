@@ -22,7 +22,7 @@ Orange = red 31 + green 10 (tune `color()` in `/usr/sbin/nb6-leds` if needed).
 | c | OK | temperature > 70 °C or MemAvailable < 4 MB | blinking: dnsmasq/netifd dead or overlay full | — |
 
 **Spiral mode** (`/tmp/nb6-leds/spiral`): a/b/c cycle green → orange → red, one step apart
-(350 ms per step), toggled by the SFR button.
+(1 s per step: BusyBox sleep has no sub-second support), toggled by the SFR button.
 
 ## Buttons (`/etc/rc.button/*`)
 | Button | Linux key / name | Action |

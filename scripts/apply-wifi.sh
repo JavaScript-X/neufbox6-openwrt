@@ -55,6 +55,9 @@ EOF
 D=package/kernel/mac80211/patches/brcm
 n=900; for f in "$W"/b43-upstream/*.patch; do cp "$f" "$D/$n-b43-$(basename "$f" .patch | cut -d- -f2-).patch"; n=$((n+1)); done
 n=920; for f in "$W"/b43-fixes/*.patch; do cp "$f" "$D/$n-$(basename "$f")"; n=$((n+1)); done
+# kmod-bcma: its KCONFIG uses $(if $(CONFIG_TARGET_bmips_bcm6362),y,n), evaluated before .config
+# is loaded -> always n. Force the SoC host + BCM6362 WLAN host driver on.
+python3 "$(dirname "$0")/fix-bcma-kconfig.py" package/kernel/linux/modules/other.mk
 
 # 4. Device tree + packages for the Neufbox 6
 DTS=target/linux/bmips/dts/bcm6362-sfr-neufbox-6-sercomm-r0.dts

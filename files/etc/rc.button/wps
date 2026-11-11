@@ -1,0 +1,21 @@
+#!/bin/sh
+# Wi-Fi switch pushed past "on" (KEY_WPS_BUTTON, GPIO 25): WPS push-button pairing for 2 minutes.
+# The white wlan LED blinks fast while WPS is open.
+[ "$ACTION" = released ] || exit 0
+
+LED=/sys/class/leds/white:wlan
+done_any=0
+for sock in /var/run/hostapd/*; do
+	[ -S "$sock" ] || continue
+	hostapd_cli -p /var/run/hostapd -i "$(basename "$sock")" wps_pbc >/dev/null 2>&1 && done_any=1
+done
+
+if [ $done_any = 1 ]; then
+	logger -t nb6-buttons "WPS: pairing open for 120 s"
+	echo timer > $LED/trigger
+	echo 100 > $LED/delay_on; echo 100 > $LED/delay_off
+	( sleep 120; /etc/init.d/led restart ) &
+else
+	logger -t nb6-buttons "WPS: no hostapd interface with WPS available"
+fi
+return 0

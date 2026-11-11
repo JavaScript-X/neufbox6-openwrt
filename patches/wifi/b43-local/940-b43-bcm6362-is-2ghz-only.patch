@@ -1,0 +1,28 @@
+From: Tahar
+Subject: [PATCH] b43: treat the BCM6362 integrated WLAN as 2.4 GHz only
+
+The radio of the BCM6362 SoC WLAN (d11 corerev 22, radio 2057 rev 8) has no
+5 GHz support in b43 (no 5 GHz IPA gain table) and SFR Neufbox 6 boards have
+no 5 GHz front-end. Advertising band 2 only makes channel switches fail.
+
+--- a/drivers/net/wireless/broadcom/b43/main.c
++++ b/drivers/net/wireless/broadcom/b43/main.c
+@@ -5388,6 +5388,10 @@
+ 
+ 	/* Note: below IDs can be "virtual" (not maching e.g. real PCI ID) */
+ 	switch (dev_id) {
++	case 0x435f: /* BCM6362 integrated WLAN: radio 2057 rev 8, 2.4 GHz only */
++		*have_2ghz_phy = true;
++		*have_5ghz_phy = false;
++		return;
+ 	case 0x4324: /* BCM4306 */
+ 	case 0x4312: /* BCM4311 */
+ 	case 0x4319: /* BCM4318 */
+@@ -5396,7 +5400,6 @@
+ 	case 0x4350: /* BCM43222 */
+ 	case 0x4353: /* BCM43224 */
+ 	case 0x0576: /* BCM43224 */
+-	case 0x435f: /* BCM6362 */
+ 	case 0x4331: /* BCM4331 */
+ 	case 0x4359: /* BCM43228 */
+ 	case 0x43a0: /* BCM4360 */

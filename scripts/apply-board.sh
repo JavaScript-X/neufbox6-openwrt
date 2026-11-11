@@ -26,4 +26,15 @@ open(p, "w").write(s)
 EOF
 fi
 
+# SFR LED/hwmon microcontroller: GPIO I2C bus + nb6-hwmon PWM driver + pwm-leds, built in.
+K="$B/bcm6362/config-6.12"
+for opt in CONFIG_I2C=y CONFIG_I2C_BOARDINFO=y CONFIG_I2C_ALGOBIT=y CONFIG_I2C_GPIO=y \
+           CONFIG_I2C_CHARDEV=y CONFIG_PWM=y CONFIG_LEDS_PWM=y CONFIG_HWMON=y \
+           CONFIG_SENSORS_NB6_HWMON=y CONFIG_LEDS_TRIGGER_PATTERN=y \
+           CONFIG_LEDS_TRIGGER_ONESHOT=y CONFIG_LEDS_TRIGGER_TRANSIENT=y; do
+  sym=${opt%%=*}
+  sed -i "/^$sym=/d;/^# $sym is not set/d" "$K"
+  echo "$opt" >> "$K"
+done
+sort -o "$K" "$K"
 echo "applied:"; ls -1 "$B/dts/" | grep neufbox; grep -n -A3 neufbox "$N"; tail -12 "$B/image/bcm6362.mk"

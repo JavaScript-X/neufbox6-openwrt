@@ -54,6 +54,26 @@
 		};
 	};
 
+	/*
+	 * SFR LED/hwmon microcontroller on a GPIO I2C bus (SDA = GPIO 30, SCL = GPIO 2, as in the
+	 * SFR firmware). It drives the 9 LEDs with 0..31 PWM, has built-in LED animations,
+	 * temperature/voltage sensors, boot/panic counters and a watchdog.
+	 */
+	i2c-nb6 {
+		compatible = "i2c-gpio";
+		sda-gpios = <&gpio 30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&gpio 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <10>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		nb6_pwm: hwmon@60 {
+			compatible = "sfr,nb6_hwmon";
+			reg = <0x60>;
+			#pwm-cells = <2>;
+		};
+	};
+
 	/* Realtek RTL8367R, swconfig driver (kmod-switch-rtl8367).
 	 * extif: <cpu_port txdelay rxdelay mode(1=RGMII) force txpause rxpause link duplex speed(2=1000)>
 	 * Same values as 23.05 ("realtek,extif0 = <1 5 1 1 1 1 1 1 2>") with cpu port 9 prepended. */

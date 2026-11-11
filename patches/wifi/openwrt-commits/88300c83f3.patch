@@ -1,0 +1,36 @@
+From 88300c83f34ae1517e8b6dd248fecd60a6fdc904 Mon Sep 17 00:00:00 2001
+From: Alessio Ferri <alessio.ferri.3012@gmail.com>
+Date: Mon, 25 May 2026 20:50:39 +0200
+Subject: [PATCH] b43-tools: update the package to version released on
+ 2026-05-22
+
+b43-tools introduced python 2 to python 3 conversion and added
+support to extract ucode from a new blob
+
+Signed-off-by: Alessio Ferri <alessio.ferri.3012@gmail.com>
+Link: https://github.com/openwrt/openwrt/pull/23535
+Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
+---
+ tools/b43-tools/Makefile | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/tools/b43-tools/Makefile b/tools/b43-tools/Makefile
+index 586c645b41c5a3..828834574e9619 100644
+--- a/tools/b43-tools/Makefile
++++ b/tools/b43-tools/Makefile
+@@ -8,12 +8,12 @@
+ include $(TOPDIR)/rules.mk
+ 
+ PKG_NAME:=b43-tools
+-PKG_DATE:=2025-09-23
++PKG_DATE:=2026-05-22
+ 
+ PKG_SOURCE_PROTO:=git
+ PKG_SOURCE_URL:=https://github.com/mbuesch/b43-tools.git
+-PKG_MIRROR_HASH:=421520ea1983c4774864ec47f9333e5dfa947ef759ce543830b958c63a9c5974
+-PKG_SOURCE_VERSION:=35fe4385a8d738874ef004fa47c5aa40b2c08b3e
++PKG_MIRROR_HASH:=980663ea5ce8ff7cc9411bdf702282b6f43d191616bb32e5e24c812490038ac9
++PKG_SOURCE_VERSION:=448c90f71a929fd6e144a7bd6faa05308eacaf34
+ 
+ include $(INCLUDE_DIR)/host-build.mk
+ 

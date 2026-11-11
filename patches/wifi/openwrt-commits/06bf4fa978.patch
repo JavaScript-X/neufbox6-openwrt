@@ -1,0 +1,45 @@
+From 06bf4fa978cb542df447ce9a50d83306a83f368a Mon Sep 17 00:00:00 2001
+From: Alessio Ferri <alessio.ferri.3012@gmail.com>
+Date: Mon, 25 May 2026 15:15:03 +0200
+Subject: [PATCH] b43-tools: introduce support for rev22 in b43-fwsquash.py
+
+rev22 has been ignored in fwsquash for the lack of supported binary blobs
+containing the required firmware.
+Now that fwcutter is able to parse the blob included in the gpl release
+of dlink dsl 3580l, fwsquash need to keep the extracted files.
+
+Signed-off-by: Alessio Ferri <alessio.ferri.3012@gmail.com>
+Link: https://github.com/openwrt/openwrt/pull/23532
+Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
+---
+ tools/b43-tools/files/b43-fwsquash.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/tools/b43-tools/files/b43-fwsquash.py b/tools/b43-tools/files/b43-fwsquash.py
+index 6b4952cbc1dc4f..cc4963eb35f623 100755
+--- a/tools/b43-tools/files/b43-fwsquash.py
++++ b/tools/b43-tools/files/b43-fwsquash.py
+@@ -75,6 +75,7 @@ def phytypes_match(types_a, types_b):
+ 	"ucode15.fw"		: ( (15,),		("LP",), ),
+ 	"ucode16_mimo.fw"	: ( (16,17,18,19,23,),	("N",), ),
+ #	"ucode16_lp.fw"		: ( (16,17,18,19,),	("LP",), ),
++	"ucode22_mimo.fw"	: ( (22,),		("N",), ),
+ 	"ucode24_lcn.fw"	: ( (24,),		("LCN",), ),
+ 	"ucode25_mimo.fw"	: ( (25,28,),		("N",), ),
+ 	"ucode25_lcn.fw"	: ( (25,28,),		("LCN",), ),
+@@ -96,6 +97,7 @@ def phytypes_match(types_a, types_b):
+ 	"b0g0initvals13.fw"	: ( (13,),		("G",), ),
+ 	"n0initvals11.fw"	: ( (11,12,),		("N",), ),
+ 	"n0initvals16.fw"	: ( (16,17,18,23,),	("N",), ),
++	"n0initvals22.fw"	: ( (22,),		("N",), ),
+ 	"n0initvals24.fw"	: ( (24,),		("N",), ),
+ 	"n0initvals25.fw"	: ( (25,28,),		("N",), ),
+ 	"n16initvals30.fw"	: ( (30,),		("N",), ),
+@@ -114,6 +116,7 @@ def phytypes_match(types_a, types_b):
+ 	"b0g0bsinitvals5.fw"	: ( (5,6,7,8,9,10,),	("G",), ),
+ 	"n0bsinitvals11.fw"	: ( (11,12,),		("N",), ),
+ 	"n0bsinitvals16.fw"	: ( (16,17,18,23,),	("N",), ),
++	"n0bsinitvals22.fw"	: ( (22,),		("N",), ),
+ 	"n0bsinitvals24.fw"	: ( (24,),		("N",), ),
+ 	"n0bsinitvals25.fw"	: ( (25,28,),		("N",), ),
+ 	"n16bsinitvals30.fw"	: ( (30,),		("N",), ),

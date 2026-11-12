@@ -43,7 +43,8 @@ image ships `kmod-wireguard`, `wireguard-tools`, `luci-proto-wireguard`). Create
 LuCI → Network → Interfaces → Add → name `vpn`, protocol WireGuard.
 
 ## Hardware test results (2026-11-11)
-- LED order: left = a (service1), middle = b (service2), right = c (service3). Brightness 0..31; values above 31 switch the LED off.
+- LED positions on the ring around the SFR button (same as SFR's documentation): a (service1) = top right,
+  b (service2) = bottom, c (service3) = top left. Brightness 0..31; values above 31 switch the LED off.
 - SFR spiral: works, one step per second (BusyBox `sleep` has no sub-second resolution).
 - ECO: works (3 red flashes on LED b while no `vpn` interface exists).
 - Wi-Fi switch: off/on works.

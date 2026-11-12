@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="neufbox6-openwrt — OpenWrt 25.12 on the SFR Neufbox 6" width="100%">
+  <img src="assets/banner.png" alt="neufbox6-openwrt — OpenWrt 25.12 on the SFR Neufbox 6" width="100%">
 </p>
 
 <p align="center">
@@ -36,7 +36,7 @@ goes further than the official port ever did:
 
 ## 🧩 Hardware
 
-<p align="center"><img src="assets/architecture.svg" alt="Neufbox 6 architecture" width="100%"></p>
+<p align="center"><img src="assets/hardware.png" alt="Neufbox 6 back panel ports and hardware" width="100%"></p>
 
 BCM6362 @ 400 MHz · 64 MB RAM · 16 MB SPI NOR · Realtek RTL8367R gigabit switch · BCM6362 integrated 2.4 GHz radio ·
 SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and the microcontroller's registers:
@@ -44,7 +44,7 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 ## 💡 LEDs and buttons
 
-<p align="center"><img src="assets/leds-buttons.svg" alt="LEDs and buttons" width="100%"></p>
+<p align="center"><img src="assets/leds-buttons.png" alt="LEDs and buttons" width="100%"></p>
 
 > ✅ Tested on real hardware: LED colours and order, SFR spiral, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > 🧪 WPS (switch pushed past "on") is detected but does not start pairing yet: hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
@@ -90,7 +90,7 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 ## 📁 Repository
 
 ```
-assets/            illustrations used in this README
+assets/            photos and diagrams used in this README
 config/nb6.config  OpenWrt target and package selection
 docker/            Debian 12 build environment
 docs/              hardware, build, flashing, Wi-Fi, LEDs, porting journal
@@ -117,6 +117,9 @@ tools/             serial / CFE / TFTP / GPIO helpers used for flashing and prob
 
 Third-party patches keep their original authorship and trailers. SFR firmware images and calibration files are **not**
 distributed here.
+
+Product photos of the Neufbox 6 in `assets/banner.png`, `assets/leds-buttons.png` and `assets/hardware.png`: © SFR,
+annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
 
 ## 📜 Licence
 

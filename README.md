@@ -27,12 +27,12 @@ goes further than the official port ever did:
 | | OpenWrt 23.05 (official, last) | **neufbox6-openwrt** |
 |---|:---:|:---:|
 | OpenWrt / Linux | 23.05 / 5.15 | **25.12 / 6.12** |
-| Security updates | no, end of life | yes, follows the 25.12 branch |
-| Integrated Wi-Fi | no | yes, access point, WPA2 |
-| Front LEDs (a/b/c, wan, voip, wlan) | no | yes, with status meanings |
-| ECO button | no | yes, VPN on/off |
-| Sensors (temperature, voltage) | no | yes |
-| Gigabit switch, USB, WAN "Fibre" port | yes | yes |
+| Security updates | ❌ end of life | ✅ follows the 25.12 branch |
+| Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
+| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
+| ECO button | ❌ | ✅ VPN on/off |
+| Sensors (temperature, voltage) | ❌ | ✅ |
+| Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
 
 ## Hardware
 

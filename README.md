@@ -38,6 +38,8 @@ goes further than the official port ever did:
 
 <p align="center"><img src="assets/hardware.png" alt="Neufbox 6 back panel ports and hardware" width="100%"></p>
 
+<p align="center"><img src="assets/architecture.svg" alt="Neufbox 6 architecture" width="100%"></p>
+
 BCM6362 @ 400 MHz · 64 MB RAM · 16 MB SPI NOR · Realtek RTL8367R gigabit switch · BCM6362 integrated 2.4 GHz radio ·
 SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and the microcontroller's registers:
 **[docs/HARDWARE.md](docs/HARDWARE.md)**.

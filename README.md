@@ -122,6 +122,8 @@ distributed here.
 
 Product photos of the Neufbox 6 in `assets/banner.png`, `assets/leds-buttons.png` and `assets/hardware.png`: © SFR,
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
+The OpenWrt logo in `assets/banner.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+(shown in its white variant for the dark background); OpenWrt is a registered trademark of Software Freedom Conservancy.
 
 ## Licence
 

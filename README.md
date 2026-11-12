@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="neufbox6-openwrt: OpenWrt 25.12 on the SFR Neufbox 6" width="100%">
+  <img src="assets/banner-openwrt.png" alt="neufbox6-openwrt: OpenWrt 25.12 on the SFR Neufbox 6" width="100%">
 </p>
 
 <p align="center">
@@ -120,9 +120,9 @@ tools/             serial / CFE / TFTP / GPIO helpers used for flashing and prob
 Third-party patches keep their original authorship and trailers. SFR firmware images and calibration files are **not**
 distributed here.
 
-Product photos of the Neufbox 6 in `assets/banner.png`, `assets/leds-buttons.png` and `assets/hardware.png`: © SFR,
+Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png` and `assets/hardware.png`: © SFR,
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
-The OpenWrt logo in `assets/banner.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+The OpenWrt logo in `assets/banner-openwrt.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 (shown in its white variant for the dark background); OpenWrt is a registered trademark of Software Freedom Conservancy.
 
 ## Licence

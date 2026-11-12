@@ -12,7 +12,7 @@
     </style>
   </defs>
   <rect width="1200" height="640" rx="20" fill="#f6f8fb"/>
-  <text x="40" y="52" class="t" font-size="26" font-weight="800">Neufbox 6 (NB6-SER-r0) — what OpenWrt drives</text>
+  <text x="40" y="52" class="t" font-size="26" font-weight="800">Neufbox 6 (NB6-SER-r0): what OpenWrt drives</text>
 
   <!-- SoC -->
   <rect x="440" y="230" width="320" height="190" class="b" fill="#e7efff" stroke="#3b6fd8"/>

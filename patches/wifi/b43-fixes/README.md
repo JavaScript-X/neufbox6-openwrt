@@ -7,7 +7,7 @@ on any revision and demonstrably wrong without the hardware in front of you.
 **They are separate patches, not a series**, and go out as as many `[PATCH]`es
 in as many threads: none needs another to be correct, and tying them into a
 series means a long review on one holds up the merge of the others. Only one
-pair touches, and only for context — `treat-the-n-phy-dac-test` and
+pair touches, and only for context: `treat-the-n-phy-dac-test` and
 `fix-two-defects-in-the-n-phy-sample-table-logic` change neighbouring lines of
 `b43_nphy_gen_load_samples()`, see below.
 
@@ -24,7 +24,7 @@ pair touches, and only for context — `treat-the-n-phy-dac-test` and
 | `b43-fill-the-per-rate-transmit-power-offsets-on-n-phy` | `nphy->tx_power_offset[]` has **no writer**: declared, read in two places and filled nowhere, so the 84 cells of the adjusted power table come out at zero whatever the SPROM says, and every rate transmits at the same power. **It also carries a move of `b43_nphy_tx_pwr_ctrl_coef_setup()` that does not belong and must be split off**, see below | 20 |
 | `b43-square-both-terms-of-the-n-phy-rssi-vcm-search` | the narrowband VCM search minimises `I² + Q²` and the second term is written `Q * I`: not a distance, and negative whenever the two rails have opposite signs, so the minimum falls where that product is most negative. The chosen VCM and the offsets that follow from it are both wrong | 2 |
 | `b43-program-the-best-n-phy-rssi-vcm-instead-of-the-loop-bound` | the rev 7+ branch of the choice of the best VCM programs `vcm`, which at the loop exit is 8: the field is three bits wide, so it writes a bit out of the field and throws away the result of the search. The rev 3 branch below and brcmsmac both pass `vcm_final` | 2 |
-| `b43-save-the-right-field-of-the-n-phy-tx-power-index` | when it turns power control off, it saves the index each chain was on by taking the **seven low bits** of the status instead of bits 8..14, which are the index — `B43_NPHY_TXPCTL_STAT_BIDX` of this same driver says so, and twenty lines below `b43_nphy_get_tx_gains()` reads it right. The restore puts that wrong field back into the index, so the hardware restarts from wherever | 12 |
+| `b43-save-the-right-field-of-the-n-phy-tx-power-index` | when it turns power control off, it saves the index each chain was on by taking the **seven low bits** of the status instead of bits 8..14, which are the index: `B43_NPHY_TXPCTL_STAT_BIDX` of this same driver says so, and twenty lines below `b43_nphy_get_tx_gains()` reads it right. The restore puts that wrong field back into the index, so the hardware restarts from wherever | 12 |
 
 The last two are proved **three ways**: brcmsmac, the capture and b43 say
 different things, and the first two say the same thing. The capture lines are in
@@ -33,7 +33,7 @@ the body of the patches.
 `reverse-tools/check_patch_gating.py --tree` on `045958acaa75` (as on
 `848acc8ffe1b`: the b43 files are the same) flags **seven
 points in five** of these patches, not two. Six are fine, and for the same
-reason — a transcription or C precedence typo does not go behind a revision
+reason: a transcription or C precedence typo does not go behind a revision
 gate, because it is not a feature of this hardware, and it is the exception
 already declared in `b43/MESSAGES.md#0010`:
 
@@ -50,7 +50,7 @@ before sending: `b43-fill-the-per-rate-transmit-power-offsets-on-n-phy` in
 every N-PHY rev 3 and up programs, and it is not a typo: it is new behaviour on
 hardware we do not have. The tool's verdict on the **other** hunk of the same
 patch, `b43_phy_initn` "dentro if (rev >= 3 &&", is a false positive of its
-heuristic — the added line is indented **one tab**, so it is at function level,
+heuristic: the added line is indented **one tab**, so it is at function level,
 after the `if (phy->rev >= 3) ... else ...` block has closed.
 
 And that hunk is a problem of its own, unrelated to the rest of the patch: it
@@ -84,7 +84,7 @@ The defect does not show when they are applied in alphabetical order, as
 comes before `treat-`.
 
 `b43-fill-the-per-rate-transmit-power-offsets-on-n-phy` **applies** on
-`045958acaa75`, and without fuzz — `git apply` allows none — but with offsets
+`045958acaa75`, and without fuzz (`git apply` allows none), but with offsets
 **-643, -643, -1027 and -1054**: it was generated on top of the series, which
 makes `phy_n.c` ~1000 lines longer. It has to be regenerated on the clean
 baseline before sending anyway, because four offsets of a thousand lines on a
@@ -94,7 +94,7 @@ today.
   for p in patches/mainline/*.patch; do git apply --check "$p"; done
 
 The first one carries two defects together, and not out of laziness: neither
-half alone produces a right sample table — 140 wrong words of 160 with only the
+half alone produces a right sample table: 140 wrong words of 160 with only the
 mask fixed, 120 with only the phase step. They are two lines of one broken
 logic, and separating them would give two patches nobody can verify.
 
@@ -110,7 +110,7 @@ phy rev 7 program at 5 GHz, and we have neither. The rationale is in
 
 `b43-treat-the-n-phy-dac-test-as-a-mode-not-a-flag` is latent: no in-tree caller
 passes a mode other than 0 or 1, so on its own it changes nothing. It bites the
-first caller with a real mode, which is the RX IQ cal — and the measurement is
+first caller with a real mode, which is the RX IQ cal, and the measurement is
 there: with the `bool`, a type 2 builds the 160 words of the tone over a band of
 80 or 82 instead of 20, and the port loses **476 ops** on `up-ch1`. The series
 in `b43/` sits on top of this one and does not duplicate it.

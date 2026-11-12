@@ -15,7 +15,7 @@ Values read from the serial console (CFE + SFR firmware boot log) and by probing
 | Wi-Fi calibration | Not in OTP/SROM: the SFR firmware loads `/etc/wlan/bcmNB6-SER-r0_map.bin` (SROM rev 8, 448 bytes) |
 | LEDs / sensors | SFR microcontroller on GPIO I²C (SDA = GPIO 30, SCL = GPIO 2), address `0x60` |
 | USB | 1 × USB 2.0 (EHCI/OHCI) |
-| Serial | 4-pin header: GND, TX, RX, 3.3 V — 115200 8N1, **3.3 V logic, do not connect VCC** |
+| Serial | 4-pin header: GND, TX, RX, 3.3 V, 115200 8N1, **3.3 V logic, do not connect VCC** |
 
 ## Flash layout
 | Offset | Size | SFR firmware | OpenWrt |
@@ -33,7 +33,7 @@ Values read from the serial console (CFE + SFR firmware boot log) and by probing
 | 2 | I²C SCL (LED/hwmon microcontroller) |
 | 10 | SFR button (active low) |
 | 12 | Wi-Fi slide switch, ON position (active low) |
-| 16 | ECO button (active low) — found by probing, not in OpenWrt 23.05 |
+| 16 | ECO button (active low), found by probing, not in OpenWrt 23.05 |
 | 18 / 20 | RTL8367R SMI SDA / SCK |
 | 24 | Reset button (rear, active low) |
 | 25 | Wi-Fi switch pushed further = WPS (active low) |

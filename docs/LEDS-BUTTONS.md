@@ -17,9 +17,9 @@ Orange = red 31 + green 10 (tune `color()` in `/usr/sbin/nb6-leds` if needed).
 ### `nb6-leds` daemon (`/etc/init.d/nb6-leds`)
 | LED | Green | Orange | Red | Off |
 |---|---|---|---|---|
-| a | WAN link + ping 1.1.1.1 OK | WAN link, no internet | WAN cable unplugged | — |
-| b | VPN up (WireGuard handshake < 3 min) | blinking: connecting | — | VPN down / not configured |
-| c | OK | temperature > 70 °C or MemAvailable < 4 MB | blinking: dnsmasq/netifd dead or overlay full | — |
+| a | WAN link + ping 1.1.1.1 OK | WAN link, no internet | WAN cable unplugged | |
+| b | VPN up (WireGuard handshake < 3 min) | blinking: connecting | | VPN down / not configured |
+| c | OK | temperature > 70 °C or MemAvailable < 4 MB | blinking: dnsmasq/netifd dead or overlay full | |
 
 **Spiral mode** (`/tmp/nb6-leds/spiral`): a/b/c cycle green → orange → red, one step apart
 (1 s per step: BusyBox sleep has no sub-second support), toggled by the SFR button.

@@ -9,7 +9,7 @@
   </defs>
   <rect width="1200" height="520" rx="20" fill="#f6f8fb"/>
   <text x="40" y="50" class="t" font-size="26" font-weight="800">Why the image needs a loader</text>
-  <text x="40" y="78" class="s" font-size="15">CFE can only unpack ~4 MB and lives at ~0x81400000 — the 6.12 kernel is 11.3 MB once unpacked.</text>
+  <text x="40" y="78" class="s" font-size="15">CFE can only unpack ~4 MB and lives at ~0x81400000, but the 6.12 kernel is 11.3 MB once unpacked.</text>
 
   <!-- steps -->
   <g>
@@ -39,7 +39,7 @@
   </g>
 
   <!-- RAM map: 0x80000000..0x84000000 (64 MB), 1 MB = 17.5 px -->
-  <text x="40" y="290" class="t h">RAM (64 MB, 0x80000000 – 0x84000000)</text>
+  <text x="40" y="290" class="t h">RAM (64 MB, 0x80000000 to 0x84000000)</text>
   <g transform="translate(40 305)">
     <rect width="1120" height="56" rx="8" fill="#ffffff" stroke="#b8c2d1"/>
     <!-- kernel 0x80010000 .. +11.3 MB -->

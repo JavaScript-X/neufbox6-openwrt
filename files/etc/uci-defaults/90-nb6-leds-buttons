@@ -2,7 +2,7 @@
 # First boot defaults for the SFR Neufbox 6 port:
 #  - white:wan  LED blinks with WAN traffic, white:wlan LED blinks with Wi-Fi traffic (netdev triggers)
 #  - WPS push button enabled on the Wi-Fi access point(s)
-#  - nb6-leds service enabled (LEDs a/b/c + voip)
+#  - nb6-leds service enabled (LEDs a/b/c + voip), eco mode re-applied at boot (nb6-eco)
 
 [ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = "sfr,neufbox-6-sercomm-r0" ] || exit 0
 
@@ -33,4 +33,5 @@ done
 uci commit wireless
 
 /etc/init.d/nb6-leds enable
+/etc/init.d/nb6-eco enable
 exit 0

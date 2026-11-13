@@ -1,0 +1,59 @@
+#!/bin/sh
+# Eco mode, switched by the ECO button (settings: /etc/config/nb6, section eco)
+#
+#   ring LEDs a, b, c dimmed to eco.led_brightness
+#   white traffic LEDs (wan, wlan) off           unless eco.traffic_leds = 1
+#   statistics and per-device traffic paused     unless eco.pause_stats = 0
+#   Wi-Fi off                                    if eco.wifi_off = 1 (default 0)
+#
+# The state (eco.enabled) survives a reboot. This hardware cannot slow down its LAN ports
+# (the RTL8367R driver only reads the link) nor lower the Wi-Fi power (b43 ignores it).
+#
+# Usage: nb6-eco on|off|toggle|apply|status
+
+opt() { v=$(uci -q get nb6.eco.$1); echo "${v:-$2}"; }
+
+leds_reload() { # tell nb6-leds to re-read the brightness now
+	for p in $(pidof nb6-leds); do kill -USR1 $p 2>/dev/null; done
+}
+
+traffic_leds_off() {
+	for l in wan wlan; do
+		echo none > /sys/class/leds/white:$l/trigger 2>/dev/null
+		echo 0 > /sys/class/leds/white:$l/brightness 2>/dev/null
+	done
+}
+
+apply_on() {
+	[ "$(opt traffic_leds 0)" = 1 ] || traffic_leds_off
+	if [ "$(opt pause_stats 1)" = 1 ]; then
+		for s in collectd nlbwmon; do [ -x /etc/init.d/$s ] && /etc/init.d/$s stop >/dev/null 2>&1; done
+	fi
+	[ "$(opt wifi_off 0)" = 1 ] && wifi down
+	leds_reload
+}
+
+apply_off() {
+	/etc/init.d/led restart >/dev/null 2>&1          # traffic LED triggers from /etc/config/system
+	for s in collectd nlbwmon; do
+		[ -x /etc/init.d/$s ] && /etc/init.d/$s enabled && /etc/init.d/$s start >/dev/null 2>&1
+	done
+	[ "$(opt wifi_off 0)" = 1 ] && wifi up
+	leds_reload
+}
+
+set_state() {
+	uci -q get nb6.eco >/dev/null || uci set nb6.eco=eco
+	uci set nb6.eco.enabled=$1
+	uci commit nb6
+}
+
+case "$1" in
+	on)     set_state 1; apply_on;  logger -t nb6-eco "eco mode on" ;;
+	off)    set_state 0; apply_off; logger -t nb6-eco "eco mode off" ;;
+	toggle) if [ "$(opt enabled 0)" = 1 ]; then exec "$0" off; else exec "$0" on; fi ;;
+	apply)  [ "$(opt enabled 0)" = 1 ] && apply_on ;;
+	status) echo "eco mode: $([ "$(opt enabled 0)" = 1 ] && echo on || echo off)" ;;
+	*)      sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac
+exit 0

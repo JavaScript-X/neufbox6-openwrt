@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# Re-apply eco mode at boot when it was on (see /usr/sbin/nb6-eco)
+
+START=99
+
+boot() {
+	# after nb6-leds, collectd and nlbwmon have started
+	( sleep 30; /usr/sbin/nb6-eco apply ) &
+}
+
+start() {
+	/usr/sbin/nb6-eco apply
+}

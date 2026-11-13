@@ -8,3 +8,15 @@ config leds 'leds'
 	option night_start '23:00'
 	option night_end '07:00'
 	option night_brightness '4'
+
+config eco 'eco'
+	# eco mode, switched by the ECO button; the state survives a reboot
+	option enabled '0'
+	# ring LED brightness in eco mode (1..31)
+	option led_brightness '4'
+	# 1 = keep the white traffic LEDs (wan, wlan) blinking
+	option traffic_leds '0'
+	# 1 = pause statistics (collectd) and per-device traffic (nlbwmon)
+	option pause_stats '1'
+	# 1 = also turn the Wi-Fi off
+	option wifi_off '0'

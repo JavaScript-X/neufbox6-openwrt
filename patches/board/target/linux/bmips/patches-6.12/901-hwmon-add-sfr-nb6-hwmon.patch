@@ -3,7 +3,7 @@ Subject: [PATCH] hwmon: add SFR NeufBox 6 hwmon / PWM LED driver
 
 Driver posted to LKML in June 2020 ("hwmon: Add SFR NB6 sensor driver"), never merged.
 Ported to Linux 6.12 for the OpenWrt Neufbox 6 port: pwm_ops.apply, devm_pwmchip_alloc,
-single-argument i2c probe.
+single-argument i2c probe, standard temp1_input / in0_input sensor names.
 
 --- a/drivers/hwmon/Kconfig
 +++ b/drivers/hwmon/Kconfig
@@ -37,7 +37,7 @@ single-argument i2c probe.
  obj-$(CONFIG_SENSORS_NCT6775_CORE) += nct6775-core.o
 --- /dev/null
 +++ b/drivers/hwmon/nb6-hwmon.c
-@@ -0,0 +1,458 @@
+@@ -0,0 +1,478 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * Driver for SFR NeufBox 6 Hardware Monitoring
@@ -329,6 +329,22 @@ single-argument i2c probe.
 +
 +static DEVICE_ATTR_RO(voltage);
 +
++/* standard hwmon names, so lm-sensors and collectd see the sensors */
++static ssize_t label_show(struct device *dev, struct device_attribute *attr,
++			  char *buf)
++{
++	return sprintf(buf, "%s\n", attr->attr.name[0] == 't' ? "board" : "12V");
++}
++
++static struct device_attribute dev_attr_temp1_input =
++	__ATTR(temp1_input, 0444, temperature_show, NULL);
++static struct device_attribute dev_attr_temp1_label =
++	__ATTR(temp1_label, 0444, label_show, NULL);
++static struct device_attribute dev_attr_in0_input =
++	__ATTR(in0_input, 0444, voltage_show, NULL);
++static struct device_attribute dev_attr_in0_label =
++	__ATTR(in0_label, 0444, label_show, NULL);
++
 +static ssize_t watchdog_show(struct device *dev,
 +			     struct device_attribute *attr, char *buf)
 +{
@@ -371,6 +387,10 @@ single-argument i2c probe.
 +	&dev_attr_temperature.attr,
 +	&dev_attr_voltage.attr,
 +	&dev_attr_watchdog.attr,
++	&dev_attr_temp1_input.attr,
++	&dev_attr_temp1_label.attr,
++	&dev_attr_in0_input.attr,
++	&dev_attr_in0_label.attr,
 +	NULL,
 +};
 +

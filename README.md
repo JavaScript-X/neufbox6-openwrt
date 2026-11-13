@@ -9,6 +9,7 @@
   <img alt="Wi-Fi" src="https://img.shields.io/badge/Wi--Fi-2.4%20GHz%20b43-2b8bd6">
   <img alt="Licence" src="https://img.shields.io/badge/licence-GPL--2.0--or--later-2e9e5b">
   <img alt="Status" src="https://img.shields.io/badge/status-experimental-orange">
+  <a href="https://github.com/JavaScript-X/neufbox6-openwrt/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/JavaScript-X/neufbox6-openwrt?label=release&color=00a3e0"></a>
 </p>
 
 <p align="center">
@@ -73,7 +74,12 @@ CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED 
 
 ## Getting started
 
-### 1. Build (Docker)
+### Download
+Ready-made images are on the **[releases page](https://github.com/JavaScript-X/neufbox6-openwrt/releases/latest)**:
+`…-squashfs-cfe.bin` for the first install, `…-squashfs-sysupgrade.bin` for updates, with SHA-256 checksums.
+Back up the whole flash first ([docs/FLASHING.md](docs/FLASHING.md#full-flash-backup)).
+
+### 1. Build it yourself (Docker, optional)
 ```sh
 git clone https://github.com/JavaScript-X/neufbox6-openwrt.git
 cd neufbox6-openwrt

@@ -2,7 +2,8 @@
 # SFR Neufbox 6 front LEDs daemon
 #
 #  LED a (service1): Internet  green = OK, orange = WAN link up but no internet, red = WAN cable unplugged
-#  LED b (service2): VPN       green = up, orange blinking = connecting, off = down / not configured
+#  LED b (service2): VPN       green = tailnet up, orange = commercial VPN up, green/orange = both,
+#                              orange blinking = connecting, off = no tunnel
 #  LED c (service3): health    green = OK, orange = hot or low memory, red blinking = error
 #  LED voip (white): blinks for 60 s when a new device gets a DHCP lease on the LAN
 #
@@ -13,7 +14,6 @@
 
 L=/sys/class/leds
 KNOWN=/etc/nb6-leds.known-macs
-VPN_IF=${VPN_IF:-vpn}
 WAN_PORT=0
 PING_HOST=1.1.1.1
 TEMP_WARN=70000          # m°C
@@ -81,21 +81,32 @@ internet_state() {
 	[ "$net_ok" = 1 ] && S_A=green || S_A=orange
 }
 
-vpn_state() {
-	S_B=off
-	uci -q get network.$VPN_IF >/dev/null || return
-	[ "$(uci -q get network.$VPN_IF.disabled)" = 1 ] && return
-	st=$(ifstatus $VPN_IF 2>/dev/null) || return
+tunnel_state() { # interface -> T=up|connecting|off
+	T=off
+	uci -q get network.$1 >/dev/null || return
+	[ "$(uci -q get network.$1.disabled)" = 1 ] && return
+	st=$(ifstatus $1 2>/dev/null) || return
 	if [ "$(echo "$st" | jsonfilter -e '@.up')" != true ]; then
-		[ "$(echo "$st" | jsonfilter -e '@.pending')" = true ] && S_B=connecting
+		[ "$(echo "$st" | jsonfilter -e '@.pending')" = true ] && T=connecting
 		return
 	fi
-	if [ "$(uci -q get network.$VPN_IF.proto)" = wireguard ]; then
+	if [ "$(uci -q get network.$1.proto)" = wireguard ]; then
 		dev=$(echo "$st" | jsonfilter -e '@.l3_device')
-		last=$(wg show ${dev:-$VPN_IF} latest-handshakes 2>/dev/null | awk '{print $2}' | sort -n | tail -1)
-		[ -n "$last" ] && [ "$last" -gt 0 ] && [ $(( $(date +%s) - last )) -lt 180 ] && S_B=green || S_B=connecting
+		last=$(wg show ${dev:-$1} latest-handshakes 2>/dev/null | awk '{print $2}' | sort -n | tail -1)
+		[ -n "$last" ] && [ "$last" -gt 0 ] && [ $(( $(date +%s) - last )) -lt 180 ] && T=up || T=connecting
 	else
-		S_B=green
+		T=up
+	fi
+}
+
+vpn_state() {
+	tunnel_state vpn; t=$T
+	tunnel_state vpn_commercial; c=$T
+	if [ $t = up ] && [ $c = up ]; then S_B=both
+	elif [ $c = up ]; then S_B=orange
+	elif [ $t = up ]; then S_B=green
+	elif [ $t = connecting ] || [ $c = connecting ]; then S_B=connecting
+	else S_B=off
 	fi
 }
 
@@ -135,6 +146,8 @@ while true; do
 	color 1 $S_A
 	case $S_B in
 		green)      color 2 green ;;
+		orange)     color 2 orange ;;
+		both)       [ $on = 1 ] && color 2 green || color 2 orange ;;
 		connecting) [ $on = 1 ] && color 2 orange || color 2 off ;;
 		*)          color 2 off ;;
 	esac

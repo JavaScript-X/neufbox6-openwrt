@@ -31,7 +31,7 @@ goes further than the official port ever did:
 | Security updates | ❌ end of life | ✅ follows the 25.12 branch |
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
 | Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
-| ECO button | ❌ | ✅ VPN on/off |
+| ECO button | ❌ | ✅ tailnet / commercial VPN on/off |
 | Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
 | Compressed swap (zram), watchdog | ❌ | ✅ |
 | Wi-Fi schedule, LED night mode | ❌ | ✅ |
@@ -54,7 +54,7 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 > Tested on real hardware: LED colours and order, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
-- **ECO** button → turns the **WireGuard VPN** (interface `vpn`) on and off; LED **b** shows the tunnel state.
+- **ECO** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
@@ -110,7 +110,8 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 | [docs/BUILD.md](docs/BUILD.md) | building the firmware with Docker |
 | [docs/FLASHING.md](docs/FLASHING.md) | first flash from CFE, updates, going back to the SFR firmware |
 | [docs/WIFI.md](docs/WIFI.md) | integrated Wi-Fi: driver, firmware, calibration |
-| [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors, VPN |
+| [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors |
+| [docs/VPN.md](docs/VPN.md) | tailnet and commercial VPN on the ECO button |
 | [docs/EXTRAS.md](docs/EXTRAS.md) | zram, watchdog, statistics, Wi-Fi schedule, night mode, Wake-on-LAN, terminal |
 | [docs/PORTING.md](docs/PORTING.md) | how the port was done, bring-up problems, test results |
 | [CHANGELOG.md](CHANGELOG.md) | changes per version |
@@ -122,7 +123,7 @@ assets/            photos and diagrams used in this README
 config/nb6.config  OpenWrt target and package selection
 docker/            Debian 12 build environment
 docs/              hardware, build, flashing, Wi-Fi, LEDs and buttons, extras, porting notes
-files/             added to the image: LED daemon and its settings, button handlers, first-boot defaults
+files/             added to the image: LED daemon and its settings, VPN helper, button handlers, first-boot defaults
 patches/board/     device tree, image recipe, RTL8367R RGMII fix, nb6-hwmon LED driver
 patches/wifi/      BCM6362 WLAN: bcma host, b43 N-PHY r8 / radio 2057 r8, firmware, calibration
 scripts/           build.sh, apply-board.sh, apply-wifi.sh

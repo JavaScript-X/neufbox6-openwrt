@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+### Added
+- Two WireGuard tunnels on the ECO button: tailnet (short press) and commercial VPN (long press),
+  set up with `nb6-vpn`; LED b shows which ones are up. See `docs/VPN.md`.
+
 ## 2.0 (2026-11-13)
 ### Added
 - zram compressed swap.

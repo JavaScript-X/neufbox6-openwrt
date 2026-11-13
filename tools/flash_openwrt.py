@@ -1,12 +1,18 @@
 """Catch CFE at power-on, then flash the OpenWrt image over TFTP with CFE's 'f' command.
-Everything from the serial port is logged to flash-log.txt."""
+Everything from the serial port is logged to flash-log.txt.
+Usage: python flash_openwrt.py <image-cfe.bin>
+Serial port: $NB6_SERIAL; TFTP server address: $NB6_TFTP_HOST (default 192.168.22.68)."""
+import os
 import sys
 import time
 
 import serial
 
-IMAGE = sys.argv[1] if len(sys.argv) > 1 else "openwrt-23.05.6-bcm63xx-generic-sfr_neufbox-6-sercomm-r0-squashfs-cfe.bin"
-HOST = "192.168.22.68"
+if len(sys.argv) != 2:
+    sys.exit(__doc__)
+IMAGE = sys.argv[1]
+PORT = os.environ.get("NB6_SERIAL", "COM5" if os.name == "nt" else "/dev/ttyUSB0")  # serial adapter
+HOST = os.environ.get("NB6_TFTP_HOST", "192.168.22.68")  # this PC, as seen by CFE
 
 log = open("flash-log.txt", "wb")
 
@@ -22,7 +28,7 @@ def pump(s, buf, seconds):
     return buf
 
 
-with serial.Serial("COM5", 115200, timeout=0.05) as s:
+with serial.Serial(PORT, 115200, timeout=0.05) as s:
     buf = bytearray()
     start = time.time()
     print("waiting for the box to power on...", flush=True)
@@ -52,7 +58,7 @@ with serial.Serial("COM5", 115200, timeout=0.05) as s:
         if "CFE>" in text[-200:] and len(text) > 200:
             print("CFE prompt returned (see flash-log.txt)", flush=True)
             break
-        if "Starting program" in text or "Linux version" in text or "Booting" in text and t0 + 20 < time.time():
+        if "Starting program" in text or "Linux version" in text or ("Booting" in text and t0 + 20 < time.time()):
             print("box is rebooting into the new image", flush=True)
             pump(s, buf, 60)
             break

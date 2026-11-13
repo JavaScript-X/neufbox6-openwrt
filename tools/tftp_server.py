@@ -1,12 +1,13 @@
 """Minimal read-only TFTP server (RFC 1350 + blksize option) for flashing the Neufbox from CFE.
-Serves files from ./firmware only. Usage: python tftp_server.py [bind_ip]"""
+Serves the files of one directory only: $NB6_FIRMWARE_DIR, default ./firmware.
+Usage: python tftp_server.py [bind_ip]   (port 69 needs administrator / root rights)"""
 import os
 import socket
 import struct
 import sys
 import threading
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "firmware")
+ROOT = os.path.abspath(os.environ.get("NB6_FIRMWARE_DIR", "firmware"))
 BIND = sys.argv[1] if len(sys.argv) > 1 else "0.0.0.0"
 
 

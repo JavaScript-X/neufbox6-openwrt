@@ -1,10 +1,14 @@
-"""Send one line to the box over COM5 and print what comes back.
+"""Send one line to the box over the serial console and print what comes back.
+Serial port: $NB6_SERIAL (default COM5 on Windows, /dev/ttyUSB0 elsewhere).
 Usage: python ser.py "command" [max_seconds] [idle_seconds]
        python ser.py --raw "keys"   (no newline added)"""
+import os
 import sys
 import time
 
 import serial
+
+PORT = os.environ.get("NB6_SERIAL", "COM5" if os.name == "nt" else "/dev/ttyUSB0")  # serial adapter
 
 args = sys.argv[1:]
 raw = False
@@ -15,7 +19,7 @@ cmd = args[0] if args else ""
 max_s = float(args[1]) if len(args) > 1 else 5
 idle_s = float(args[2]) if len(args) > 2 else 1.5
 
-with serial.Serial("COM5", 115200, timeout=0.2) as s:
+with serial.Serial(PORT, 115200, timeout=0.2) as s:
     s.reset_input_buffer()
     data = (cmd if raw else cmd + "\n").encode()
     for i in range(0, len(data), 16):  # pace input: the box UART drops bytes on long bursts

@@ -1,0 +1,10 @@
+#!/bin/sh
+# LuCI on a 400 MHz CPU:
+#  - status pages refresh every 10 s instead of 5 s (half the background requests)
+#  - uhttpd runs up to 6 scripts at once instead of 3, so a page does not wait for a slow call
+
+[ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = "sfr,neufbox-6-sercomm-r0" ] || exit 0
+
+uci -q get luci.main >/dev/null && { uci set luci.main.pollinterval='10'; uci commit luci; }
+uci -q get uhttpd.main >/dev/null && { uci set uhttpd.main.max_requests='6'; uci commit uhttpd; }
+exit 0

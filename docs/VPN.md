@@ -69,6 +69,13 @@ tailscale set --advertise-routes=<existing routes>,192.168.1.0/24
 Choose a LAN subnet for the box that is not used elsewhere: Tailscale clients that accept routes
 send that subnet to the box, even when their local network uses the same range.
 
+## Test results (2026-11-13)
+- Box → tailnet devices through the tunnel: OK.
+- Tailnet → box: LuCI opened from a phone on mobile data through Tailscale, the server and the tunnel.
+- ECO short press: tunnel down (LED b off) and back up (orange blinking, then green).
+- ECO long press without a provider configured: 3 red flashes on LED b.
+- Commercial VPN: not tested yet (needs a provider configuration).
+
 ## Away from home
 The tailnet tunnel connects to `<server-host>:51820`. Outside the server's network, use a public
 address or name and forward UDP 51820 to the server.

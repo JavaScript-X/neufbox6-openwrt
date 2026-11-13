@@ -18,3 +18,14 @@ stop_service() {
 		echo 0 > /sys/class/leds/green:service$led/brightness 2>/dev/null
 	done
 }
+
+# settings changed in LuCI (/etc/config/nb6): apply them without restarting the daemon
+service_triggers() {
+	procd_add_reload_trigger nb6
+}
+
+reload_service() {
+	procd_send_signal nb6-leds '*' USR1
+	[ "$(uci -q get nb6.eco.enabled)" = 1 ] && /usr/sbin/nb6-eco apply
+	return 0
+}

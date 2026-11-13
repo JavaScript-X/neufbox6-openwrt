@@ -16,7 +16,7 @@ for line in a:
               "\t\t*have_5ghz_phy = false;\n",
               "\t\treturn;\n"]
 assert len(b) == len(a) + 3, "anchors not found"
-hdr = ("From: Tahar\n"
+hdr = ("From: JavaScript_X <73346071+JavaScript-X@users.noreply.github.com>\n"
        "Subject: [PATCH] b43: treat the BCM6362 integrated WLAN as 2.4 GHz only\n\n"
        "The radio of the BCM6362 SoC WLAN (d11 corerev 22, radio 2057 rev 8) has no\n"
        "5 GHz support in b43 (no 5 GHz IPA gain table) and SFR Neufbox 6 boards have\n"

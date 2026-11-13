@@ -1,0 +1,28 @@
+{
+	"admin/nb6": {
+		"title": "Neufbox",
+		"order": 45,
+		"action": {
+			"type": "firstchild"
+		},
+		"depends": {
+			"acl": [ "luci-app-nb6" ]
+		}
+	},
+	"admin/nb6/vpn": {
+		"title": "VPN",
+		"order": 10,
+		"action": {
+			"type": "view",
+			"path": "nb6/vpn"
+		}
+	},
+	"admin/nb6/leds": {
+		"title": "LEDs and eco mode",
+		"order": 20,
+		"action": {
+			"type": "view",
+			"path": "nb6/leds"
+		}
+	}
+}

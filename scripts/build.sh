@@ -25,12 +25,15 @@ cd "$SRC"
 git log -1 --format="   %h %cd %s"
 
 echo "== $(date -u) feeds"
+# undo the previous build's LuCI touches (apply-luci.sh) so the feed updates cleanly
+[ -d feeds/luci/.git ] && git -C feeds/luci checkout -q -- .
 ./scripts/feeds update -a >/dev/null
 ./scripts/feeds install -a >/dev/null 2>&1
 
 echo "== $(date -u) apply Neufbox 6 port"
 bash "$PORT/scripts/apply-board.sh" "$PORT/patches/board" "$SRC"
 bash "$PORT/scripts/apply-wifi.sh" "$PORT/patches/wifi" "$SRC"
+bash "$PORT/scripts/apply-luci.sh" "$SRC"
 
 echo "== $(date -u) image files (LED daemon, button handlers, first-boot defaults)"
 rm -rf files && cp -r "$PORT/files" files

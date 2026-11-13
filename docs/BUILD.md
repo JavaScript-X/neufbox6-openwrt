@@ -28,7 +28,9 @@ docker run --rm --network host -v "$PWD":/port:ro -v /srv/nb6-work:/work nb6-bui
    - b43 patches: 7 upstream (N-PHY r8 / radio 2057 r8), 12 N-PHY fixes, 1 local (2.4 GHz only)
    - NB6 SPROM fixups appended to the DTS, `&wlan` enabled
    - forces `CONFIG_BCMA_HOST_SOC(_BRCM6362_WLAN)=y` (the `$(if …)` in kmod-bcma is evaluated without .config)
-4. Copy `files/` into the image, install `config/nb6.config`, `make defconfig`, build.
+4. `scripts/apply-luci.sh`: OpenWrt logo in front of the host name in the bootstrap theme header
+   (the luci feed is reset before each update).
+5. Copy `files/` into the image, install `config/nb6.config`, `make defconfig`, build.
 
 ## Gotchas found while porting
 - Do not override `chosen/bootargs` in the DTS: the dtsi sets `earlycon`, without it a crash before

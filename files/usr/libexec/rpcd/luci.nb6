@@ -1,0 +1,142 @@
+#!/bin/sh
+# rpcd backend for the LuCI "Neufbox" pages (VPN, LEDs and eco mode).
+# Private keys are never returned: only public keys and tunnel status.
+
+. /usr/share/libubox/jshn.sh
+
+b() { [ "$1" = 1 ] && echo true || echo false; }
+
+tunnel_json() { # $1 = interface -> one JSON object on stdout
+	local i=$1 st up pending dev ep hs rx tx now age conf en
+	[ "$(uci -q get network.$i.proto)" = wireguard ] && [ -n "$(uci -q get network.$i.private_key)" ] && conf=1 || conf=0
+	[ "$(uci -q get network.$i.disabled)" = 1 ] && en=0 || en=1
+	st=$(ifstatus $i 2>/dev/null)
+	up=$(echo "$st" | jsonfilter -e '@.up' 2>/dev/null)
+	pending=$(echo "$st" | jsonfilter -e '@.pending' 2>/dev/null)
+	dev=$(echo "$st" | jsonfilter -e '@.l3_device' 2>/dev/null)
+	ep=""; age=-1; rx=0; tx=0
+	if [ "$up" = true ]; then
+		# peer line of "wg show <dev> dump": pubkey psk endpoint allowed-ips handshake rx tx keepalive
+		set -- $(wg show ${dev:-$i} dump 2>/dev/null | sed -n 2p)
+		ep=$3; hs=${5:-0}; rx=${6:-0}; tx=${7:-0}
+		now=$(date +%s)
+		[ "$hs" -gt 0 ] 2>/dev/null && age=$((now - hs))
+	fi
+	[ "$up" = true ] && up=1 || up=0
+	[ "$pending" = true ] && pending=1 || pending=0
+	printf '{"configured":%s,"enabled":%s,"up":%s,"pending":%s,' $(b $conf) $(b $en) $(b $up) $(b $pending)
+	printf '"endpoint":"%s","handshake_age":%s,"rx_bytes":%s,"tx_bytes":%s}' "$ep" "$age" "$rx" "$tx"
+}
+
+case "$1" in
+list)
+	cat <<'EOF'
+{ "status": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str" } }
+EOF
+	;;
+call)
+	case "$2" in
+	status)
+		uci -q get network.vpn >/dev/null && init=1 || init=0
+		[ "$(uci -q get nb6.eco.enabled)" = 1 ] && eco=1 || eco=0
+		echo "{\"initialized\":$(b $init),\"eco\":$(b $eco),\"vpn\":$(tunnel_json vpn),\"vpn_commercial\":$(tunnel_json vpn_commercial)}"
+		;;
+	pubkey)
+		json_init
+		k=$(uci -q get network.vpn.private_key)
+		json_add_string pubkey "$([ -n "$k" ] && echo "$k" | wg pubkey)"
+		json_dump
+		;;
+	rekey)
+		json_init
+		if uci -q get network.vpn >/dev/null; then
+			uci set network.vpn.private_key="$(wg genkey)"
+			uci commit network
+			[ "$(uci -q get network.vpn.disabled)" = 1 ] || ifup vpn
+			json_add_string pubkey "$(uci get network.vpn.private_key | wg pubkey)"
+		else
+			json_add_string error "not initialized"
+		fi
+		json_dump
+		;;
+	init)
+		json_init
+		/usr/sbin/nb6-vpn init >/dev/null 2>&1
+		k=$(uci -q get network.vpn.private_key)
+		json_add_string pubkey "$([ -n "$k" ] && echo "$k" | wg pubkey)"
+		json_dump
+		;;
+	set_tunnel)
+		read -r input
+		json_load "$input"
+		json_get_var iface iface
+		json_get_var enabled enabled
+		json_init
+		case "$iface" in
+		vpn|vpn_commercial)
+			if [ "$enabled" = 1 ]; then
+				uci set network.$iface.disabled=0; uci commit network; ifup $iface
+			else
+				uci set network.$iface.disabled=1; uci commit network; ifdown $iface
+			fi
+			json_add_boolean ok 1 ;;
+		*) json_add_string error "unknown interface" ;;
+		esac
+		json_dump
+		;;
+	import_commercial)
+		# fields parsed by the LuCI page from the provider's WireGuard file
+		read -r input
+		json_load "$input"
+		for v in private_key addresses dns public_key preshared_key endpoint_host endpoint_port; do
+			json_get_var $v $v
+		done
+		json_init
+		if [ -z "$private_key" ] || [ -z "$public_key" ] || [ -z "$endpoint_host" ] || [ -z "$addresses" ]; then
+			json_add_string error "missing PrivateKey, Address, PublicKey or Endpoint"
+			json_dump
+			exit 0
+		fi
+		uci -q get network.vpn_commercial >/dev/null || /usr/sbin/nb6-vpn init >/dev/null 2>&1
+		uci set network.vpn_commercial.private_key="$private_key"
+		uci -q delete network.vpn_commercial.addresses
+		for a in $addresses; do uci add_list network.vpn_commercial.addresses="$a"; done
+		uci -q delete network.vpn_commercial.dns
+		for d in $dns; do uci add_list network.vpn_commercial.dns="$d"; done
+		[ -n "$dns" ] && uci set network.vpn_commercial.peerdns=0
+		uci -q get network.vpn_commercial_peer >/dev/null || uci set network.vpn_commercial_peer=wireguard_vpn_commercial
+		uci set network.vpn_commercial_peer.description=provider
+		uci set network.vpn_commercial_peer.public_key="$public_key"
+		if [ -n "$preshared_key" ]; then
+			uci set network.vpn_commercial_peer.preshared_key="$preshared_key"
+		else
+			uci -q delete network.vpn_commercial_peer.preshared_key
+		fi
+		uci set network.vpn_commercial_peer.endpoint_host="$endpoint_host"
+		uci set network.vpn_commercial_peer.endpoint_port="${endpoint_port:-51820}"
+		uci -q delete network.vpn_commercial_peer.allowed_ips
+		uci add_list network.vpn_commercial_peer.allowed_ips=0.0.0.0/1
+		uci add_list network.vpn_commercial_peer.allowed_ips=128.0.0.0/1
+		case "$addresses" in *:*)	# IPv6 address from the provider: route IPv6 through the tunnel too
+			uci add_list network.vpn_commercial_peer.allowed_ips=::/1
+			uci add_list network.vpn_commercial_peer.allowed_ips=8000::/1 ;;
+		esac
+		uci set network.vpn_commercial_peer.route_allowed_ips=1
+		uci set network.vpn_commercial_peer.persistent_keepalive=25
+		uci commit network
+		[ "$(uci -q get network.vpn_commercial.disabled)" = 1 ] || ifup vpn_commercial
+		json_add_boolean ok 1
+		json_dump
+		;;
+	eco)
+		read -r input
+		json_load "$input"
+		json_get_var enabled enabled
+		[ "$enabled" = 1 ] && /usr/sbin/nb6-eco on || /usr/sbin/nb6-eco off
+		json_init
+		json_add_boolean ok 1
+		json_dump
+		;;
+	esac
+	;;
+esac

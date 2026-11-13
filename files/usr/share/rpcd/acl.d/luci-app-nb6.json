@@ -1,0 +1,17 @@
+{
+	"luci-app-nb6": {
+		"description": "Neufbox 6: VPN tunnels, LEDs and eco mode",
+		"read": {
+			"ubus": {
+				"luci.nb6": [ "status", "pubkey" ]
+			},
+			"uci": [ "network", "nb6" ]
+		},
+		"write": {
+			"ubus": {
+				"luci.nb6": [ "init", "rekey", "set_tunnel", "import_commercial", "eco" ]
+			},
+			"uci": [ "network", "nb6" ]
+		}
+	}
+}

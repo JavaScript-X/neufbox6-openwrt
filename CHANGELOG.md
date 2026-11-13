@@ -8,6 +8,7 @@
   provider's WireGuard file) and LEDs / eco mode page; backend `luci.nb6` (rpcd). The pages show a
   photo of the box and the logos of Tailscale, WireGuard, OpenWrt and the commercial VPN provider
   (found from the imported file).
+- OpenWrt logo next to the host name at the top left of LuCI.
 - Eco mode on the ECO button (`nb6-eco`): ring LEDs dimmed, traffic LEDs off, statistics paused,
   optionally Wi-Fi off; kept across reboots. See `docs/LEDS-BUTTONS.md`.
 

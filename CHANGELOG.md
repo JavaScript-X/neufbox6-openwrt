@@ -1,8 +1,5 @@
 # Changelog
 
-## Unreleased
-- Docs: full flash backup from OpenWrt (`docs/FLASHING.md`).
-
 ## 2.0 (2026-11-13)
 ### Added
 - zram compressed swap.
@@ -13,6 +10,7 @@
 - Wake-on-LAN (`luci-app-wol`) and a LAN-only web terminal (`luci-app-ttyd`).
 - `nb6-hwmon`: standard `temp1_input` / `in0_input` sensor attributes.
 - Documentation: `docs/EXTRAS.md`, `docs/PORTING.md`, this changelog.
+- Documentation: full flash backup from OpenWrt and restore with a CH341A (`docs/FLASHING.md`).
 
 ### Changed
 - `nb6-leds` checks the states every 5 s (internet every 30 s, DHCP leases every 10 s) instead of every

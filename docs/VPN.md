@@ -18,7 +18,19 @@ tailnet tunnel goes to a machine that already runs Tailscale, which routes betwe
  LAN 192.168.1.0/24 ── Neufbox (10.77.0.2) ══ WireGuard ══ server (10.77.0.1) ── tailscale0 ── tailnet
 ```
 
-## Box side
+## LuCI pages
+**Neufbox > VPN** does everything below from the browser:
+- status of both tunnels (state, endpoint, last handshake, traffic) with *Turn on / Turn off*;
+- tailnet: the box's public key (to add on the server), a new key, the server key, address, port and
+  remote networks;
+- commercial VPN: **Import a WireGuard file...** reads the provider's `.conf` (chosen or pasted) and fills
+  in the key, addresses, DNS and server. The file goes from the browser to the box only.
+
+**Neufbox > LEDs and eco mode** sets the ring brightness, night dimming and eco mode.
+
+Backend: `/usr/libexec/rpcd/luci.nb6` (rpcd). It never returns private keys.
+
+## Box side (command line)
 ```sh
 nb6-vpn init                                  # interfaces, firewall zones, key; prints the public key
 nb6-vpn tailnet <server-public-key> <server-host> [port]
@@ -31,12 +43,13 @@ Firewall zones:
 - `vpnc` (commercial): forwarding from the LAN only, masquerading.
 
 ### Commercial VPN
-Download a WireGuard configuration from the provider (Mullvad, Proton VPN, IVPN, ...), then in
-LuCI > Network > Interfaces > `vpn_commercial` > Edit:
+Download a WireGuard configuration from the provider (Mullvad, Proton VPN, IVPN, ...) and import it in
+Neufbox > VPN. To enter it by hand instead, use LuCI > Network > Interfaces > `vpn_commercial` > Edit:
 - *General*: private key and address(es) from the `[Interface]` section;
 - *Peers* > `provider`: public key and endpoint from the `[Peer]` section. Keep the allowed IPs
   `0.0.0.0/1` and `128.0.0.0/1`: they take over the internet traffic without removing the WAN default
-  route, so the tunnel endpoint stays reachable;
+  route, so the tunnel endpoint stays reachable (the import also adds `::/1` and `8000::/1` when the
+  provider gives an IPv6 address);
 - *Advanced*: the provider's DNS server, if you want DNS through the tunnel too.
 
 Then press the SFR button for 3 s. Tailnet routes are more specific, so the tailnet keeps working through `vpn`.

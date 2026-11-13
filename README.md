@@ -57,6 +57,7 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 - **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
 - **ECO** button → **eco mode**: ring LEDs dimmed, traffic LEDs off, statistics paused (optionally Wi-Fi off); kept across reboots.
+- **LuCI > Neufbox**: VPN page (status, tailnet, import of a provider's WireGuard file) and LEDs / eco mode page.
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
@@ -125,7 +126,7 @@ assets/            photos and diagrams used in this README
 config/nb6.config  OpenWrt target and package selection
 docker/            Debian 12 build environment
 docs/              hardware, build, flashing, Wi-Fi, LEDs and buttons, extras, porting notes
-files/             added to the image: LED daemon and its settings, VPN helper, button handlers, first-boot defaults
+files/             added to the image: LED daemon and its settings, VPN and eco helpers, LuCI pages, button handlers, first-boot defaults
 patches/board/     device tree, image recipe, RTL8367R RGMII fix, nb6-hwmon LED driver
 patches/wifi/      BCM6362 WLAN: bcma host, b43 N-PHY r8 / radio 2057 r8, firmware, calibration
 scripts/           build.sh, apply-board.sh, apply-wifi.sh

@@ -6,7 +6,7 @@ All 9 LEDs are driven by the SFR microcontroller (`nb6-hwmon`, PWM 0..31) throug
 | sysfs name | Where | Used for |
 |---|---|---|
 | `red:service1` + `green:service1` | top LED **a** | Internet |
-| `red:service2` + `green:service2` | top LED **b** | VPN |
+| `red:service2` + `green:service2` | top LED **b** | VPN (tailnet / commercial) |
 | `red:service3` + `green:service3` | top LED **c** | health |
 | `white:wan` | front | WAN traffic (netdev trigger on `extsw.2`) |
 | `white:wlan` | front | Wi-Fi traffic (netdev trigger on `phy0-ap0`), blinks during WPS |
@@ -18,7 +18,7 @@ Orange = red 31 + green 10 (tune `color()` in `/usr/sbin/nb6-leds` if needed).
 | LED | Green | Orange | Red | Off |
 |---|---|---|---|---|
 | a | WAN link + ping 1.1.1.1 OK | WAN link, no internet | WAN cable unplugged | |
-| b | VPN up (WireGuard handshake < 3 min) | blinking: connecting | | VPN down / not configured |
+| b | tailnet up (handshake < 3 min); alternating with orange when both are up | commercial VPN up; blinking: connecting | | no tunnel up |
 | c | OK | temperature > 70 °C or MemAvailable < 4 MB | blinking: dnsmasq/netifd dead or overlay full | |
 
 Brightness and night mode: `/etc/config/nb6`, see [EXTRAS.md](EXTRAS.md#led-brightness-and-night-mode).
@@ -30,7 +30,7 @@ handles blinking, and an LED is written only when its value changes.
 | Button | Linux key / name | Action |
 |---|---|---|
 | SFR (top) | `BTN_0` | not assigned: add your own `/etc/rc.button/BTN_0` script |
-| ECO (top) | `BTN_1` | toggle the UCI interface `vpn` (`disabled` + ifup/ifdown); 3 red flashes on LED b if no `vpn` interface |
+| ECO (top) | `BTN_1` | short press: tailnet tunnel `vpn` on / off; long press (≥ 3 s): commercial VPN `vpn_commercial` on / off; 3 red flashes on LED b if that tunnel is not configured |
 | Wi-Fi slide switch | `wlan` | ON position = radios on, OFF = radios off |
 | Wi-Fi switch pushed further | `wps` | `hostapd_cli wps_pbc` on every AP, wlan LED blinks (500 ms) for 120 s |
 | Reset (rear) | `reset` | OpenWrt default: < 5 s reboot, > 5 s factory reset |
@@ -41,9 +41,7 @@ standard names `temp1_input` / `in0_input` (with `temp1_label` "board" and `in0_
 (boot/panic/oops counters), `release`, `leds_mode`, `watchdog`, `dmesg` (from the microcontroller).
 
 ## VPN
-The ECO button and LED b expect a network interface named **`vpn`** (WireGuard recommended: the
-image ships `kmod-wireguard`, `wireguard-tools`, `luci-proto-wireguard`). Create it in
-LuCI → Network → Interfaces → Add → name `vpn`, protocol WireGuard.
+See [VPN.md](VPN.md): `nb6-vpn` sets up the tailnet and commercial tunnels used by the ECO button.
 
 ## Hardware test results (2026-11-11)
 - LED positions on the ring around the SFR button (same as SFR's documentation): a (service1) = top right,

@@ -1,0 +1,112 @@
+#!/bin/sh
+# Set up the two WireGuard tunnels driven by the ECO button (see docs/VPN.md).
+#
+#   vpn             tailnet: tunnel to a WireGuard server that routes to a Tailscale network
+#                   (or any private network). Only the remote networks go through it.
+#   vpn_commercial  full tunnel: all internet traffic of the LAN through a WireGuard provider.
+#
+# Usage:
+#   nb6-vpn init                         create both interfaces and firewall zones (disabled),
+#                                        generate the tailnet key, print its public key
+#   nb6-vpn tailnet <server-pubkey> <host> [port] [networks]
+#                                        set the tailnet server; networks default to
+#                                        "10.77.0.0/24 100.64.0.0/10"
+#   nb6-vpn pubkey                       print the tailnet public key
+#   nb6-vpn status                       show both tunnels
+#
+# The commercial tunnel is filled from the provider's WireGuard file in
+# LuCI > Network > Interfaces > vpn_commercial (private key, address, peer).
+# Private keys never leave the box: only public keys are printed.
+
+set -e
+TUN_ADDR=10.77.0.2/24
+
+zone() { # zone <name> <network>
+	uci -q get firewall.$1 >/dev/null && return
+	uci set firewall.$1=zone
+	uci set firewall.$1.name=$1
+	uci set firewall.$1.network=$2
+	uci set firewall.$1.input=REJECT
+	uci set firewall.$1.output=ACCEPT
+	uci set firewall.$1.forward=REJECT
+	uci set firewall.$1.masq=1
+	uci set firewall.$1.mtu_fix=1
+}
+
+forward() { # forward <id> <src> <dest>
+	uci -q get firewall.$1 >/dev/null && return
+	uci set firewall.$1=forwarding
+	uci set firewall.$1.src=$2
+	uci set firewall.$1.dest=$3
+}
+
+init() {
+	if ! uci -q get network.vpn >/dev/null; then
+		uci set network.vpn=interface
+		uci set network.vpn.proto=wireguard
+		uci set network.vpn.private_key="$(wg genkey)"
+		uci add_list network.vpn.addresses=$TUN_ADDR
+		uci set network.vpn.disabled=1
+	fi
+	if ! uci -q get network.vpn_commercial >/dev/null; then
+		uci set network.vpn_commercial=interface
+		uci set network.vpn_commercial.proto=wireguard
+		uci set network.vpn_commercial.disabled=1
+		uci set network.vpn_commercial_peer=wireguard_vpn_commercial
+		uci set network.vpn_commercial_peer.description='provider'
+		# two halves instead of 0.0.0.0/0: they win over the WAN default route without replacing it
+		uci add_list network.vpn_commercial_peer.allowed_ips=0.0.0.0/1
+		uci add_list network.vpn_commercial_peer.allowed_ips=128.0.0.0/1
+		uci set network.vpn_commercial_peer.route_allowed_ips=1
+		uci set network.vpn_commercial_peer.persistent_keepalive=25
+	fi
+	uci commit network
+
+	# tailnet: the remote side may open connections to the LAN and to the box (LuCI, SSH)
+	zone vpn vpn
+	uci set firewall.vpn.input=ACCEPT
+	forward fwd_lan_vpn lan vpn
+	forward fwd_vpn_lan vpn lan
+	# commercial: outgoing only
+	zone vpnc vpn_commercial
+	forward fwd_lan_vpnc lan vpnc
+	uci commit firewall
+	/etc/init.d/firewall reload >/dev/null 2>&1 || true
+	pubkey
+}
+
+tailnet() {
+	[ -n "$1" ] && [ -n "$2" ] || { echo "usage: nb6-vpn tailnet <server-pubkey> <host> [port] [networks]" >&2; exit 1; }
+	uci -q delete network.vpn_server || true
+	uci set network.vpn_server=wireguard_vpn
+	uci set network.vpn_server.description='tailnet server'
+	uci set network.vpn_server.public_key="$1"
+	uci set network.vpn_server.endpoint_host="$2"
+	uci set network.vpn_server.endpoint_port="${3:-51820}"
+	for n in ${4:-10.77.0.0/24 100.64.0.0/10}; do
+		uci add_list network.vpn_server.allowed_ips=$n
+	done
+	uci set network.vpn_server.route_allowed_ips=1
+	uci set network.vpn_server.persistent_keepalive=25
+	uci commit network
+	echo "tailnet server set; press ECO (short) or run: uci set network.vpn.disabled=0; uci commit network; ifup vpn"
+}
+
+pubkey() {
+	echo "tailnet public key: $(uci get network.vpn.private_key | wg pubkey)"
+}
+
+status() {
+	for i in vpn vpn_commercial; do
+		d=$(uci -q get network.$i.disabled)
+		up=$(ifstatus $i 2>/dev/null | jsonfilter -e '@.up' 2>/dev/null)
+		echo "$i: $([ "$d" = 1 ] && echo disabled || echo enabled), up=${up:-false}"
+	done
+	wg show 2>/dev/null | grep -E 'interface|endpoint|latest handshake|transfer' || true
+}
+
+case "$1" in
+	init|pubkey|status) "$1" ;;
+	tailnet) shift; tailnet "$@" ;;
+	*) sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

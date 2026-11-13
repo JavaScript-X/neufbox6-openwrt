@@ -2,8 +2,10 @@
 
 ## Unreleased
 ### Added
-- Two WireGuard tunnels on the ECO button: tailnet (short press) and commercial VPN (long press),
+- Two WireGuard tunnels on the SFR button: tailnet (short press) and commercial VPN (long press),
   set up with `nb6-vpn`; LED b shows which ones are up. See `docs/VPN.md`.
+- Eco mode on the ECO button (`nb6-eco`): ring LEDs dimmed, traffic LEDs off, statistics paused,
+  optionally Wi-Fi off; kept across reboots. See `docs/LEDS-BUTTONS.md`.
 
 ## 2.0 (2026-11-13)
 ### Added

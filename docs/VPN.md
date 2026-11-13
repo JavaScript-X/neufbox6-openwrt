@@ -1,10 +1,10 @@
 # VPN
 
-Two WireGuard tunnels, switched with the ECO button and shown on LED b.
+Two WireGuard tunnels, switched with the SFR button and shown on LED b.
 
 | | Tailnet (`vpn`) | Commercial VPN (`vpn_commercial`) |
 |---|---|---|
-| ECO button | short press | long press (3 s or more) |
+| SFR button | short press | long press (3 s or more) |
 | What goes through it | only the remote networks (by default `10.77.0.0/24` and Tailscale's `100.64.0.0/10`) | all internet traffic of the LAN |
 | LED b | green | orange |
 
@@ -39,7 +39,7 @@ LuCI > Network > Interfaces > `vpn_commercial` > Edit:
   route, so the tunnel endpoint stays reachable;
 - *Advanced*: the provider's DNS server, if you want DNS through the tunnel too.
 
-Then press ECO for 3 s. Tailnet routes are more specific, so the tailnet keeps working through `vpn`.
+Then press the SFR button for 3 s. Tailnet routes are more specific, so the tailnet keeps working through `vpn`.
 
 ## Server side (example: a Linux machine running Tailscale)
 The server needs the kernel WireGuard module and Tailscale. Example `wg0.conf` (`wg-quick`):
@@ -72,8 +72,8 @@ send that subnet to the box, even when their local network uses the same range.
 ## Test results (2026-11-13)
 - Box → tailnet devices through the tunnel: OK.
 - Tailnet → box: LuCI opened from a phone on mobile data through Tailscale, the server and the tunnel.
-- ECO short press: tunnel down (LED b off) and back up (orange blinking, then green).
-- ECO long press without a provider configured: 3 red flashes on LED b.
+- Short press (on the ECO button at the time, now the SFR button): tunnel down (LED b off) and back up (orange blinking, then green).
+- Long press without a provider configured: 3 red flashes on LED b.
 - Commercial VPN: not tested yet (needs a provider configuration).
 
 ## Away from home

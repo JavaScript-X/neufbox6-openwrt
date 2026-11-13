@@ -29,8 +29,8 @@ handles blinking, and an LED is written only when its value changes.
 ## Buttons (`/etc/rc.button/*`)
 | Button | Linux key / name | Action |
 |---|---|---|
-| SFR (top) | `BTN_0` | not assigned: add your own `/etc/rc.button/BTN_0` script |
-| ECO (top) | `BTN_1` | short press: tailnet tunnel `vpn` on / off; long press (≥ 3 s): commercial VPN `vpn_commercial` on / off; 3 red flashes on LED b if that tunnel is not configured |
+| SFR (top) | `BTN_0` | short press: tailnet tunnel `vpn` on / off; long press (≥ 3 s): commercial VPN `vpn_commercial` on / off; 3 red flashes on LED b if that tunnel is not configured |
+| ECO (top) | `BTN_1` | eco mode on / off (`nb6-eco`, see below) |
 | Wi-Fi slide switch | `wlan` | ON position = radios on, OFF = radios off |
 | Wi-Fi switch pushed further | `wps` | `hostapd_cli wps_pbc` on every AP, wlan LED blinks (500 ms) for 120 s |
 | Reset (rear) | `reset` | OpenWrt default: < 5 s reboot, > 5 s factory reset |
@@ -41,12 +41,26 @@ standard names `temp1_input` / `in0_input` (with `temp1_label` "board" and `in0_
 (boot/panic/oops counters), `release`, `leds_mode`, `watchdog`, `dmesg` (from the microcontroller).
 
 ## VPN
-See [VPN.md](VPN.md): `nb6-vpn` sets up the tailnet and commercial tunnels used by the ECO button.
+See [VPN.md](VPN.md): `nb6-vpn` sets up the tailnet and commercial tunnels used by the SFR button.
+
+## Eco mode
+The ECO button runs `nb6-eco toggle`. Settings in `/etc/config/nb6`, section `eco`:
+
+| Option | Default | Effect in eco mode |
+|---|---|---|
+| `led_brightness` | `4` | ring LEDs a, b, c dimmed to this value (1..31) |
+| `traffic_leds` | `0` | `0`: white traffic LEDs (wan, wlan) off |
+| `pause_stats` | `1` | `1`: statistics (collectd) and per-device traffic (nlbwmon) paused |
+| `wifi_off` | `0` | `1`: Wi-Fi off too |
+
+The state (`enabled`) survives a reboot (`/etc/init.d/nb6-eco` re-applies it). The original SFR firmware
+also slowed the LAN ports down and lowered the Wi-Fi power; neither is possible here: the RTL8367R
+driver only reads the port link, and b43 ignores transmit power changes.
 
 ## Hardware test results (2026-11-11)
 - LED positions on the ring around the SFR button (same as SFR's documentation): a (service1) = top right,
   b (service2) = bottom, c (service3) = top left. Brightness 0..31; values above 31 switch the LED off.
-- ECO: works (3 red flashes on LED b while no `vpn` interface exists).
+- ECO: eco mode on and off (ring 31 → 4, traffic LEDs off, collectd and nlbwmon paused, then restored), 2026-11-13.
 - Wi-Fi switch: off/on works.
 - Sensors: temperature ~51 °C, voltage ~12.2 V, boot counter readable.
 - I2C load: the SFR microcontroller refuses (NAKs) writes when LEDs change faster than ~2/s; traffic and WPS blinks are therefore 500 ms. The driver retries up to 5 times.

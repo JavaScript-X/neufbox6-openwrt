@@ -14,7 +14,7 @@
 
 <p align="center">
   <b>Unofficial OpenWrt 25.12 (Linux 6.12) for the white SFR Neufbox 6 "Box Évolution" (NB6-SER-r0)</b><br>
-  Integrated Wi-Fi, front LEDs, ECO button and sensors, none of which the last official build (23.05) supported.
+  Integrated Wi-Fi, front LEDs, SFR and ECO buttons and sensors, none of which the last official build (23.05) supported.
 </p>
 
 ---
@@ -31,7 +31,8 @@ goes further than the official port ever did:
 | Security updates | ❌ end of life | ✅ follows the 25.12 branch |
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
 | Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
-| ECO button | ❌ | ✅ tailnet / commercial VPN on/off |
+| SFR button | ❌ | ✅ tailnet / commercial VPN on/off |
+| ECO button | ❌ | ✅ eco mode |
 | Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
 | Compressed swap (zram), watchdog | ❌ | ✅ |
 | Wi-Fi schedule, LED night mode | ❌ | ✅ |
@@ -54,7 +55,8 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 > Tested on real hardware: LED colours and order, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
-- **ECO** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
+- **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
+- **ECO** button → **eco mode**: ring LEDs dimmed, traffic LEDs off, statistics paused (optionally Wi-Fi off); kept across reboots.
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
@@ -111,7 +113,7 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 | [docs/FLASHING.md](docs/FLASHING.md) | first flash from CFE, updates, going back to the SFR firmware |
 | [docs/WIFI.md](docs/WIFI.md) | integrated Wi-Fi: driver, firmware, calibration |
 | [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors |
-| [docs/VPN.md](docs/VPN.md) | tailnet and commercial VPN on the ECO button |
+| [docs/VPN.md](docs/VPN.md) | tailnet and commercial VPN on the SFR button |
 | [docs/EXTRAS.md](docs/EXTRAS.md) | zram, watchdog, statistics, Wi-Fi schedule, night mode, Wake-on-LAN, terminal |
 | [docs/PORTING.md](docs/PORTING.md) | how the port was done, bring-up problems, test results |
 | [CHANGELOG.md](CHANGELOG.md) | changes per version |

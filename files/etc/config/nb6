@@ -1,0 +1,10 @@
+# SFR Neufbox 6 port settings (read by /usr/sbin/nb6-leds)
+
+config leds 'leds'
+	# brightness of the ring LEDs a, b, c: 1..31
+	option brightness '31'
+	# night mode: dim the ring LEDs between night_start and night_end (HH:MM, may cross midnight)
+	option night '0'
+	option night_start '23:00'
+	option night_end '07:00'
+	option night_brightness '4'

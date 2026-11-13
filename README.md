@@ -13,7 +13,7 @@
 
 <p align="center">
   <b>Unofficial OpenWrt 25.12 (Linux 6.12) for the white SFR Neufbox 6 "Box Évolution" (NB6-SER-r0)</b><br>
-  integrated Wi-Fi · front LEDs · ECO button · gigabit switch · WireGuard. None of these worked in the last official build (23.05).
+  Integrated Wi-Fi, front LEDs, ECO button and sensors, none of which the last official build (23.05) supported.
 </p>
 
 ---
@@ -31,7 +31,9 @@ goes further than the official port ever did:
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
 | Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
 | ECO button | ❌ | ✅ VPN on/off |
-| Sensors (temperature, voltage) | ❌ | ✅ |
+| Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
+| Compressed swap (zram), watchdog | ❌ | ✅ |
+| Wi-Fi schedule, LED night mode | ❌ | ✅ |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
 
 ## Hardware
@@ -48,10 +50,9 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 <p align="center"><img src="assets/leds-buttons.png" alt="LEDs and buttons" width="100%"></p>
 
-> Tested on real hardware: LED colours and order, SFR spiral, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
+> Tested on real hardware: LED colours and order, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
-- **SFR** button → the three top LEDs turn into a rotating green / orange / red **spiral**; press again for the status view.
 - **ECO** button → turns the **WireGuard VPN** (interface `vpn`) on and off; LED **b** shows the tunnel state.
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
@@ -63,6 +64,12 @@ The BCM6362's on-chip radio never worked under OpenWrt. It now runs with the ope
 Alessio Ferri's 2026 work on the same SoC, Linux mainline patches, and the Neufbox's **own radio calibration**
 recovered from the SFR firmware. 2.4 GHz access point, WPA2, 802.11g rates, 0 % packet loss in tests.
 5 GHz is physically absent on this board. → **[docs/WIFI.md](docs/WIFI.md)**
+
+## Extras
+
+More out of 64 MB of RAM: **zram** compressed swap, hardware **watchdog**, **graphs** of temperature, 12 V,
+CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED **brightness and night mode**,
+**Wake-on-LAN** and a **web terminal** in LuCI. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
 
 ## Getting started
 
@@ -89,18 +96,31 @@ The stock CFE bootloader is kept: interrupt it on the serial console and flash
 The 2010 CFE bootloader can only unpack ~4 MB and lives in the middle of RAM, while the 6.12 kernel is 11 MB.
 The image therefore ships a small **lzma-loader** that CFE unpacks first, which then unpacks the kernel itself.
 
+## Documentation
+
+| Document | Content |
+|---|---|
+| [docs/HARDWARE.md](docs/HARDWARE.md) | board, GPIO map, flash layout, microcontroller registers |
+| [docs/BUILD.md](docs/BUILD.md) | building the firmware with Docker |
+| [docs/FLASHING.md](docs/FLASHING.md) | first flash from CFE, updates, going back to the SFR firmware |
+| [docs/WIFI.md](docs/WIFI.md) | integrated Wi-Fi: driver, firmware, calibration |
+| [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors, VPN |
+| [docs/EXTRAS.md](docs/EXTRAS.md) | zram, watchdog, statistics, Wi-Fi schedule, night mode, Wake-on-LAN, terminal |
+| [docs/PORTING.md](docs/PORTING.md) | how the port was done, bring-up problems, test results |
+| [CHANGELOG.md](CHANGELOG.md) | changes per version |
+
 ## Repository
 
 ```
 assets/            photos and diagrams used in this README
 config/nb6.config  OpenWrt target and package selection
 docker/            Debian 12 build environment
-docs/              hardware, build, flashing, Wi-Fi, LEDs, porting journal
-files/             added to the image: LED daemon, button handlers, first-boot defaults
+docs/              hardware, build, flashing, Wi-Fi, LEDs and buttons, extras, porting notes
+files/             added to the image: LED daemon and its settings, button handlers, first-boot defaults
 patches/board/     device tree, image recipe, RTL8367R RGMII fix, nb6-hwmon LED driver
 patches/wifi/      BCM6362 WLAN: bcma host, b43 N-PHY r8 / radio 2057 r8, firmware, calibration
 scripts/           build.sh, apply-board.sh, apply-wifi.sh
-tools/             serial / CFE / TFTP / GPIO helpers used for flashing and probing
+tools/             serial console, CFE, TFTP and GPIO helpers for flashing and probing
 ```
 
 ## Limits

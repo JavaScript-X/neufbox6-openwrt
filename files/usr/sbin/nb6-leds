@@ -1,85 +1,112 @@
 #!/bin/sh
-# SFR Neufbox 6 front LEDs daemon (OpenWrt port)
+# SFR Neufbox 6 front LEDs daemon
 #
 #  LED a (service1): Internet  green = OK, orange = WAN link up but no internet, red = WAN cable unplugged
 #  LED b (service2): VPN       green = up, orange blinking = connecting, off = down / not configured
 #  LED c (service3): health    green = OK, orange = hot or low memory, red blinking = error
 #  LED voip (white): blinks for 60 s when a new device gets a DHCP lease on the LAN
 #
-#  "spiral" mode (toggled by the SFR button): a/b/c cycle green -> orange -> red, one step apart.
+# Settings: /etc/config/nb6 (section leds): brightness and night mode.
 #
-# State: /tmp/nb6-leds/spiral exists = spiral mode.
+# Cost: the 1 s loop only does shell arithmetic and `sleep`; the checks run every 5 to 60 s,
+# and an LED is written (one I2C transfer to the SFR microcontroller) only when it changes.
 
 L=/sys/class/leds
-STATE=/tmp/nb6-leds
 KNOWN=/etc/nb6-leds.known-macs
 VPN_IF=${VPN_IF:-vpn}
 WAN_PORT=0
 PING_HOST=1.1.1.1
-TEMP_WARN=70000          # milli-degrees C
+TEMP_WARN=70000          # m°C
 MEM_WARN_KB=4096
 
-mkdir -p $STATE
+STATE_EVERY=5            # s between LED a/b/c state checks
+PING_EVERY=30            # s between internet checks
+LEASES_EVERY=10          # s between new-device checks
+CONFIG_EVERY=60          # s between reads of /etc/config/nb6
+
 # first start: devices already on the LAN are not "new"
 [ -s $KNOWN ] || awk '{print $2}' /tmp/dhcp.leases 2>/dev/null > $KNOWN
 
-# brightness 0..31; orange = red + some green
-color() { # $1 = 1|2|3  $2 = green|orange|red|off
+BR=31
+load_brightness() {
+	BR=$(uci -q get nb6.leds.brightness); BR=${BR:-31}
+	if [ "$(uci -q get nb6.leds.night)" = 1 ]; then
+		ns=$(uci -q get nb6.leds.night_start | tr -d :); ne=$(uci -q get nb6.leds.night_end | tr -d :)
+		if [ -n "$ns" ] && [ -n "$ne" ]; then
+			# "1HHMM - 10000" keeps leading zeros from being read as octal
+			now=$(( 1$(date +%H%M) - 10000 )); ns=$(( 1$ns - 10000 )); ne=$(( 1$ne - 10000 ))
+			if [ $ns -le $ne ]; then
+				[ $now -ge $ns ] && [ $now -lt $ne ] && in=1 || in=0
+			else
+				[ $now -ge $ns ] || [ $now -lt $ne ] && in=1 || in=0
+			fi
+			[ $in = 1 ] && { BR=$(uci -q get nb6.leds.night_brightness); BR=${BR:-4}; }
+		fi
+	fi
+	[ "$BR" -ge 1 ] 2>/dev/null && [ "$BR" -le 31 ] || BR=31
+}
+
+scale() { # brightness at full scale (0..31) -> 0..BR, never 0 for a lit LED
+	v=$(( $1 * BR / 31 )); [ $1 -gt 0 ] && [ $v -eq 0 ] && v=1
+}
+
+# set LED $1 (1|2|3) to green|orange|red|off; orange = red + some green.
+# Only the channels whose value changes are written.
+color() {
 	case "$2" in
 		green)  r=0;  g=31 ;;
 		orange) r=31; g=10 ;;
 		red)    r=31; g=0 ;;
 		*)      r=0;  g=0 ;;
 	esac
-	# only touch the LEDs whose value changes: every write is an I2C transaction to the
-	# SFR microcontroller, and fewer writes means fewer NAK retries (and less lag)
+	if [ $BR -lt 31 ]; then scale $r; r=$v; scale $g; g=$v; fi
 	eval "pr=\$last_r$1 pg=\$last_g$1"
 	[ "$r" = "$pr" ] || { echo $r > $L/red:service$1/brightness 2>/dev/null; eval "last_r$1=$r"; }
 	[ "$g" = "$pg" ] || { echo $g > $L/green:service$1/brightness 2>/dev/null; eval "last_g$1=$g"; }
 }
 
+white() { # $1 = voip|wan|wlan  $2 = 0|31, cached like color()
+	eval "p=\$last_w_$1"
+	[ "$2" = "$p" ] || { echo $2 > $L/white:$1/brightness 2>/dev/null; eval "last_w_$1=$2"; }
+}
+
 internet_state() {
-	link=$(swconfig dev switch0 port $WAN_PORT get link 2>/dev/null)
-	case "$link" in *link:up*) ;; *) echo red; return ;; esac
-	if [ $((tick % 10)) -eq 0 ] || [ -z "$net_ok" ]; then
+	case "$(swconfig dev switch0 port $WAN_PORT get link 2>/dev/null)" in
+		*link:up*) ;;
+		*) S_A=red; net_ok=; return ;;
+	esac
+	if [ -z "$net_ok" ] || [ $((tick % PING_EVERY)) -lt $STATE_EVERY ]; then
 		ping -c1 -W2 $PING_HOST >/dev/null 2>&1 && net_ok=1 || net_ok=0
 	fi
-	[ "$net_ok" = 1 ] && echo green || echo orange
+	[ "$net_ok" = 1 ] && S_A=green || S_A=orange
 }
 
 vpn_state() {
-	uci -q get network.$VPN_IF >/dev/null || { echo off; return; }
-	up=$(ifstatus $VPN_IF 2>/dev/null | jsonfilter -e '@.up' 2>/dev/null)
-	[ "$up" = "true" ] || {
-		# interface asked up but not up yet = connecting
-		[ "$(uci -q get network.$VPN_IF.disabled)" = 1 ] && { echo off; return; }
-		pending=$(ifstatus $VPN_IF 2>/dev/null | jsonfilter -e '@.pending' 2>/dev/null)
-		[ "$pending" = "true" ] && echo connecting || echo off
+	S_B=off
+	uci -q get network.$VPN_IF >/dev/null || return
+	[ "$(uci -q get network.$VPN_IF.disabled)" = 1 ] && return
+	st=$(ifstatus $VPN_IF 2>/dev/null) || return
+	if [ "$(echo "$st" | jsonfilter -e '@.up')" != true ]; then
+		[ "$(echo "$st" | jsonfilter -e '@.pending')" = true ] && S_B=connecting
 		return
-	}
+	fi
 	if [ "$(uci -q get network.$VPN_IF.proto)" = wireguard ]; then
-		dev=$(ifstatus $VPN_IF | jsonfilter -e '@.l3_device' 2>/dev/null)
+		dev=$(echo "$st" | jsonfilter -e '@.l3_device')
 		last=$(wg show ${dev:-$VPN_IF} latest-handshakes 2>/dev/null | awk '{print $2}' | sort -n | tail -1)
-		now=$(date +%s)
-		[ -n "$last" ] && [ "$last" -gt 0 ] && [ $((now - last)) -lt 180 ] && echo green || echo connecting
+		[ -n "$last" ] && [ "$last" -gt 0 ] && [ $(( $(date +%s) - last )) -lt 180 ] && S_B=green || S_B=connecting
 	else
-		echo green
+		S_B=green
 	fi
 }
 
 health_state() {
-	err=0
-	pidof dnsmasq >/dev/null || err=1
-	pidof netifd >/dev/null || err=1
-	[ "$(df /overlay 2>/dev/null | awk 'NR==2{print $4}')" -lt 200 ] 2>/dev/null && err=1
-	[ $err = 1 ] && { echo error; return; }
-	t=$(cat /sys/class/hwmon/hwmon*/temperature 2>/dev/null | head -1)
+	S_C=green
+	if ! pidof dnsmasq >/dev/null || ! pidof netifd >/dev/null; then S_C=error; return; fi
+	free_kb=$(df /overlay 2>/dev/null | awk 'NR==2{print $4}')
+	[ -n "$free_kb" ] && [ "$free_kb" -lt 200 ] && { S_C=error; return; }
+	t=$(cat /sys/class/hwmon/hwmon*/temp1_input 2>/dev/null | head -1)
 	m=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
-	if { [ -n "$t" ] && [ "$t" -gt $TEMP_WARN ]; } || [ "${m:-99999}" -lt $MEM_WARN_KB ]; then
-		echo orange
-	else
-		echo green
-	fi
+	{ [ -n "$t" ] && [ "$t" -gt $TEMP_WARN ]; } || [ "${m:-99999}" -lt $MEM_WARN_KB ] && S_C=orange
 }
 
 new_device_check() {
@@ -87,52 +114,39 @@ new_device_check() {
 	for mac in $(awk '{print $2}' /tmp/dhcp.leases); do
 		grep -q -x "$mac" $KNOWN && continue
 		echo "$mac" >> $KNOWN
-		voip_until=$(( $(date +%s) + 60 ))
-		logger -t nb6-leds "new device on LAN: $mac"
+		voip_left=60
+		logger -t nb6-leds "new device on the LAN: $mac"
 	done
 }
 
-blink() { [ $((tick % 2)) -eq 0 ] && echo "$1" || echo off; }
-
-spiral_step=0
-spiral() {
-	# the step follows the clock (one step per second), so a late step does not delay
-	# the next ones: the rotation catches up by itself
-	spiral_step=$(( $(date +%s) % 3 ))
-	for led in 1 2 3; do
-		i=$(( (spiral_step + led - 1) % 3 ))
-		case $i in 0) c=green ;; 1) c=orange ;; 2) c=red ;; esac
-		color $led $c
-	done
-}
-
-# first run: take over the LEDs from the microcontroller's own animation
+# take over the LEDs from the microcontroller's own boot animation
+load_brightness
 for led in 1 2 3; do color $led off; done
-voip_until=0
+voip_left=0
 tick=0
 while true; do
-	if [ -e $STATE/spiral ]; then
-		spiral
-		sleep 1   # BusyBox sleep has no sub-second support
-		continue
+	[ $((tick % CONFIG_EVERY)) -eq 0 ] && load_brightness
+	if [ $((tick % STATE_EVERY)) -eq 0 ]; then
+		internet_state; vpn_state; health_state
 	fi
+	[ $((tick % LEASES_EVERY)) -eq 0 ] && new_device_check
 
-	color 1 $(internet_state)
-	case $(vpn_state) in
+	on=$((tick % 2))         # blinking phase, 1 s on / 1 s off
+	color 1 $S_A
+	case $S_B in
 		green)      color 2 green ;;
-		connecting) color 2 $(blink orange) ;;
+		connecting) [ $on = 1 ] && color 2 orange || color 2 off ;;
 		*)          color 2 off ;;
 	esac
-	case $(health_state) in
-		error) color 3 $(blink red) ;;
-		*)     color 3 $(health_state) ;;
+	case $S_C in
+		error) [ $on = 1 ] && color 3 red || color 3 off ;;
+		*)     color 3 $S_C ;;
 	esac
-
-	[ $((tick % 5)) -eq 0 ] && new_device_check
-	if [ "$(date +%s)" -lt "$voip_until" ]; then
-		[ $((tick % 2)) -eq 0 ] && echo 31 > $L/white:voip/brightness || echo 0 > $L/white:voip/brightness
+	if [ $voip_left -gt 0 ]; then
+		[ $on = 1 ] && white voip 31 || white voip 0
+		voip_left=$((voip_left - 1))
 	else
-		echo 0 > $L/white:voip/brightness 2>/dev/null
+		white voip 0
 	fi
 
 	tick=$((tick + 1))

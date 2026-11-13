@@ -1,5 +1,5 @@
 #!/bin/sh
-# Set up the two WireGuard tunnels driven by the ECO button (see docs/VPN.md).
+# Set up the two WireGuard tunnels driven by the SFR button (see docs/VPN.md).
 #
 #   vpn             tailnet: tunnel to a WireGuard server that routes to a Tailscale network
 #                   (or any private network). Only the remote networks go through it.
@@ -89,7 +89,7 @@ tailnet() {
 	uci set network.vpn_server.route_allowed_ips=1
 	uci set network.vpn_server.persistent_keepalive=25
 	uci commit network
-	echo "tailnet server set; press ECO (short) or run: uci set network.vpn.disabled=0; uci commit network; ifup vpn"
+	echo "tailnet server set; press the SFR button (short) or run: uci set network.vpn.disabled=0; uci commit network; ifup vpn"
 }
 
 pubkey() {

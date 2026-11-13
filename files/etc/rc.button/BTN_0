@@ -1,5 +1,5 @@
 #!/bin/sh
-# ECO button (BTN_1)
+# SFR button (BTN_0): VPN
 #   short press          tailnet tunnel (interface "vpn") on / off
 #   long press (>= 3 s)  commercial VPN (interface "vpn_commercial") on / off
 # LED b shows the result (see /usr/sbin/nb6-leds). Set the tunnels up with nb6-vpn.

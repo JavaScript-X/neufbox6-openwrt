@@ -1,0 +1,5 @@
+#!/bin/sh
+# ECO button (BTN_1): eco mode on / off (see /usr/sbin/nb6-eco and /etc/config/nb6)
+[ "$ACTION" = released ] || exit 0
+/usr/sbin/nb6-eco toggle
+return 0

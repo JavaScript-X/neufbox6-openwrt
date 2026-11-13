@@ -22,8 +22,8 @@ from CFE. Keep the serial adapter around.
 4. If the box is already sitting at a `CFE>` prompt, use `tools/flash_from_prompt.py <image>` instead.
 
 CFE notes:
-- `dm` can only read the first ~64 KB of flash (it crashes beyond); a full flash backup needs a
-  SOIC-16 (300 mil) clip + programmer.
+- `dm` can only read the first ~64 KB of flash (it crashes beyond). Once OpenWrt runs, back up the
+  whole chip from OpenWrt instead (below).
 - CFE refuses to unpack more than ~4 MB ("Failed to decompress image") and itself lives around
   0x81400000; that is why the image uses the lzma-loader (see [PORTING.md](PORTING.md)).
 
@@ -40,6 +40,31 @@ sysupgrade -T /tmp/fw.bin && sysupgrade -v /tmp/fw.bin
 If the box runs out of memory anyway (OOM messages, nothing written yet), save the settings with
 `sysupgrade -b /tmp/backup.tgz`, copy the archive off the box, flash the `cfe.bin` image from CFE
 (above), then restore it with `sysupgrade -r /tmp/backup.tgz` and reboot.
+
+## Full flash backup
+Do this once after the first flash: `cfe` holds the bootloader and the box's MAC address, which no
+image can give back. The three partitions together are the whole 16 MiB chip:
+
+| Partition | Offset | Size | Content |
+|---|---|---|---|
+| `cfe` (`/dev/mtd0`) | 0x000000 | 64 KiB | CFE bootloader, board data, MAC address at 0x6a0 |
+| `firmware` (`/dev/mtd1`) | 0x010000 | 15.9 MiB | image tag, kernel, squashfs, settings (jffs2) |
+| `nvram` (`/dev/mtd5`) | 0xff0000 | 64 KiB | nvram |
+
+The simplest way is LuCI > System > Backup / Flash Firmware > *Save mtdblock contents*, once per
+partition. Then rebuild a full chip image and check the copies against the box:
+```sh
+cat cfe.bin firmware.bin nvram.bin > nb6-full-flash-16MiB.bin   # on the PC
+sha256sum /dev/mtd0 /dev/mtd5                                    # on the box: must match cfe.bin, nvram.bin
+```
+`firmware.bin` changes while the box runs (settings area), so only `cfe` and `nvram` are compared.
+It contains the settings (password hash, Wi-Fi key): keep the backup private.
+
+If CFE itself is ever damaged, write `nb6-full-flash-16MiB.bin` with a CH341A programmer and a
+SOIC-16 (300 mil) clip at 3.3 V:
+```sh
+flashrom -p ch341a_spi -c MX25L12835F/MX25L12845E/MX25L12865E -w nb6-full-flash-16MiB.bin
+```
 
 ## Back to the SFR firmware
 SFR still serves the NB6 images (e.g. `http://download.nb6thd.neufbox.neuf.fr/nb6_Version%203.5.15rc2/NB6-MAIN-R3.5.15rc2`).

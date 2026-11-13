@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Docs: full flash backup from OpenWrt (`docs/FLASHING.md`).
+
 ## 2.0 (2026-11-13)
 ### Added
 - zram compressed swap.

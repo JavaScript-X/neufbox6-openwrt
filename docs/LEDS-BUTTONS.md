@@ -61,6 +61,7 @@ driver only reads the port link, and b43 ignores transmit power changes.
 - LED positions on the ring around the SFR button (same as SFR's documentation): a (service1) = top right,
   b (service2) = bottom, c (service3) = top left. Brightness 0..31; values above 31 switch the LED off.
 - ECO: eco mode on and off (ring 31 → 4, traffic LEDs off, collectd and nlbwmon paused, then restored), 2026-11-13.
+- SFR: short press tailnet off / on (LED b off, then orange blinking, then green); long press without a provider: 3 red flashes, 2026-11-13.
 - Wi-Fi switch: off/on works.
 - Sensors: temperature ~51 °C, voltage ~12.2 V, boot counter readable.
 - I2C load: the SFR microcontroller refuses (NAKs) writes when LEDs change faster than ~2/s; traffic and WPS blinks are therefore 500 ms. The driver retries up to 5 times.

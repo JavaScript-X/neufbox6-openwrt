@@ -21,20 +21,23 @@ Orange = red 31 + green 10 (tune `color()` in `/usr/sbin/nb6-leds` if needed).
 | b | VPN up (WireGuard handshake < 3 min) | blinking: connecting | | VPN down / not configured |
 | c | OK | temperature > 70 °C or MemAvailable < 4 MB | blinking: dnsmasq/netifd dead or overlay full | |
 
-**Spiral mode** (`/tmp/nb6-leds/spiral`): a/b/c cycle green → orange → red, one step apart
-(1 s per step: BusyBox sleep has no sub-second support), toggled by the SFR button.
+Brightness and night mode: `/etc/config/nb6`, see [EXTRAS.md](EXTRAS.md#led-brightness-and-night-mode).
+
+The daemon checks the states every 5 s (internet every 30 s, DHCP leases every 10 s); its 1 s loop only
+handles blinking, and an LED is written only when its value changes.
 
 ## Buttons (`/etc/rc.button/*`)
 | Button | Linux key / name | Action |
 |---|---|---|
-| SFR (top) | `BTN_0` | toggle LED spiral mode |
+| SFR (top) | `BTN_0` | not assigned: add your own `/etc/rc.button/BTN_0` script |
 | ECO (top) | `BTN_1` | toggle the UCI interface `vpn` (`disabled` + ifup/ifdown); 3 red flashes on LED b if no `vpn` interface |
 | Wi-Fi slide switch | `wlan` | ON position = radios on, OFF = radios off |
 | Wi-Fi switch pushed further | `wps` | `hostapd_cli wps_pbc` on every AP, wlan LED blinks (500 ms) for 120 s |
 | Reset (rear) | `reset` | OpenWrt default: < 5 s reboot, > 5 s factory reset |
 
 ## Sensors
-`/sys/class/hwmon/hwmon*/` exposes `temperature` (m°C), `voltage` (mV), `stats`
+`/sys/class/hwmon/hwmon*/` exposes `temperature` (m°C), `voltage` (mV), the same values under the
+standard names `temp1_input` / `in0_input` (with `temp1_label` "board" and `in0_label` "12V"), `stats`
 (boot/panic/oops counters), `release`, `leds_mode`, `watchdog`, `dmesg` (from the microcontroller).
 
 ## VPN
@@ -45,7 +48,6 @@ LuCI → Network → Interfaces → Add → name `vpn`, protocol WireGuard.
 ## Hardware test results (2026-11-11)
 - LED positions on the ring around the SFR button (same as SFR's documentation): a (service1) = top right,
   b (service2) = bottom, c (service3) = top left. Brightness 0..31; values above 31 switch the LED off.
-- SFR spiral: works, one step per second (BusyBox `sleep` has no sub-second resolution).
 - ECO: works (3 red flashes on LED b while no `vpn` interface exists).
 - Wi-Fi switch: off/on works.
 - Sensors: temperature ~51 °C, voltage ~12.2 V, boot counter readable.

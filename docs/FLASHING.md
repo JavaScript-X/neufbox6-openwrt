@@ -12,9 +12,12 @@ from CFE. Keep the serial adapter around.
 - A TFTP server on the PC serving the `…-squashfs-cfe.bin` image (`tools/tftp_server.py`, read-only).
 
 ## First flash from CFE
-1. Start the TFTP server (`python tools/tftp_server.py 0.0.0.0`, serving `./firmware`).
-2. Start `python tools/flash_openwrt.py <image-cfe.bin>` (serial port COM5 in the script; adapt it).
-   It sends a key during the 1-second CFE countdown, then runs `f 192.168.22.68:<image>`.
+1. Put the image in `./firmware` and start the TFTP server: `python tools/tftp_server.py 0.0.0.0`
+   (another directory: `NB6_FIRMWARE_DIR`; port 69 needs administrator / root rights).
+2. Start `python tools/flash_openwrt.py <image-cfe.bin>`. The serial port is `NB6_SERIAL`
+   (default `COM5` on Windows, `/dev/ttyUSB0` elsewhere), the PC address `NB6_TFTP_HOST`
+   (default 192.168.22.68). The script sends a key during the 1-second CFE countdown, then runs
+   `f <NB6_TFTP_HOST>:<image>`.
 3. Power the box. CFE downloads ~8 MB, prints `*** Image flash done ***`, resets and boots OpenWrt.
 4. If the box is already sitting at a `CFE>` prompt, use `tools/flash_from_prompt.py <image>` instead.
 
@@ -22,16 +25,21 @@ CFE notes:
 - `dm` can only read the first ~64 KB of flash (it crashes beyond); a full flash backup needs a
   SOIC-16 (300 mil) clip + programmer.
 - CFE refuses to unpack more than ~4 MB ("Failed to decompress image") and itself lives around
-  0x81400000; that is why the image uses the lzma-loader (see JOURNAL.md).
+  0x81400000; that is why the image uses the lzma-loader (see [PORTING.md](PORTING.md)).
 
 ## Updates from OpenWrt
-Use the sysupgrade image (settings are kept):
+Use the sysupgrade image (settings are kept). The image (~10.6 MB) is held in RAM during the
+upgrade, which leaves little room on a 64 MB box: stop the optional services first.
 ```sh
+service collectd stop; service nlbwmon stop; service ttyd stop; wifi down
+sync; echo 3 > /proc/sys/vm/drop_caches
 # from a PC on the LAN, e.g. python -m http.server 8000
 wget -O /tmp/fw.bin http://<pc>:8000/openwrt-bmips-bcm6362-sfr_neufbox-6-sercomm-r0-squashfs-sysupgrade.bin
-sysupgrade -v /tmp/fw.bin
+sysupgrade -T /tmp/fw.bin && sysupgrade -v /tmp/fw.bin
 ```
-or LuCI → System → Backup / Flash Firmware.
+If the box runs out of memory anyway (OOM messages, nothing written yet), save the settings with
+`sysupgrade -b /tmp/backup.tgz`, copy the archive off the box, flash the `cfe.bin` image from CFE
+(above), then restore it with `sysupgrade -r /tmp/backup.tgz` and reboot.
 
 ## Back to the SFR firmware
 SFR still serves the NB6 images (e.g. `http://download.nb6thd.neufbox.neuf.fr/nb6_Version%203.5.15rc2/NB6-MAIN-R3.5.15rc2`).

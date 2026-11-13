@@ -1,0 +1,27 @@
+#!/bin/sh
+# First boot defaults for the extra features of the Neufbox 6 port:
+#  - statistics: board temperature and 12 V rail (nb6-hwmon via lm-sensors), uptime;
+#    a 30 s interval keeps collectd light on the 400 MHz CPU, data stays in RAM (/tmp/rrd)
+#  - Wi-Fi schedule: Wi-Fi on 07:00 -> 00:30 every day, prepared but left disabled (LuCI > Services > Wifi Schedule)
+
+[ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = "sfr,neufbox-6-sercomm-r0" ] || exit 0
+
+if uci -q get luci_statistics.collectd >/dev/null; then
+	uci set luci_statistics.collectd.Interval='30'
+	uci set luci_statistics.collectd_sensors.enable='1'
+	uci -q set luci_statistics.collectd_uptime.enable='1'
+	uci commit luci_statistics
+fi
+
+if uci -q get wifi_schedule.@global[0] >/dev/null; then
+	uci set wifi_schedule.@global[0].enabled='0'
+	uci -q delete wifi_schedule.awake
+	uci set wifi_schedule.awake=entry
+	uci set wifi_schedule.awake.enabled='0'
+	uci set wifi_schedule.awake.daysofweek='Monday Tuesday Wednesday Thursday Friday Saturday Sunday'
+	uci set wifi_schedule.awake.starttime='07:00'
+	uci set wifi_schedule.awake.stoptime='00:30'
+	uci set wifi_schedule.awake.forcewifidown='0'
+	uci commit wifi_schedule
+fi
+exit 0

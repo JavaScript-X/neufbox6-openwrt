@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1 (2026-11-14)
 ### Added
 - Two WireGuard tunnels on the SFR button: tailnet (short press) and commercial VPN (long press),
   set up with `nb6-vpn`; LED b shows which ones are up. See `docs/VPN.md`.
@@ -10,6 +10,7 @@
   optionally Wi-Fi off; kept across reboots. See `docs/LEDS-BUTTONS.md`.
 
 ### Changed
+- The VPN moves from the ECO button to the SFR button; the ECO button now switches eco mode.
 - Faster LuCI: memory tuning for zram (`vm.swappiness=100`, `vm.vfs_cache_pressure=50`), status pages
   refresh every 10 s, uhttpd runs 6 scripts at once. First page after idle: 1.1-2.3 s → 0.4-0.5 s.
 

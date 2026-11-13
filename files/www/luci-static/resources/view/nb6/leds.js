@@ -4,6 +4,7 @@
 'require rpc';
 'require uci';
 'require ui';
+'require nb6.icons as icons';
 
 /*
  * Neufbox 6: ring LED brightness, night dimming and eco mode (/etc/config/nb6).
@@ -26,8 +27,7 @@ return view.extend({
 	render([st]) {
 		let m, s, o;
 
-		m = new form.Map('nb6', _('LEDs and eco mode'),
-			_('Ring LEDs a (Internet), b (VPN) and c (health), and the eco mode switched by the ECO button.'));
+		m = new form.Map('nb6');
 
 		/* ---- LEDs ---- */
 		s = m.section(form.NamedSection, 'leds', 'leds', _('Ring LEDs'));
@@ -79,6 +79,23 @@ return view.extend({
 		o = s.option(form.Flag, 'wifi_off', _('Turn Wi-Fi off'));
 		o.rmempty = false;
 
-		return m.render();
+		return m.render().then(node => E([], [
+			E('div', { 'style': 'display:flex;align-items:center;gap:1.2em;flex-wrap:wrap;margin-bottom:1em' }, [
+				E('img', {
+					'src': L.resource('nb6/box-top.jpg'), 'alt': _('Neufbox 6 top panel'), 'width': 240,
+					'title': _('SFR Neufbox 6 (product photo (c) SFR)'),
+					'style': 'border-radius:8px;max-width:100%;height:auto'
+				}),
+				E('div', { 'style': 'flex:1;min-width:240px' }, [
+					E('h2', { 'style': 'margin-top:0' }, _('LEDs and eco mode')),
+					E('div', { 'class': 'cbi-map-descr' },
+						_('Ring LEDs a (Internet), b (VPN) and c (health), and the eco mode switched by the ECO button.'))
+				])
+			]),
+			node,
+			E('div', { 'class': 'cbi-section', 'style': 'font-size:90%;opacity:.85' }, [
+				E('p', {}, [_('Built with') + ' ', icons.badge('openwrt', 18), 'OpenWrt'])
+			])
+		]));
 	}
 });

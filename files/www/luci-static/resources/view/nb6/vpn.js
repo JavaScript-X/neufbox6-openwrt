@@ -5,6 +5,7 @@
 'require uci';
 'require ui';
 'require poll';
+'require nb6.icons as icons';
 
 /*
  * Neufbox 6: the two WireGuard tunnels driven by the SFR button.
@@ -22,14 +23,41 @@ const callSetTunnel = rpc.declare({
 });
 const callImport = rpc.declare({
 	object: 'luci.nb6', method: 'import_commercial',
-	params: ['private_key', 'addresses', 'dns', 'public_key', 'preshared_key', 'endpoint_host', 'endpoint_port'],
+	params: ['private_key', 'addresses', 'dns', 'public_key', 'preshared_key', 'endpoint_host', 'endpoint_port', 'provider'],
 	expect: { '': {} }
 });
 
 const TUNNELS = [
-	{ iface: 'vpn', name: _('Tailnet'), button: _('SFR button, short press') },
-	{ iface: 'vpn_commercial', name: _('Commercial VPN'), button: _('SFR button, long press (3 s)') }
+	{ iface: 'vpn', name: _('Tailnet'), button: _('SFR button, short press'), brands: () => ['tailscale', 'wireguard'] },
+	{ iface: 'vpn_commercial', name: _('Commercial VPN'), button: _('SFR button, long press (3 s)'),
+	  brands: () => [uci.get('network', 'vpn_commercial_peer', 'provider') || 'wireguard'] }
 ];
+
+const PROVIDERS = ['mullvad', 'protonvpn', 'nordvpn', 'surfshark', 'expressvpn', 'privateinternetaccess', 'cloudflare'];
+
+function pageHeader(title, descr) {
+	return E('div', { 'style': 'display:flex;align-items:center;gap:1.2em;flex-wrap:wrap;margin-bottom:1em' }, [
+		E('img', {
+			'src': L.resource('nb6/box-top.jpg'), 'alt': _('Neufbox 6 top panel'), 'width': 240,
+			'title': _('SFR Neufbox 6 (product photo (c) SFR)'),
+			'style': 'border-radius:8px;max-width:100%;height:auto'
+		}),
+		E('div', { 'style': 'flex:1;min-width:240px' }, [
+			E('h2', { 'style': 'margin-top:0' }, title),
+			E('div', { 'class': 'cbi-map-descr' }, descr)
+		])
+	]);
+}
+
+function pageFooter() {
+	return E('div', { 'class': 'cbi-section', 'style': 'font-size:90%;opacity:.85' }, [
+		E('p', {}, [
+			_('Built with') + ' ', icons.badge('openwrt', 18), 'OpenWrt ',
+			icons.badge('wireguard', 18), 'WireGuard ', icons.badge('tailscale', 18), 'Tailscale'
+		]),
+		E('small', {}, _('Product names and logos are trademarks of their owners and only identify their services. Icons: Simple Icons (CC0).'))
+	]);
+}
 
 const B64KEY = /^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$/;
 
@@ -103,7 +131,12 @@ return view.extend({
 			const s = st[t.iface] || {};
 			const [label, cls] = tunnelState(s);
 			return E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td' }, [E('strong', {}, t.name), E('br'), E('small', {}, t.button)]),
+				E('td', { 'class': 'td' }, [
+					E('div', { 'style': 'display:flex;align-items:center' }, [
+						...t.brands().map(b => icons.badge(b, 26)),
+						E('div', {}, [E('strong', {}, t.name), E('br'), E('small', {}, t.button)])
+					])
+				]),
 				E('td', { 'class': 'td' }, E('span', { 'class': cls }, label)),
 				E('td', { 'class': 'td' }, s.endpoint || '-'),
 				E('td', { 'class': 'td' }, s.up ? fmtAge(s.handshake_age) : '-'),
@@ -142,16 +175,18 @@ return view.extend({
 			'class': 'cbi-input-textarea', 'rows': 12, 'style': 'width:100%; font-family:monospace',
 			'placeholder': '[Interface]\nPrivateKey = ...\nAddress = 10.x.x.x/32\nDNS = ...\n\n[Peer]\nPublicKey = ...\nEndpoint = host:51820'
 		});
+		let fileName = '';
 		const file = E('input', {
 			'type': 'file', 'accept': '.conf,text/plain',
 			'change': ev => {
 				const f = ev.target.files[0];
-				if (f) f.text().then(t => { text.value = t; });
+				if (f) { fileName = f.name; f.text().then(t => { text.value = t; }); }
 			}
 		});
 
 		ui.showModal(_('Import a WireGuard file'), [
-			E('p', {}, _('Download the WireGuard configuration from your provider (Mullvad, Proton VPN, IVPN, ...), then choose the file or paste its content. It is sent to the box only.')),
+			E('p', {}, PROVIDERS.map(p => icons.badge(p, 28))),
+			E('p', {}, _('Download the WireGuard configuration from your provider (Mullvad, Proton VPN, NordVPN, Surfshark, ...), then choose the file or paste its content. It is sent to the box only.')),
 			E('p', {}, file),
 			text,
 			E('div', { 'class': 'right' }, [
@@ -165,8 +200,11 @@ return view.extend({
 							ui.addNotification(null, E('p', _('This does not look like a WireGuard file: PrivateKey, Address, PublicKey and Endpoint are needed.')), 'danger');
 							return;
 						}
+						/* never look inside the keys: only the file name, comments and server name */
+						const comments = text.value.split(/\r?\n/).filter(l => /^\s*#/.test(l)).join(' ');
+						const provider = icons.detect([fileName, comments, c.endpoint_host].join(' '));
 						return callImport(c.private_key, c.addresses.join(' '), c.dns.join(' '), c.public_key,
-							c.preshared_key || '', c.endpoint_host, c.endpoint_port || '51820').then(res => {
+							c.preshared_key || '', c.endpoint_host, c.endpoint_port || '51820', provider).then(res => {
 							ui.hideModal();
 							if (res && res.error)
 								ui.addNotification(null, E('p', res.error), 'danger');
@@ -268,6 +306,10 @@ return view.extend({
 		s = m.section(form.NamedSection, 'vpn_commercial_peer', 'wireguard_vpn_commercial', _('Provider server'));
 		s.addremove = true;
 
+		o = s.option(form.ListValue, 'provider', _('Provider'), _('Only used for the logo; found automatically when importing a file.'));
+		o.value('', _('Other'));
+		PROVIDERS.forEach(p => o.value(p, icons.list[p].title));
+
 		o = s.option(form.Value, 'public_key', _('Public key'));
 		o.validate = (id, v) => !v || B64KEY.test(v) || _('A WireGuard key is 44 base64 characters ending with "="');
 
@@ -294,14 +336,14 @@ return view.extend({
 		poll.add(() => this.refresh());
 
 		return m.render().then(node => E([], [
-			E('h2', {}, _('VPN')),
-			E('div', { 'class': 'cbi-map-descr' },
+			pageHeader(_('VPN'),
 				_('Two WireGuard tunnels, switched with the SFR button. LED b: green = tailnet, orange = commercial VPN, alternating = both, orange blinking = connecting.')),
 			E('div', { 'class': 'cbi-section' }, [
 				E('h3', {}, _('Status')),
 				this.statusTable(st)
 			]),
-			node
+			node,
+			pageFooter()
 		]));
 	}
 });

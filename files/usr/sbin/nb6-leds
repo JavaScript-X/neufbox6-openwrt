@@ -7,7 +7,8 @@
 #  LED c (service3): health    green = OK, orange = hot or low memory, red blinking = error
 #  LED voip (white): blinks for 60 s when a new device gets a DHCP lease on the LAN
 #
-# Settings: /etc/config/nb6 (section leds): brightness and night mode.
+# Settings: /etc/config/nb6 (section leds): brightness and night mode; eco mode (section eco)
+# caps the brightness at eco.led_brightness. SIGUSR1 re-reads the settings at once.
 #
 # Cost: the 1 s loop only does shell arithmetic and `sleep`; the checks run every 5 to 60 s,
 # and an LED is written (one I2C transfer to the SFR microcontroller) only when it changes.
@@ -42,6 +43,10 @@ load_brightness() {
 			fi
 			[ $in = 1 ] && { BR=$(uci -q get nb6.leds.night_brightness); BR=${BR:-4}; }
 		fi
+	fi
+	if [ "$(uci -q get nb6.eco.enabled)" = 1 ]; then
+		eb=$(uci -q get nb6.eco.led_brightness); eb=${eb:-4}
+		[ "$eb" -lt "$BR" ] 2>/dev/null && BR=$eb
 	fi
 	[ "$BR" -ge 1 ] 2>/dev/null && [ "$BR" -le 31 ] || BR=31
 }
@@ -132,6 +137,8 @@ new_device_check() {
 
 # take over the LEDs from the microcontroller's own boot animation
 load_brightness
+# settings changed (nb6-eco): forget the cached values so every LED is rewritten
+trap 'load_brightness; last_r1=; last_g1=; last_r2=; last_g2=; last_r3=; last_g3=' USR1
 for led in 1 2 3; do color $led off; done
 voip_left=0
 tick=0

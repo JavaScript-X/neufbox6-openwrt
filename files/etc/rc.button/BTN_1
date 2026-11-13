@@ -1,12 +1,21 @@
 #!/bin/sh
-# ECO button (BTN_1): turn the VPN interface on/off (UCI network interface "vpn", e.g. WireGuard).
-# LED b shows the result (see /usr/sbin/nb6-leds).
+# ECO button (BTN_1)
+#   short press          tailnet tunnel (interface "vpn") on / off
+#   long press (>= 3 s)  commercial VPN (interface "vpn_commercial") on / off
+# LED b shows the result (see /usr/sbin/nb6-leds). Set the tunnels up with nb6-vpn.
 [ "$ACTION" = released ] || exit 0
 
-VPN_IF=vpn
-if ! uci -q get network.$VPN_IF >/dev/null; then
-	logger -t nb6-buttons "ECO button: no '$VPN_IF' interface configured"
-	# 3 short red flashes on LED b
+if [ "${SEEN:-0}" -ge 3 ]; then IF=vpn_commercial; NAME="commercial VPN"; else IF=vpn; NAME="tailnet VPN"; fi
+
+configured() {
+	[ "$(uci -q get network.$1.proto)" = wireguard ] || return 1
+	[ -n "$(uci -q show network | grep "=wireguard_$1\$")" ] || return 1
+	[ -n "$(uci -q get network.$1.private_key)" ]
+}
+
+if ! configured $IF; then
+	logger -t nb6-buttons "ECO button: $NAME not configured (see nb6-vpn)"
+	# 3 red flashes on LED b
 	for i in 1 2 3; do
 		echo 31 > /sys/class/leds/red:service2/brightness; sleep 1
 		echo 0 > /sys/class/leds/red:service2/brightness; sleep 1
@@ -14,15 +23,15 @@ if ! uci -q get network.$VPN_IF >/dev/null; then
 	return 0
 fi
 
-if [ "$(uci -q get network.$VPN_IF.disabled)" = 1 ]; then
-	uci set network.$VPN_IF.disabled=0
+if [ "$(uci -q get network.$IF.disabled)" = 1 ]; then
+	uci set network.$IF.disabled=0
 	uci commit network
-	ifup $VPN_IF
-	logger -t nb6-buttons "ECO button: VPN on"
+	ifup $IF
+	logger -t nb6-buttons "ECO button: $NAME on"
 else
-	uci set network.$VPN_IF.disabled=1
+	uci set network.$IF.disabled=1
 	uci commit network
-	ifdown $VPN_IF
-	logger -t nb6-buttons "ECO button: VPN off"
+	ifdown $IF
+	logger -t nb6-buttons "ECO button: $NAME off"
 fi
 return 0

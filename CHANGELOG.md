@@ -7,6 +7,10 @@
 - Eco mode on the ECO button (`nb6-eco`): ring LEDs dimmed, traffic LEDs off, statistics paused,
   optionally Wi-Fi off; kept across reboots. See `docs/LEDS-BUTTONS.md`.
 
+### Changed
+- Faster LuCI: memory tuning for zram (`vm.swappiness=100`, `vm.vfs_cache_pressure=50`), status pages
+  refresh every 10 s, uhttpd runs 6 scripts at once. First page after idle: 1.1-2.3 s → 0.4-0.5 s.
+
 ## 2.0 (2026-11-13)
 ### Added
 - zram compressed swap.

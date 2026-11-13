@@ -6,6 +6,7 @@ All of them are in the image; the ones that change the box's behaviour are off u
 | Feature | Package | Default | Where |
 |---|---|---|---|
 | Compressed swap in RAM | `zram-swap` | on | automatic |
+| Faster LuCI (memory and polling tuning) | `/etc/sysctl.d/90-nb6.conf`, first-boot defaults | on | automatic |
 | Hardware watchdog | kernel `bcm7038-wdt` + procd | on | automatic |
 | Graphs: temperature, 12 V, CPU, RAM, traffic, Wi-Fi | `luci-app-statistics`, `collectd-mod-sensors` | on | LuCI > Statistics > Graphs |
 | Per-device traffic | `luci-app-nlbwmon` | on | LuCI > Services > Bandwidth Monitor |
@@ -18,6 +19,16 @@ All of them are in the image; the ones that change the box's behaviour are off u
 Part of the RAM is used as a compressed swap device (lzo), so the 54 MB that Linux sees behave like
 roughly 80 MB. Package installs with `apk`, which used to be OOM-killed, and bursts of traffic no longer
 kill services. Check it with `free` or `cat /proc/swaps`.
+
+## Faster LuCI
+Measured on the box: the first page after a few idle minutes took 1.1 to 2.3 s (LuCI's files had been
+evicted from the cache and were read again from the xz-compressed squashfs), and 0.4 to 0.5 s with:
+- `vm.swappiness=100` and `vm.vfs_cache_pressure=50` (`/etc/sysctl.d/90-nb6.conf`): idle program
+  memory goes to the zram swap instead of the file cache being dropped;
+- `luci.main.pollinterval=10`: status pages refresh every 10 s instead of 5 s;
+- `uhttpd.main.max_requests=6`: up to 6 scripts at once instead of 3.
+
+Pages also load faster with eco mode on (statistics paused) and with fewer LuCI apps installed.
 
 ## Watchdog
 The BCM6362 has a hardware watchdog (`brcm,bcm7038-wdt`), and procd feeds `/dev/watchdog`. If the

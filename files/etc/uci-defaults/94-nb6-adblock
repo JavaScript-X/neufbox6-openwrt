@@ -4,6 +4,8 @@
 # got dnsmasq killed for lack of memory under load on this 64 MB box. Off until turned on in LuCI. DNS is not forced
 # so that the tailnet and commercial VPN keep their own resolvers.
 uci -q get adblock-fast.config >/dev/null || exit 0
+# first install only: uci-defaults run again after each upgrade, and the user's choice must stay
+uci -q get adblock-fast.nb6pgl >/dev/null && exit 0
 for s in $(uci -q show adblock-fast | sed -n 's/^adblock-fast\.\([^.=]*\)=file_url$/\1/p'); do
 	uci set adblock-fast.$s.enabled=0
 done

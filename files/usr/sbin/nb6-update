@@ -16,6 +16,16 @@ CACHE=/tmp/nb6-update.json
 STATUS=/tmp/nb6-update.status
 FW=/tmp/nb6-fw.bin
 
+# download $1 to $2 ("-" = stdout): curl when present (retries, follows GitHub's redirects reliably),
+# else OpenWrt's uclient-fetch
+get() {
+	if command -v curl >/dev/null; then
+		curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 20 -m 900 -o "$2" "$1"
+	else
+		uclient-fetch -q -T 60 -O "$2" "$1"
+	fi
+}
+
 current() { sed -n 's/^neufbox6-openwrt \([0-9][0-9.]*\).*/\1/p' /etc/nb6-release 2>/dev/null; }
 
 newer() { # is $1 newer than $2 (dotted numbers)?
@@ -28,7 +38,7 @@ newer() { # is $1 newer than $2 (dotted numbers)?
 asset_url() { jsonfilter -i $CACHE -e "@.assets[@.name='$1'].browser_download_url" 2>/dev/null; }
 
 fetch_release() {
-	uclient-fetch -q -T 20 -O $CACHE.tmp "$API" 2>/dev/null && jsonfilter -i $CACHE.tmp -e '@.tag_name' >/dev/null 2>&1 \
+	get "$API" $CACHE.tmp 2>/dev/null && jsonfilter -i $CACHE.tmp -e '@.tag_name' >/dev/null 2>&1 \
 		&& mv $CACHE.tmp $CACHE
 	rm -f $CACHE.tmp
 }
@@ -68,9 +78,10 @@ run() {
 	sync; echo 3 > /proc/sys/vm/drop_caches
 
 	state "downloading"
-	uclient-fetch -q -T 60 -O $FW "$url" || fail "download failed"
-	want=$(uclient-fetch -q -T 30 -O - "$sums" | awk -v f=$IMG '$2 == f || $2 == "*"f {print $1}')
+	# the small checksum file first: after the image is in RAM, little memory is left
+	want=$(get "$sums" - | awk -v f=$IMG '$2 == f || $2 == "*"f {print $1}')
 	[ -n "$want" ] || fail "no checksum for the image"
+	get "$url" $FW || fail "download failed"
 
 	state "checking"
 	[ "$(sha256sum $FW | cut -d' ' -f1)" = "$want" ] || fail "checksum mismatch"

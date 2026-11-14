@@ -13,7 +13,8 @@ if uci -q get luci_statistics.collectd >/dev/null; then
 	uci commit luci_statistics
 fi
 
-if uci -q get wifi_schedule.@global[0] >/dev/null; then
+# first install only (uci-defaults run again after each upgrade; keep the user's schedule)
+if uci -q get wifi_schedule.@global[0] >/dev/null && ! uci -q get wifi_schedule.awake >/dev/null; then
 	uci set wifi_schedule.@global[0].enabled='0'
 	uci -q delete wifi_schedule.awake
 	uci set wifi_schedule.awake=entry

@@ -6,7 +6,9 @@
 			"type": "firstchild"
 		},
 		"depends": {
-			"acl": [ "luci-app-nb6" ]
+			"acl": [
+				"luci-app-nb6"
+			]
 		}
 	},
 	"admin/nb6/vpn": {
@@ -23,6 +25,27 @@
 		"action": {
 			"type": "view",
 			"path": "nb6/leds"
+		}
+	},
+	"admin/status/nb6home": {
+		"title": "Home",
+		"order": 0,
+		"action": {
+			"type": "view",
+			"path": "nb6/home"
+		},
+		"depends": {
+			"acl": [
+				"luci-app-nb6"
+			]
+		}
+	},
+	"admin/nb6/home": {
+		"title": "Home",
+		"order": 5,
+		"action": {
+			"type": "alias",
+			"path": "admin/status/nb6home"
 		}
 	}
 }

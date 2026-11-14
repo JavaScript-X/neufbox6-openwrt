@@ -85,7 +85,7 @@ return view.extend({
 				E('div', { 'style': 'flex:1;min-width:240px' }, [
 					E('h2', { 'style': 'margin-top:0' }, _('LEDs and eco mode')),
 					E('div', { 'class': 'cbi-map-descr' },
-						_('Ring LEDs a (Internet), b (VPN) and c (health), and the eco mode switched by the ECO button.'))
+						_('The Internet, VPN and System LEDs on the ring, and the eco mode switched by the ECO button.'))
 				])
 			]),
 			node,

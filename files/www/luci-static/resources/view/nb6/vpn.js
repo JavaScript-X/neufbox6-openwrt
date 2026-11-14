@@ -333,7 +333,7 @@ return view.extend({
 
 		return m.render().then(node => E([], [
 			pageHeader('vpn', _('VPN'),
-				_('Two WireGuard tunnels, switched with the SFR button. LED b: green = tailnet, orange = commercial VPN, alternating = both, orange blinking = connecting.')),
+				_('Two WireGuard tunnels, switched with the SFR button. VPN LED: green = tailnet, orange = commercial VPN, alternating = both, orange blinking = connecting.')),
 			E('div', { 'class': 'cbi-section' }, [
 				E('h3', {}, _('Status')),
 				this.statusTable(st)

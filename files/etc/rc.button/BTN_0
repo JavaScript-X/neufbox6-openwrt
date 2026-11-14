@@ -2,7 +2,7 @@
 # SFR button (BTN_0): VPN
 #   short press          tailnet tunnel (interface "vpn") on / off
 #   long press (>= 3 s)  commercial VPN (interface "vpn_commercial") on / off
-# LED b shows the result (see /usr/sbin/nb6-leds). Set the tunnels up with nb6-vpn.
+# The VPN LED shows the result (see /usr/sbin/nb6-leds). Set the tunnels up with nb6-vpn.
 [ "$ACTION" = released ] || exit 0
 
 if [ "${SEEN:-0}" -ge 3 ]; then IF=vpn_commercial; NAME="commercial VPN"; else IF=vpn; NAME="tailnet VPN"; fi
@@ -15,7 +15,7 @@ configured() {
 
 if ! configured $IF; then
 	logger -t nb6-buttons "ECO button: $NAME not configured (see nb6-vpn)"
-	# 3 red flashes on LED b
+	# 3 red flashes on the VPN LED
 	for i in 1 2 3; do
 		echo 31 > /sys/class/leds/red:service2/brightness; sleep 1
 		echo 0 > /sys/class/leds/red:service2/brightness; sleep 1

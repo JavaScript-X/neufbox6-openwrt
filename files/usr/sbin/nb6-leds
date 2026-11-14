@@ -1,10 +1,10 @@
 #!/bin/sh
 # SFR Neufbox 6 front LEDs daemon
 #
-#  LED a (service1): Internet  green = OK, orange = WAN link up but no internet, red = WAN cable unplugged
-#  LED b (service2): VPN       green = tailnet up, orange = commercial VPN up, green/orange = both,
-#                              orange blinking = connecting, off = no tunnel
-#  LED c (service3): health    green = OK, orange = hot or low memory, red blinking = error
+#  Internet LED (service1): green = OK, orange = WAN link up but no internet, red = WAN cable unplugged
+#  VPN LED (service2):      green = tailnet up, orange = commercial VPN up, green/orange = both,
+#                             orange blinking = connecting, off = no tunnel
+#  System LED (service3):   green = OK, orange = hot or low memory, red blinking = error
 #  LED voip (white): blinks for 60 s when a new device gets a DHCP lease on the LAN
 #
 # Settings: /etc/config/nb6 (section leds): brightness and night mode; eco mode (section eco)
@@ -20,7 +20,7 @@ PING_HOST=1.1.1.1
 TEMP_WARN=70000          # m°C
 MEM_WARN_KB=4096
 
-STATE_EVERY=5            # s between LED a/b/c state checks
+STATE_EVERY=5            # s between state checks of the ring LEDs
 PING_EVERY=30            # s between internet checks
 LEASES_EVERY=10          # s between new-device checks
 CONFIG_EVERY=60          # s between reads of /etc/config/nb6
@@ -146,7 +146,7 @@ while true; do
 	[ $((tick % CONFIG_EVERY)) -eq 0 ] && load_brightness
 	if [ $((tick % STATE_EVERY)) -eq 0 ]; then
 		internet_state; vpn_state; health_state
-		# for the LuCI home page (luci.nb6 home): states of LEDs a, b, c
+		# for the LuCI home page (luci.nb6 home): states of the Internet, VPN and System LEDs
 		echo "$S_A $S_B $S_C" > /tmp/nb6-leds.state
 	fi
 	[ $((tick % LEASES_EVERY)) -eq 0 ] && new_device_check

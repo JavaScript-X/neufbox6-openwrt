@@ -6,7 +6,7 @@
 
 /*
  * Neufbox 6 home page: connection, box information, VPN, a photo of the box with the ring LEDs
- * a, b, c in their real colours, and a summary of the devices and services.
+ * (Internet, VPN, System) in their real colours, and a summary of the devices and services.
  * Data: luci.nb6 "home" (rpcd).
  */
 
@@ -53,11 +53,11 @@ function tunnelText(word) {
 	}
 }
 
-/* photo of the box with the current state of the ring LEDs a, b, c below it */
+/* photo of the box with the current state of its Internet, VPN and System LEDs below it */
 function boxPhoto(h) {
 	const l = h.leds || {};
-	const led = (name, label, state) => E('span', { 'class': 'nb6-led', 'title': label }, [
-		E('span', { 'style': 'background:%s;box-shadow:0 0 7px %s'.format(ledColor(state), ledColor(state)) }), name
+	const led = (label, state) => E('span', { 'class': 'nb6-led' }, [
+		E('span', { 'style': 'background:%s;box-shadow:0 0 7px %s'.format(ledColor(state), ledColor(state)) }), label
 	]);
 	return E('div', {}, [
 		E('img', {
@@ -66,7 +66,7 @@ function boxPhoto(h) {
 			'style': 'width:100%;max-width:300px;height:auto'
 		}),
 		E('div', { 'class': 'nb6-leds' }, [
-			led('a', _('Internet'), l.a), led('b', _('VPN'), l.b), led('c', _('Health'), l.c)
+			led(_('Internet'), l.internet), led(_('VPN'), l.vpn), led(_('System'), l.system)
 		])
 	]);
 }

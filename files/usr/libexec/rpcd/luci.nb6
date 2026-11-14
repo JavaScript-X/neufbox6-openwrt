@@ -43,10 +43,10 @@ home_json() {
 	local st w6 lan=0 p link t v u n
 	json_init
 
-	# LED states published by nb6-leds: "a b c" (green/orange/red/off/connecting/both/error)
+	# LED states published by nb6-leds: "internet vpn system" (green/orange/red/off/connecting/both/error)
 	set -- $(cat /tmp/nb6-leds.state 2>/dev/null)
 	json_add_object leds
-	json_add_string a "${1:-off}"; json_add_string b "${2:-off}"; json_add_string c "${3:-off}"
+	json_add_string internet "${1:-off}"; json_add_string vpn "${2:-off}"; json_add_string system "${3:-off}"
 	json_close_object
 
 	st=$(ifstatus wan 2>/dev/null)

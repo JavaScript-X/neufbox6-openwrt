@@ -1,7 +1,7 @@
 #!/bin/sh
 # Eco mode, switched by the ECO button (settings: /etc/config/nb6, section eco)
 #
-#   ring LEDs a, b, c dimmed to eco.led_brightness
+#   Internet, VPN and System LEDs dimmed to eco.led_brightness
 #   white traffic LEDs (wan, wlan) off           unless eco.traffic_leds = 1
 #   statistics and per-device traffic paused     unless eco.pause_stats = 0
 #   Wi-Fi off                                    if eco.wifi_off = 1 (default 0)

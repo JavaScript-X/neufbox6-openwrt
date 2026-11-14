@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.3 (2026-11-14)
+### Added
+- **One-click updates**: the Home page shows the latest release on GitHub and installs it (download,
+  checksum, `sysupgrade -T`, settings kept), with progress and automatic reconnection. `nb6-update`.
+- **Devices** page (Neufbox > Devices): devices on the LAN with address, wired or Wi-Fi (signal) and
+  traffic; per device, internet access allowed, blocked or blocked on a schedule, and Wake-on-LAN.
+- **Ad blocking** page (Neufbox > Ad blocking): `adblock-fast` with Peter Lowe's ad server list, sized
+  for 64 MB of RAM; off by default.
+
+### Changed
+- dnsmasq and netifd are protected from the out-of-memory killer (`oom_score_adj` -800).
+
 ## 2.2 (2026-11-14)
 ### Added
 - **Home** page (Status > Home, opened after login): connection, box, VPN, connected devices, and a

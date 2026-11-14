@@ -78,6 +78,11 @@ and sets the LEDs and eco mode. The standard bootstrap theme and overview stay a
 
 <p align="center"><img src="assets/luci-home.png" alt="LuCI home page with the Neufbox theme" width="100%"></p>
 
+<p align="center">
+  <img src="assets/luci-devices.png" alt="LuCI: Neufbox > Devices" width="49%">
+  <img src="assets/luci-adblock.png" alt="LuCI: Neufbox > Ad blocking" width="49%">
+</p>
+
 <p align="center"><img src="assets/luci-login.png" alt="LuCI login page with the Neufbox theme" width="46%"></p>
 
 <p align="center">
@@ -96,7 +101,8 @@ recovered from the SFR firmware. 2.4 GHz access point, WPA2, 802.11g rates, 0 % 
 
 More out of 64 MB of RAM: **zram** compressed swap, hardware **watchdog**, **graphs** of temperature, 12 V,
 CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED **brightness and night mode**,
-**Wake-on-LAN** and a **web terminal** in LuCI. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
+**Wake-on-LAN** and a **web terminal** in LuCI, a **devices** page with per-device internet blocking and schedules,
+**ad blocking** for the whole network, and **one-click updates** from GitHub. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
 
 ## Getting started
 

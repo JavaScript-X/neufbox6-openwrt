@@ -14,6 +14,9 @@ All of them are in the image; the ones that change the box's behaviour are off u
 | LED brightness and night mode | `nb6-leds` | full brightness, night mode off | `/etc/config/nb6` |
 | Wake-on-LAN | `luci-app-wol`, `etherwake` | on | LuCI > Services > Wake on LAN |
 | Web terminal | `luci-app-ttyd` | LAN only, root login | LuCI > Services > Terminal |
+| Devices, internet blocking and schedules | `nb6/devices` page, firewall rules | on | LuCI > Neufbox > Devices |
+| Ad blocking | `adblock-fast`, Peter Lowe's list | off | LuCI > Neufbox > Ad blocking |
+| One-click updates | `nb6-update` | on (checks every 6 h) | LuCI > Status > Home, Software card |
 
 ## zram swap
 Part of the RAM is used as a compressed swap device (lzo), so the 54 MB that Linux sees behave like
@@ -62,3 +65,33 @@ LuCI > Services > Wake on LAN sends a magic packet to a machine on the LAN (a NA
 ## Web terminal
 LuCI > Services > Terminal opens a shell in the browser (`ttyd`, port 7681, LAN only). It asks for the
 root login, like SSH.
+
+## Devices
+LuCI > Neufbox > Devices lists the devices seen on the LAN (DHCP leases, neighbour table, Wi-Fi
+stations) with their address, connection (wired, or Wi-Fi with signal) and traffic (nlbwmon).
+Per device:
+- **Internet access**: allowed, blocked, or blocked during set hours on chosen days (parental control).
+  It is a firewall rule named `nb6_block_<mac>` (`src_mac`, `start_time`, `stop_time`, `weekdays`);
+  the device keeps its access to the local network.
+- **Wake up**: sends a Wake-on-LAN packet.
+
+## Ad blocking
+LuCI > Neufbox > Ad blocking turns `adblock-fast` on or off. It answers the ad servers of
+[Peter Lowe's list](https://pgl.yoyo.org/adservers/) (about 3 500 domains) with an empty address, for
+every device that uses the box as its DNS server. dnsmasq then uses about 1.5 MB of RAM.
+
+Bigger lists do not fit: with the Hagezi Light list (90 000 domains, about 6 MB) dnsmasq was killed for
+lack of memory under load, which stops DNS and DHCP for the whole network. As a safety net, `nb6-leds`
+gives dnsmasq and netifd an `oom_score_adj` of -800 so that the kernel stops other processes first.
+
+## Updates from the web interface
+The **Software** card of the Home page compares the installed version (`/etc/nb6-release`) with the
+latest release on GitHub (checked at most every 6 hours, or with *Check for updates*). *Install*
+runs `nb6-update install`, which:
+1. stops the optional services and Wi-Fi to free memory (the image is held in RAM);
+2. downloads the sysupgrade image and the release's `SHA256SUMS`, and checks the checksum;
+3. runs `sysupgrade -T`, then `sysupgrade` with the settings kept.
+
+Nothing is written if any step fails; the services come back and the error is shown. The box restarts
+on its own and the page reconnects when it is back (about 10 minutes for the first boot).
+From the command line: `nb6-update check`, `nb6-update install`, `nb6-update status`.

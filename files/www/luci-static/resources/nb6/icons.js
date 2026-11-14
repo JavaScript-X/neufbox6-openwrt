@@ -22,6 +22,7 @@ const ICONS = {
 
 /* page icons drawn for this project (not brand logos) */
 const PAGE_ICONS = {
+	'info': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96"><defs><linearGradient id="gi" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d2c9a"/><stop offset="1" stop-color="#4a1c6b"/></linearGradient></defs><rect width="96" height="96" rx="22" fill="url(#gi)"/><circle cx="48" cy="48" r="28" fill="none" stroke="#fff" stroke-width="6"/><circle cx="48" cy="34" r="4.5" fill="#fff"/><rect x="44" y="43" width="8" height="22" rx="4" fill="#fff"/></svg>',
 	'vpn': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96"> <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1fb6ec"/><stop offset="1" stop-color="#0077b6"/></linearGradient></defs> <rect width="96" height="96" rx="22" fill="#0b2341"/> <path d="M48 14 L74 24 V46 C74 63 63 75 48 82 C33 75 22 63 22 46 V24 Z" fill="url(#g1)"/> <circle cx="48" cy="42" r="9" fill="none" stroke="#fff" stroke-width="5"/> <path d="M48 51 V67 M48 59 H55 M48 65 H54" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/> </svg>',
 	'leds': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96"> <rect width="96" height="96" rx="22" fill="#0b2341"/> <circle cx="48" cy="48" r="27" fill="none" stroke="#2c3e55" stroke-width="10"/> <path d="M27.3 30.6 A27 27 0 0 1 41.0 21.9" stroke="#eb2323" stroke-width="10" stroke-linecap="round" fill="none"/> <path d="M55.0 21.9 A27 27 0 0 1 68.7 30.6" stroke="#28cd46" stroke-width="10" stroke-linecap="round" fill="none"/> <path d="M38.8 73.4 A27 27 0 0 0 57.2 73.4" stroke="#ff8c00" stroke-width="10" stroke-linecap="round" fill="none"/> <circle cx="48" cy="48" r="13" fill="#3a4c63"/> <circle cx="48" cy="48" r="5" fill="#cfe8f7"/> </svg>'
 };
@@ -49,7 +50,7 @@ return baseclass.extend({
 		}, [ E('img', { 'src': 'data:image/svg+xml;utf8,' + encodeURIComponent(svg), 'alt': i.title, 'width': size, 'height': size }) ]);
 	},
 
-	/* square icon for a Neufbox page: 'vpn' or 'leds' */
+	/* square icon for a Neufbox page: 'info', 'vpn' or 'leds' */
 	pageIcon(name, size) {
 		const svg = (PAGE_ICONS[name] || '').replace('width="96" height="96"', 'width="%d" height="%d"'.format(size, size));
 		return E('img', {

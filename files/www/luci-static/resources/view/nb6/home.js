@@ -195,7 +195,7 @@ return view.extend({
 
 		return E([], [
 			E('style', {}, STYLE),
-			E('div', { 'class': 'nb6-home-title' }, E('h2', {}, [icons.pageIcon('leds', 34), _('Information')])),
+			E('div', { 'class': 'nb6-home-title' }, E('h2', {}, [icons.pageIcon('info', 34), _('Information')])),
 			this.content(h)
 		]);
 	},

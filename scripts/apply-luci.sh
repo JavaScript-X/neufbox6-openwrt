@@ -18,7 +18,7 @@ echo "apply-luci: logo added to the bootstrap header"
 PORT=$(cd "$(dirname "$0")/.." && pwd)
 THEME="$SRC/feeds/luci/themes/luci-theme-bootstrap"
 mkdir -p "$THEME/htdocs/luci-static/neufbox" "$THEME/ucode/template/themes/neufbox"
-cp "$PORT"/theme/neufbox/*.css "$THEME/htdocs/luci-static/neufbox/"
+cp "$PORT"/theme/neufbox/*.css "$PORT"/theme/neufbox/*.png "$THEME/htdocs/luci-static/neufbox/"
 cp "$THEME/htdocs/luci-static/bootstrap/logo.svg" "$THEME/htdocs/luci-static/bootstrap/logo_48.png" \
    "$THEME/htdocs/luci-static/neufbox/"
 for t in header footer sysauth; do

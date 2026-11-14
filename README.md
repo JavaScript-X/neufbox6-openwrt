@@ -179,7 +179,7 @@ Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-but
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
 Brand icons in the LuCI pages (`files/www/luci-static/resources/nb6/icons.js`), `assets/banner-openwrt.png` and `assets/vpn.png`: [Simple Icons](https://simpleicons.org), CC0 1.0;
 the names and logos are trademarks of their owners and only identify their services.
-The OpenWrt logo in `assets/banner-openwrt.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+The OpenWrt logo in `assets/banner-openwrt.png` and `theme/neufbox/openwrt-logo.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 (shown in its white variant for the dark background); OpenWrt is a registered trademark of Software Freedom Conservancy.
 
 ## Licence

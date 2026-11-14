@@ -166,11 +166,10 @@ tools/             serial console, CFE, TFTP and GPIO helpers for flashing and p
 Third-party patches keep their original authorship and trailers. SFR firmware images and calibration files are **not**
 distributed here.
 
-Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png`, `assets/hardware.png`, `assets/vpn.png` and the LuCI screenshots: © SFR,
+Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png`, `assets/hardware.png` and `assets/vpn.png`: © SFR,
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
 Brand icons in the LuCI pages (`files/www/luci-static/resources/nb6/icons.js`), `assets/banner-openwrt.png` and `assets/vpn.png`: [Simple Icons](https://simpleicons.org), CC0 1.0;
-the names and logos are trademarks of their owners and only identify their services. The photo in
-`files/www/luci-static/resources/nb6/box-top.jpg` is an SFR product photo (© SFR).
+the names and logos are trademarks of their owners and only identify their services.
 The OpenWrt logo in `assets/banner-openwrt.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 (shown in its white variant for the dark background); OpenWrt is a registered trademark of Software Freedom Conservancy.
 

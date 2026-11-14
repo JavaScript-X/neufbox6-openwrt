@@ -2,6 +2,8 @@
 
 Two WireGuard tunnels, switched with the SFR button and shown on LED b.
 
+![VPN on the SFR button](../assets/vpn.png)
+
 | | Tailnet (`vpn`) | Commercial VPN (`vpn_commercial`) |
 |---|---|---|
 | SFR button | short press | long press (3 s or more) |
@@ -27,6 +29,8 @@ tailnet tunnel goes to a machine that already runs Tailscale, which routes betwe
   in the key, addresses, DNS and server. The file goes from the browser to the box only.
 
 **Neufbox > LEDs and eco mode** sets the ring brightness, night dimming and eco mode.
+
+![LuCI: Neufbox > VPN](../assets/luci-vpn.png)
 
 Backend: `/usr/libexec/rpcd/luci.nb6` (rpcd). It never returns private keys.
 

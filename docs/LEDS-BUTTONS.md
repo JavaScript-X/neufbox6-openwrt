@@ -44,6 +44,8 @@ standard names `temp1_input` / `in0_input` (with `temp1_label` "board" and `in0_
 See [VPN.md](VPN.md): `nb6-vpn` sets up the tailnet and commercial tunnels used by the SFR button.
 
 ## Eco mode
+![LuCI: Neufbox > LEDs and eco mode](../assets/luci-leds.png)
+
 The ECO button runs `nb6-eco toggle`. Settings in LuCI > Neufbox > LEDs and eco mode, or in `/etc/config/nb6`, section `eco`:
 
 | Option | Default | Effect in eco mode |

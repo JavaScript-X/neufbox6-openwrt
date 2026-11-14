@@ -52,15 +52,31 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 <p align="center"><img src="assets/leds-buttons.png" alt="LEDs and buttons" width="100%"></p>
 
-> Tested on real hardware: LED colours and order, ECO button, Wi-Fi switch, sensors (51 °C, 12.2 V).
+> Tested on real hardware: LED colours and order, SFR and ECO buttons, eco mode, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
 - **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
 - **ECO** button → **eco mode**: ring LEDs dimmed, traffic LEDs off, statistics paused (optionally Wi-Fi off); kept across reboots.
-- **LuCI > Neufbox**: VPN page (status, tailnet, import of a provider's WireGuard file) and LEDs / eco mode page.
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
+
+## VPN: Tailscale and commercial VPN
+
+<p align="center"><img src="assets/vpn.png" alt="VPN on the SFR button: tailnet through a WireGuard server, commercial VPN through a provider" width="100%"></p>
+
+Tailscale itself does not fit in 64 MB, so the box reaches your tailnet through a small WireGuard tunnel to a
+machine that already runs Tailscale (a NAS, for example). A second tunnel sends all traffic through a commercial
+provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
+
+## Web interface
+
+The **Neufbox** menu in LuCI shows both tunnels, imports a provider's WireGuard file, and sets the LEDs and eco mode.
+
+<p align="center">
+  <img src="assets/luci-vpn.png" alt="LuCI: Neufbox > VPN" width="49%">
+  <img src="assets/luci-leds.png" alt="LuCI: Neufbox > LEDs and eco mode" width="49%">
+</p>
 
 ## Integrated Wi-Fi
 
@@ -150,9 +166,9 @@ tools/             serial console, CFE, TFTP and GPIO helpers for flashing and p
 Third-party patches keep their original authorship and trailers. SFR firmware images and calibration files are **not**
 distributed here.
 
-Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png` and `assets/hardware.png`: © SFR,
+Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png`, `assets/hardware.png`, `assets/vpn.png` and the LuCI screenshots: © SFR,
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
-Brand icons in the LuCI pages (`files/www/luci-static/resources/nb6/icons.js`): [Simple Icons](https://simpleicons.org), CC0 1.0;
+Brand icons in the LuCI pages (`files/www/luci-static/resources/nb6/icons.js`), `assets/banner-openwrt.png` and `assets/vpn.png`: [Simple Icons](https://simpleicons.org), CC0 1.0;
 the names and logos are trademarks of their owners and only identify their services. The photo in
 `files/www/luci-static/resources/nb6/box-top.jpg` is an SFR product photo (© SFR).
 The OpenWrt logo in `assets/banner-openwrt.png` is by the OpenWrt project, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)

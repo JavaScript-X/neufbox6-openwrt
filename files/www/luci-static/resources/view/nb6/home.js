@@ -2,6 +2,7 @@
 'require view';
 'require rpc';
 'require poll';
+'require ui';
 'require nb6.icons as icons';
 
 /*
@@ -11,6 +12,32 @@
  */
 
 const callHome = rpc.declare({ object: 'luci.nb6', method: 'home', expect: { '': {} } });
+/*
+ * The update calls go straight to ubus over HTTP: through rpc.declare the update_check reply never
+ * reached the page on this box (it works with a direct request, same session and permissions).
+ */
+function ubusCall(method, args) {
+	return fetch(L.env.ubuspath, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: 'call', params: [L.env.sessionid, 'luci.nb6', method, args || {}] })
+	}).then(r => r.json()).then(j => {
+		if (!j.result || j.result[0] !== 0) throw new Error('ubus error ' + JSON.stringify(j.error || j.result));
+		return j.result[1] || {};
+	});
+}
+
+const callUpdateCheck = force => ubusCall('update_check', { force: !!force });
+const callUpdateInstall = () => ubusCall('update_install');
+const callUpdateStatus = () => ubusCall('update_status');
+
+const UPDATE_STEPS = {
+	'starting': _('Starting...'),
+	'freeing memory': _('Freeing memory (Wi-Fi turns off for a moment)...'),
+	'downloading': _('Downloading the new version (about 11 MB)...'),
+	'checking': _('Checking the download...'),
+	'flashing': _('Installing. The box restarts by itself; do not unplug it.')
+};
 
 const LED = { green: '#28cd46', orange: '#ff8c00', red: '#eb2323', off: '#9a9aa6' };
 
@@ -127,6 +154,94 @@ return view.extend({
 		return L.resolveDefault(callHome(), {});
 	},
 
+	/* the update check runs after the page is shown, never blocking it */
+	loadUpdate(force) {
+		const timeout = new Promise(resolve => window.setTimeout(() => resolve(null), 30000));
+		return Promise.race([L.resolveDefault(callUpdateCheck(!!force), null), timeout]).then(u => {
+			this.update = u || { reachable: false };
+			const old = document.getElementById('nb6-software');
+			if (old) old.replaceWith(this.softwareCard());
+		});
+	},
+
+	softwareCard() {
+		const u = this.update || {};
+		let action;
+		if (u.available)
+			action = E('button', {
+				'class': 'btn cbi-button-action',
+				'click': ui.createHandlerFn(this, () => this.confirmUpdate())
+			}, _('Install version %s').format(u.latest));
+		else
+			action = E('button', {
+				'class': 'btn cbi-button',
+				'click': ui.createHandlerFn(this, () => this.loadUpdate(true))
+			}, _('Check for updates'));
+
+		return E('div', { 'class': 'nb6-card', 'id': 'nb6-software' }, [
+			E('h3', {}, _('Software')),
+			table([
+				[_('Installed version'), u.current || '-'],
+				[_('Latest version'), u.latest ? (u.page ? E('a', { 'href': u.page, 'target': '_blank', 'rel': 'noreferrer' }, u.latest) : u.latest)
+					: (this.update == null ? _('checking...') : (u.reachable === false ? _('GitHub not reachable') : '-'))],
+				[_('State'), u.available ? dot(LED.orange, _('Update available')) : (u.latest ? dot(LED.green, _('Up to date')) : '-')]
+			]),
+			E('div', { 'style': 'margin-top:.6em;text-align:right' }, action)
+		]);
+	},
+
+	confirmUpdate() {
+		const u = this.update || {};
+		ui.showModal(_('Install version %s').format(u.latest), [
+			E('p', {}, _('The box downloads the new version from GitHub, checks it, installs it and restarts. Your settings are kept.')),
+			E('p', {}, _('Internet and Wi-Fi are cut for about 10 minutes. Do not unplug the box.')),
+			E('div', { 'class': 'right' }, [
+				E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Cancel')), ' ',
+				E('button', {
+					'class': 'btn cbi-button-action',
+					'click': ui.createHandlerFn(this, () => callUpdateInstall().then(() => this.followUpdate()))
+				}, _('Install'))
+			])
+		]);
+	},
+
+	followUpdate() {
+		const msg = E('p', {}, _('Starting...'));
+		ui.showModal(_('Updating'), [E('div', { 'class': 'spinning' }, msg)]);
+		const tick = () => callUpdateStatus().then(r => {
+			const st = (r && r.status) || '';
+			if (st.indexOf('error') == 0) {
+				ui.showModal(_('Update failed'), [
+					E('p', {}, st),
+					E('p', {}, _('Nothing was written: the box keeps its current version.')),
+					E('div', { 'class': 'right' }, E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Close')))
+				]);
+				return;
+			}
+			msg.textContent = UPDATE_STEPS[st] || st;
+			if (st == 'flashing') return this.waitForReboot(msg);
+			window.setTimeout(tick, 3000);
+		}).catch(() => this.waitForReboot(msg));
+		tick();
+	},
+
+	waitForReboot(msg) {
+		msg.textContent = UPDATE_STEPS['flashing'];
+		const started = Date.now();
+		const ping = () => {
+			if (Date.now() - started > 20 * 60000) {
+				msg.textContent = _('The box takes longer than expected. Reload this page in a few minutes.');
+				return;
+			}
+			fetch(L.url('admin'), { cache: 'no-store' }).then(r => {
+				/* the old system answers until it stops: wait at least 2 minutes */
+				if (Date.now() - started > 120000 && r.status < 500) window.location.reload();
+				else window.setTimeout(ping, 10000);
+			}).catch(() => window.setTimeout(ping, 10000));
+		};
+		window.setTimeout(ping, 30000);
+	},
+
 	content(h) {
 		const w = h.wan || {}, b = h.box || {}, v = h.vpn || {}, d = h.devices || {};
 		const memPct = b.mem_total ? Math.round(100 * (b.mem_total - b.mem_available) / b.mem_total) : 0;
@@ -171,7 +286,8 @@ return view.extend({
 							[_('Tailnet'), tunnelText(v.tailnet)],
 							[_('Commercial VPN'), tunnelText(v.commercial)]
 						])
-					])
+					]),
+					this.softwareCard()
 				])
 			]),
 			E('div', { 'class': 'nb6-band' }, [
@@ -188,6 +304,8 @@ return view.extend({
 	},
 
 	render(h) {
+		this.update = null;
+		window.setTimeout(() => this.loadUpdate(false), 500);
 		poll.add(() => callHome().then(n => {
 			const old = document.getElementById('nb6-home');
 			if (old) old.replaceWith(this.content(n));

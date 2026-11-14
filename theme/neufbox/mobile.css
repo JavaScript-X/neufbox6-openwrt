@@ -1,0 +1,4 @@
+/* LuCI theme "Neufbox": phone layout of the bootstrap theme, same colours */
+@import url("../bootstrap/mobile.css");
+
+.cbi-section { padding: 14px 14px; border-radius: 12px; }

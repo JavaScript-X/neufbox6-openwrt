@@ -1,0 +1,234 @@
+/*
+ * LuCI theme "Neufbox" for the SFR Neufbox 6 port: a light layer over the bootstrap theme.
+ * White pages, red as the main colour, purple accents. Original design: no SFR logo or name.
+ * Licensed under the Apache License 2.0, like the bootstrap theme it builds on.
+ */
+@import url("../bootstrap/cascade.css");
+
+:root, :root[data-darkmode="true"], :root[data-darkmode="false"] {
+	--nb-red: #e2001a;
+	--nb-red-dark: #b90016;
+	--nb-purple: #5c2483;
+	--nb-purple-soft: #f3edf8;
+	--nb-page: #f2f2f5;
+	--nb-card: #ffffff;
+	--nb-line: #e4e4ea;
+	--nb-text: #2b2b33;
+	--nb-muted: #6d6d78;
+
+	/* light palette everywhere, even when the browser prefers dark */
+	--background-color-delta-l-sign: -1;
+	--background-color-l: 100%;
+	--text-color-delta-l-sign: 1;
+	--text-color-l: 0%;
+	--border-color-delta-l-sign: -1;
+	--primary-color-high: var(--nb-red);
+	--primary-color-medium: #c80018;
+	--primary-color-low: var(--nb-red-dark);
+	color-scheme: light;
+	--font-sans: "Segoe UI", Roboto, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+	background: var(--nb-page);
+	color: var(--nb-text);
+}
+
+a { color: var(--nb-purple); }
+
+/* ---- header ---- */
+header {
+	background: #fff;
+	border-bottom: 3px solid var(--nb-red);
+	box-shadow: 0 2px 12px rgba(30, 20, 50, .08);
+}
+header a, .nav a { color: #3c3c46; text-shadow: none; }
+header .brand {
+	color: var(--nb-purple);
+	font-weight: 700;
+	letter-spacing: .2px;
+}
+header .brand:hover, header ul .active > a, .nav a.menu:hover, .nav a:hover {
+	background: var(--nb-purple-soft);
+	color: var(--nb-purple);
+}
+.nav .active > a { background: var(--nb-purple-soft); color: var(--nb-purple); }
+.nav .dropdown-menu {
+	background: #fff;
+	border: 1px solid var(--nb-line);
+	border-top: 0;
+	border-radius: 0 0 12px 12px;
+	box-shadow: 0 10px 28px rgba(30, 20, 50, .14);
+	padding: 6px 0;
+}
+.nav .dropdown-menu a.menu { color: #3c3c46; }
+.nav .dropdown-menu li a { color: #3c3c46; text-shadow: none; padding: 6px 18px; }
+.nav .dropdown-menu li a:hover, .nav .dropdown-menu .active a {
+	background: var(--nb-red);
+	background-image: none;
+	color: #fff;
+}
+#indicators .label, header .label {
+	background: var(--nb-purple);
+	color: #fff;
+	border-radius: 10px;
+	text-shadow: none;
+}
+
+/* ---- titles ---- */
+#maincontent h2 {
+	color: var(--nb-purple);
+	font-weight: 700;
+}
+h3, legend {
+	color: var(--nb-text);
+	font-weight: 700;
+	border-left: 4px solid var(--nb-red);
+	padding-left: 10px;
+}
+.cbi-map-descr, .cbi-section-descr { color: var(--nb-muted); }
+
+/* ---- sections as white cards ---- */
+.cbi-section {
+	background: var(--nb-card);
+	border: 1px solid var(--nb-line);
+	border-radius: 14px;
+	padding: 18px 22px;
+	margin-bottom: 18px;
+	box-shadow: 0 1px 4px rgba(30, 20, 50, .05);
+}
+.cbi-section .cbi-section, .cbi-tblsection .cbi-section, .modal .cbi-section {
+	border: 0;
+	box-shadow: none;
+	padding: 0;
+	margin-bottom: 0;
+	background: transparent;
+}
+.cbi-page-actions {
+	background: var(--nb-card);
+	border: 1px solid var(--nb-line);
+	border-radius: 14px;
+	padding: 12px 18px;
+}
+
+/* ---- buttons ---- */
+.btn, .cbi-button {
+	border-radius: 20px;
+	padding-left: 14px;
+	padding-right: 14px;
+	font-weight: 600;
+}
+/* main actions: solid red */
+.btn.primary, .cbi-button-action, .cbi-button-apply, .cbi-button-positive.important,
+.cbi-page-actions .cbi-button-apply, .cbi-page-actions .cbi-button-save,
+.cbi-section-actions .cbi-button-edit, .cbi-button-action.important {
+	--on-color: #fff;
+	color: #fff;
+	background: var(--nb-red);
+	border-color: var(--nb-red);
+}
+.btn.primary:hover, .cbi-button-action:hover, .cbi-button-apply:hover, .cbi-button-positive.important:hover,
+.cbi-page-actions .cbi-button-apply:hover, .cbi-page-actions .cbi-button-save:hover {
+	background: var(--nb-red-dark);
+	border-color: var(--nb-red-dark);
+}
+/* "Save" next to "Save & Apply": purple outline */
+.cbi-page-actions .cbi-button-apply + .cbi-button-save,
+.cbi-page-actions .cbi-button-negative + .cbi-button-save {
+	--on-color: var(--nb-purple);
+	color: var(--nb-purple);
+	background: #fff;
+	border-color: var(--nb-purple);
+}
+.cbi-page-actions .cbi-button-apply + .cbi-button-save:hover { --on-color: #fff; color: #fff; background: var(--nb-purple); }
+/* secondary: positive / add in purple outline, negative / reset in grey outline */
+.cbi-button-positive:not(.important), .cbi-button-add, .cbi-button-fieldadd {
+	--on-color: var(--nb-purple);
+	border-color: var(--nb-purple);
+}
+.cbi-button-negative:not(.important), .cbi-button-reset, .cbi-button-remove, .cbi-section-remove .cbi-button {
+	--on-color: #8a1020;
+	border-color: #d9a3ab;
+}
+.btn:hover, .btn:focus, .cbi-button:hover, .cbi-button:focus,
+input:focus, button:hover, textarea:focus, select:focus, .cbi-dropdown:focus, .cbi-dropdown[open] {
+	--focus-color-rgb: 226, 0, 26;
+}
+
+/* ---- dialogs and login ---- */
+#modal_overlay { background: rgba(40, 18, 60, .55); }
+.modal {
+	border-radius: 16px;
+	border: 0;
+	box-shadow: 0 18px 50px rgba(30, 10, 50, .35);
+	padding: 1.4em 1.6em 1em;
+}
+.modal > h4 { color: var(--nb-purple); }
+#modal_overlay:has(> .modal.login) {
+	background: linear-gradient(135deg, var(--nb-purple) 0%, #8e1f6a 55%, var(--nb-red) 100%);
+}
+#modal_overlay > .modal.login {
+	max-width: 420px;
+	margin-top: 12vh;
+}
+#modal_overlay > .modal.login::before {
+	content: "";
+	display: block;
+	height: 64px;
+	margin-bottom: .6em;
+	background: url(logo.svg) center / 56px no-repeat;
+}
+#modal_overlay > .modal.login > h4 { text-align: center; font-size: 20px; }
+
+/* ---- inputs ---- */
+input, select, textarea, .cbi-dropdown:not(.btn):not(.cbi-button), .cbi-dynlist > .item {
+	border-radius: 8px;
+}
+
+/* ---- tabs ---- */
+.tabs, .cbi-tabmenu { --tab-active-text-color: var(--nb-red); }
+.tabs > li.active, .cbi-tabmenu > li.cbi-tab {
+	border-top: 3px solid var(--nb-red);
+	color: var(--nb-red);
+	font-weight: 600;
+}
+
+/* ---- tables ---- */
+.table .tr.table-titles .th, .table .tr.cbi-section-table-titles .th {
+	background: var(--nb-purple-soft);
+	color: var(--nb-purple);
+	font-weight: 700;
+}
+.table .tr:not(.table-titles):hover .td { background: #faf8fc; }
+
+/* ---- labels ---- */
+.label { border-radius: 10px; }
+
+/* ---- login page ---- */
+body[data-page="admin"] .cbi-map, #maincontent > form .cbi-map {
+	max-width: 460px;
+	margin: 40px auto 0;
+}
+
+/* ---- footer ---- */
+footer { color: var(--nb-muted); border-top-color: var(--nb-line); }
+footer a { color: var(--nb-purple); }
+
+/* login form: labels above full-width fields */
+#modal_overlay > .modal.login .cbi-section { padding: 0; border: 0; box-shadow: none; }
+#modal_overlay > .modal.login .cbi-value { display: block; margin-bottom: .8em; }
+#modal_overlay > .modal.login .cbi-value-title {
+	float: none;
+	display: block;
+	width: auto;
+	text-align: left;
+	padding: 0 0 4px;
+	color: var(--nb-muted);
+	font-weight: 600;
+}
+#modal_overlay > .modal.login .cbi-value-field { margin-left: 0; width: 100%; }
+#modal_overlay > .modal.login input { width: 100%; height: 40px; font-size: 15px; padding: 0 12px; }
+#modal_overlay > .modal.login hr { border-color: var(--nb-line); }
+
+/* help bubbles in purple: red is kept for actions and errors */
+.cbi-value-description:not(:empty)::before { background: var(--nb-purple); }

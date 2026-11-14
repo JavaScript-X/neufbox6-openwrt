@@ -81,11 +81,7 @@ return view.extend({
 
 		return m.render().then(node => E([], [
 			E('div', { 'style': 'display:flex;align-items:center;gap:1.2em;flex-wrap:wrap;margin-bottom:1em' }, [
-				E('img', {
-					'src': L.resource('nb6/box-top.jpg'), 'alt': _('Neufbox 6 top panel'), 'width': 240,
-					'title': _('SFR Neufbox 6 (product photo (c) SFR)'),
-					'style': 'border-radius:8px;max-width:100%;height:auto'
-				}),
+				icons.pageIcon('leds', 72),
 				E('div', { 'style': 'flex:1;min-width:240px' }, [
 					E('h2', { 'style': 'margin-top:0' }, _('LEDs and eco mode')),
 					E('div', { 'class': 'cbi-map-descr' },

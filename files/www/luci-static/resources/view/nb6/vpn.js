@@ -35,13 +35,9 @@ const TUNNELS = [
 
 const PROVIDERS = ['mullvad', 'protonvpn', 'nordvpn', 'surfshark', 'expressvpn', 'privateinternetaccess', 'cloudflare'];
 
-function pageHeader(title, descr) {
+function pageHeader(icon, title, descr) {
 	return E('div', { 'style': 'display:flex;align-items:center;gap:1.2em;flex-wrap:wrap;margin-bottom:1em' }, [
-		E('img', {
-			'src': L.resource('nb6/box-top.jpg'), 'alt': _('Neufbox 6 top panel'), 'width': 240,
-			'title': _('SFR Neufbox 6 (product photo (c) SFR)'),
-			'style': 'border-radius:8px;max-width:100%;height:auto'
-		}),
+		icons.pageIcon(icon, 72),
 		E('div', { 'style': 'flex:1;min-width:240px' }, [
 			E('h2', { 'style': 'margin-top:0' }, title),
 			E('div', { 'class': 'cbi-map-descr' }, descr)
@@ -336,7 +332,7 @@ return view.extend({
 		poll.add(() => this.refresh());
 
 		return m.render().then(node => E([], [
-			pageHeader(_('VPN'),
+			pageHeader('vpn', _('VPN'),
 				_('Two WireGuard tunnels, switched with the SFR button. LED b: green = tailnet, orange = commercial VPN, alternating = both, orange blinking = connecting.')),
 			E('div', { 'class': 'cbi-section' }, [
 				E('h3', {}, _('Status')),

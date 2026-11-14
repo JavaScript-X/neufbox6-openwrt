@@ -1,0 +1,10 @@
+#!/bin/sh
+# LuCI theme "Neufbox" (white, red, purple): registered and used by default.
+# The bootstrap themes stay available in System > System > Language and Style.
+uci -q get luci.themes >/dev/null || exit 0
+uci set luci.themes.Neufbox='/luci-static/neufbox'
+case "$(uci -q get luci.main.mediaurlbase)" in
+	''|/luci-static/bootstrap) uci set luci.main.mediaurlbase='/luci-static/neufbox' ;;
+esac
+uci commit luci
+exit 0

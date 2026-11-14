@@ -1,0 +1,94 @@
+#!/bin/sh
+# Firmware updates from the project's GitHub releases (used by the LuCI Home page).
+#
+#   nb6-update check [force]   JSON: current and latest version, whether an update is available
+#   nb6-update install         start the update in the background (download, check, flash)
+#   nb6-update status          JSON: progress of the running update
+#
+# The update keeps the settings. It frees memory first (the 64 MB box holds the ~11 MB image
+# in RAM), checks the image against the release's SHA256SUMS and runs "sysupgrade -T" before
+# writing anything.
+
+REPO=JavaScript-X/neufbox6-openwrt
+API=https://api.github.com/repos/$REPO/releases/latest
+IMG=openwrt-bmips-bcm6362-sfr_neufbox-6-sercomm-r0-squashfs-sysupgrade.bin
+CACHE=/tmp/nb6-update.json
+STATUS=/tmp/nb6-update.status
+FW=/tmp/nb6-fw.bin
+
+current() { sed -n 's/^neufbox6-openwrt \([0-9][0-9.]*\).*/\1/p' /etc/nb6-release 2>/dev/null; }
+
+newer() { # is $1 newer than $2 (dotted numbers)?
+	awk -v a="$1" -v b="$2" 'BEGIN {
+		n = split(a, x, "."); m = split(b, y, "."); if (m > n) n = m
+		for (i = 1; i <= n; i++) { if (x[i] + 0 > y[i] + 0) exit 0; if (x[i] + 0 < y[i] + 0) exit 1 }
+		exit 1 }'
+}
+
+asset_url() { jsonfilter -i $CACHE -e "@.assets[@.name='$1'].browser_download_url" 2>/dev/null; }
+
+fetch_release() {
+	uclient-fetch -q -T 20 -O $CACHE.tmp "$API" 2>/dev/null && jsonfilter -i $CACHE.tmp -e '@.tag_name' >/dev/null 2>&1 \
+		&& mv $CACHE.tmp $CACHE
+	rm -f $CACHE.tmp
+}
+
+check() {
+	if [ "$1" = force ] || [ ! -s $CACHE ] || [ $(( $(date +%s) - $(date -r $CACHE +%s) )) -gt 21600 ]; then
+		fetch_release
+	fi
+	cur=$(current)
+	latest=$(jsonfilter -i $CACHE -e '@.tag_name' 2>/dev/null | sed 's/^v//')
+	avail=false
+	[ -n "$latest" ] && [ -n "$cur" ] && [ -n "$(asset_url $IMG)" ] && newer "$latest" "$cur" && avail=true
+	printf '{"current":"%s","latest":"%s","available":%s,"published":"%s","page":"%s","reachable":%s}\n' \
+		"$cur" "$latest" $avail \
+		"$(jsonfilter -i $CACHE -e '@.published_at' 2>/dev/null)" \
+		"$(jsonfilter -i $CACHE -e '@.html_url' 2>/dev/null)" \
+		"$([ -s $CACHE ] && echo true || echo false)"
+}
+
+state() { echo "$1" > $STATUS; logger -t nb6-update "$1"; }
+
+fail() {
+	state "error: $1"
+	rm -f $FW
+	wifi up
+	for s in collectd nlbwmon ttyd adblock-fast; do [ -x /etc/init.d/$s ] && /etc/init.d/$s enabled && /etc/init.d/$s start; done
+	exit 1
+}
+
+run() {
+	url=$(asset_url $IMG); sums=$(asset_url SHA256SUMS)
+	[ -n "$url" ] && [ -n "$sums" ] || fail "no image in the latest release"
+
+	state "freeing memory"
+	for s in collectd nlbwmon ttyd adblock-fast; do [ -x /etc/init.d/$s ] && /etc/init.d/$s stop; done
+	wifi down
+	sync; echo 3 > /proc/sys/vm/drop_caches
+
+	state "downloading"
+	uclient-fetch -q -T 60 -O $FW "$url" || fail "download failed"
+	want=$(uclient-fetch -q -T 30 -O - "$sums" | awk -v f=$IMG '$2 == f || $2 == "*"f {print $1}')
+	[ -n "$want" ] || fail "no checksum for the image"
+
+	state "checking"
+	[ "$(sha256sum $FW | cut -d' ' -f1)" = "$want" ] || fail "checksum mismatch"
+	sysupgrade -T $FW >/dev/null 2>&1 || fail "image rejected by sysupgrade -T"
+
+	state "flashing"
+	sleep 2
+	sysupgrade $FW
+}
+
+case "$1" in
+	check)   check "$2" ;;
+	status)  printf '{"status":"%s"}\n' "$(cat $STATUS 2>/dev/null)" ;;
+	install)
+		case "$(cat $STATUS 2>/dev/null)" in downloading|checking|flashing|"freeing memory") echo '{"started":false}'; exit 0 ;; esac
+		state "starting"
+		( "$0" run > /tmp/nb6-update.log 2>&1 & )
+		echo '{"started":true}' ;;
+	run)     run ;;
+	*)       sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

@@ -36,40 +36,36 @@ body {
 
 a { color: var(--nb-purple); }
 
-/* ---- header ---- */
+/* ---- header: purple bar, thin red line on top ---- */
 header {
-	background: #fff;
-	border-bottom: 3px solid var(--nb-red);
-	box-shadow: 0 2px 12px rgba(30, 20, 50, .08);
+	background: var(--nb-purple);
+	border-top: 4px solid var(--nb-red);
+	border-bottom: 0;
+	box-shadow: 0 2px 12px rgba(30, 20, 50, .18);
 }
-header a, .nav a { color: #3c3c46; text-shadow: none; }
-header .brand {
-	color: var(--nb-purple);
-	font-weight: 700;
-	letter-spacing: .2px;
+header a, .nav a { color: #f1eaf7; text-shadow: none; }
+header .brand { color: #fff; font-weight: 700; letter-spacing: .2px; }
+header .brand:hover, header ul .active > a, .nav a.menu:hover, .nav a:hover, .nav .active > a {
+	background: rgba(255, 255, 255, .14);
+	color: #fff;
 }
-header .brand:hover, header ul .active > a, .nav a.menu:hover, .nav a:hover {
-	background: var(--nb-purple-soft);
-	color: var(--nb-purple);
-}
-.nav .active > a { background: var(--nb-purple-soft); color: var(--nb-purple); }
 .nav .dropdown-menu {
 	background: #fff;
 	border: 1px solid var(--nb-line);
-	border-top: 0;
+	border-top: 3px solid var(--nb-purple);
 	border-radius: 0 0 12px 12px;
-	box-shadow: 0 10px 28px rgba(30, 20, 50, .14);
+	box-shadow: 0 10px 28px rgba(30, 20, 50, .18);
 	padding: 6px 0;
 }
 .nav .dropdown-menu a.menu { color: #3c3c46; }
 .nav .dropdown-menu li a { color: #3c3c46; text-shadow: none; padding: 6px 18px; }
 .nav .dropdown-menu li a:hover, .nav .dropdown-menu .active a {
-	background: var(--nb-red);
+	background: var(--nb-purple);
 	background-image: none;
 	color: #fff;
 }
 #indicators .label, header .label {
-	background: var(--nb-purple);
+	background: rgba(255, 255, 255, .18);
 	color: #fff;
 	border-radius: 10px;
 	text-shadow: none;

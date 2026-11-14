@@ -28,7 +28,6 @@ const STYLE = `
 .nb6-qr { text-align:center; border:1px solid #e4e4ea; border-radius:14px; padding:14px; background:#fff; }
 .nb6-qr small { color:#6d6d78; }
 .nb6-guest .cbi-value { margin:.8em 0; }
-.nb6-guest label.nb6-l { display:block; font-weight:600; margin-bottom:.3em; }
 @media (max-width: 800px) { .nb6-guest { grid-template-columns: 1fr; } }
 `;
 
@@ -66,13 +65,13 @@ return view.extend({
 					]),
 					secured ? E([], [
 						E('div', { 'class': 'cbi-value' }, E('label', {}, [on, ' ', _('Guest network on')])),
-						E('div', { 'class': 'cbi-value' }, [
-							E('label', { 'class': 'nb6-l' }, _('Guest password')),
+						E('div', { 'style': 'margin:.8em 0' }, [
+							E('div', { 'style': 'font-weight:600;margin-bottom:.3em' }, _('Guest password')),
 							key, ' ',
 							E('button', { 'class': 'btn cbi-button', 'click': () => { key.value = randomKey(); } }, _('New password')),
 							E('div', { 'class': 'cbi-value-description' }, _('8 to 63 characters, different from the main Wi-Fi password. Change it to cut off the current guests.'))
 						]),
-						E('div', { 'class': 'cbi-value' }, [
+						E('div', { 'style': 'margin:.8em 0' }, [
 							E('label', {}, [port4, ' ', _('Ethernet port 4 also goes to the guest network')]),
 							E('div', { 'class': 'cbi-value-description' }, _('For a wired guest, a TV or a games console. A computer plugged into port 4 then no longer reaches the home network.'))
 						]),

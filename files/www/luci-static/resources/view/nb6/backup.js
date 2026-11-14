@@ -71,7 +71,7 @@ return view.extend({
 				E('div', { 'class': 'cbi-section' }, [
 					E('h3', {}, _('Full flash copy')),
 					E('p', {}, _('The whole 16 MB chip, byte for byte: bootloader, firmware and nvram, which holds the MAC address and radio calibration of this box. With it, the box can be brought back to this exact state through the serial console.')),
-					E('p', {}, _('Takes about a minute. Keep the file somewhere safe, it is the only copy of this box\'s nvram.')),
+					E('p', {}, _('Takes under a minute on the local network. Keep the file somewhere safe, it is the only copy of this box\'s nvram.')),
 					E('button', {
 						'class': 'btn cbi-button-action', 'disabled': total == 16777216 ? null : '',
 						'click': () => download('flash')

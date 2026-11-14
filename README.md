@@ -36,6 +36,8 @@ goes further than the official port ever did:
 | Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
 | Compressed swap (zram), watchdog | ❌ | ✅ |
 | Wi-Fi schedule, LED night mode | ❌ | ✅ |
+| Guest network, Wi-Fi QR code | ❌ | ✅ |
+| One-click updates, full flash backup from the web | ❌ | ✅ |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
 
 ## Hardware
@@ -72,15 +74,20 @@ provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
 ## Web interface
 
 LuCI uses its own **Neufbox** theme (white pages, purple menus, red actions, always light). After login, the
-**Home** page shows the connection, the box, the VPN and the connected devices, with a photo of the box and the
-current state of its ring LEDs. The **Neufbox** menu shows both tunnels, imports a provider's WireGuard file,
-and sets the LEDs and eco mode. The standard bootstrap theme and overview stay available.
+**Home** page shows the connection, the Wi-Fi (with a QR code to join), the box, the VPN and the connected devices,
+with a photo of the box and the current state of its ring LEDs. The **Neufbox** menu lists the devices (names, fixed addresses, internet
+blocking), runs the guest network and ad blocking, shows both VPN tunnels, sets the LEDs and eco mode, and makes backups. The standard bootstrap theme and overview stay available.
 
 <p align="center"><img src="assets/luci-home.png" alt="LuCI home page with the Neufbox theme" width="100%"></p>
 
 <p align="center">
   <img src="assets/luci-devices.png" alt="LuCI: Neufbox > Devices" width="49%">
   <img src="assets/luci-adblock.png" alt="LuCI: Neufbox > Ad blocking" width="49%">
+</p>
+
+<p align="center">
+  <img src="assets/luci-guest.png" alt="LuCI: Neufbox > Guest network, with a QR code for guests" width="49%">
+  <img src="assets/luci-backup.png" alt="LuCI: Neufbox > Backup, settings and full flash copy" width="49%">
 </p>
 
 <p align="center"><img src="assets/luci-login.png" alt="LuCI login page with the Neufbox theme" width="46%"></p>
@@ -102,7 +109,8 @@ recovered from the SFR firmware. 2.4 GHz access point, WPA2, 802.11g rates, 0 % 
 More out of 64 MB of RAM: **zram** compressed swap, hardware **watchdog**, **graphs** of temperature, 12 V,
 CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED **brightness and night mode**,
 **Wake-on-LAN** and a **web terminal** in LuCI, a **devices** page with per-device internet blocking and schedules,
-**ad blocking** for the whole network, and **one-click updates** from GitHub. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
+**ad blocking** for the whole network, **one-click updates** from GitHub, a **guest network** with its own
+Wi-Fi password, a **Wi-Fi QR code**, **names and fixed addresses** for devices, and a **full flash backup** in one click. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
 
 ## Getting started
 
@@ -144,7 +152,7 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 | [docs/WIFI.md](docs/WIFI.md) | integrated Wi-Fi: driver, firmware, calibration |
 | [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors |
 | [docs/VPN.md](docs/VPN.md) | tailnet and commercial VPN on the SFR button |
-| [docs/EXTRAS.md](docs/EXTRAS.md) | zram, watchdog, statistics, Wi-Fi schedule, night mode, Wake-on-LAN, terminal |
+| [docs/EXTRAS.md](docs/EXTRAS.md) | devices, guest network, Wi-Fi QR code, backup, ad blocking, updates, zram, statistics, night mode |
 | [docs/PORTING.md](docs/PORTING.md) | how the port was done, bring-up problems, test results |
 | [CHANGELOG.md](CHANGELOG.md) | changes per version |
 

@@ -14,7 +14,7 @@
 ## 2.1 (2026-11-14)
 ### Added
 - Two WireGuard tunnels on the SFR button: tailnet (short press) and commercial VPN (long press),
-  set up with `nb6-vpn`; LED b shows which ones are up. See `docs/VPN.md`.
+  set up with `nb6-vpn`; the VPN LED shows which ones are up. See `docs/VPN.md`.
 - LuCI menu **Neufbox**: VPN page (tunnel status and on / off, tailnet settings and key, import of a
   provider's WireGuard file) and LEDs / eco mode page; backend `luci.nb6` (rpcd). The pages show a
   photo of the box and the logos of Tailscale, WireGuard, OpenWrt and the commercial VPN provider

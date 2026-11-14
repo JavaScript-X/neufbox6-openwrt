@@ -47,7 +47,7 @@ Wi-Fi slide switch still turns it on by hand.
 
 ## LED brightness and night mode
 ```sh
-uci set nb6.leds.brightness='31'        # ring LEDs a, b, c: 1..31
+uci set nb6.leds.brightness='31'        # Internet, VPN and System LEDs: 1..31
 uci set nb6.leds.night='1'              # dim between night_start and night_end
 uci set nb6.leds.night_start='23:00'
 uci set nb6.leds.night_end='07:00'

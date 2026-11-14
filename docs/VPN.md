@@ -1,6 +1,6 @@
 # VPN
 
-Two WireGuard tunnels, switched with the SFR button and shown on LED b.
+Two WireGuard tunnels, switched with the SFR button and shown on the VPN LED.
 
 ![VPN on the SFR button](../assets/vpn.png)
 
@@ -8,9 +8,9 @@ Two WireGuard tunnels, switched with the SFR button and shown on LED b.
 |---|---|---|
 | SFR button | short press | long press (3 s or more) |
 | What goes through it | only the remote networks (by default `10.77.0.0/24` and Tailscale's `100.64.0.0/10`) | all internet traffic of the LAN |
-| LED b | green | orange |
+| VPN LED | green | orange |
 
-Both up: LED b alternates green and orange. Orange blinking: a tunnel is enabled but has no recent
+Both up: the VPN LED alternates green and orange. Orange blinking: a tunnel is enabled but has no recent
 handshake. Off: no tunnel. 3 red flashes: the tunnel for that press is not configured.
 
 Tailscale itself does not fit on this box (it needs 30-40 MB of RAM and ~24 MB of storage). The
@@ -89,8 +89,8 @@ send that subnet to the box, even when their local network uses the same range.
 ## Test results (2026-11-13)
 - Box → tailnet devices through the tunnel: OK.
 - Tailnet → box: LuCI opened from a phone on mobile data through Tailscale, the server and the tunnel.
-- Short press (on the ECO button at the time, now the SFR button): tunnel down (LED b off) and back up (orange blinking, then green).
-- Long press without a provider configured: 3 red flashes on LED b.
+- Short press (on the ECO button at the time, now the SFR button): tunnel down (VPN LED off) and back up (orange blinking, then green).
+- Long press without a provider configured: 3 red flashes on the VPN LED.
 - Commercial VPN: not tested yet (needs a provider configuration).
 
 ## Away from home

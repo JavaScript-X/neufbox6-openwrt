@@ -30,7 +30,7 @@ goes further than the official port ever did:
 | OpenWrt / Linux | 23.05 / 5.15 | **25.12 / 6.12** |
 | Security updates | ❌ end of life | ✅ follows the 25.12 branch |
 | Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
-| Front LEDs (a/b/c, wan, voip, wlan) | ❌ | ✅ with status meanings |
+| Front LEDs (Internet, VPN, System, traffic) | ❌ | ✅ with status meanings |
 | SFR button | ❌ | ✅ tailnet / commercial VPN on/off |
 | ECO button | ❌ | ✅ eco mode |
 | Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
@@ -55,7 +55,7 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 > Tested on real hardware: LED colours and order, SFR and ECO buttons, eco mode, Wi-Fi switch, sensors (51 °C, 12.2 V).
 > Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
 
-- **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. LED **b** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
+- **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. The **VPN LED** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
 - **ECO** button → **eco mode**: ring LEDs dimmed, traffic LEDs off, statistics paused (optionally Wi-Fi off); kept across reboots.
 - **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
 

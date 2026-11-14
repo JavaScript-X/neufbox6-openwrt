@@ -71,7 +71,11 @@ provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
 
 ## Web interface
 
-The **Neufbox** menu in LuCI shows both tunnels, imports a provider's WireGuard file, and sets the LEDs and eco mode.
+LuCI uses its own **Neufbox** theme (white, red and purple, always light), and the **Neufbox** menu shows both
+tunnels, imports a provider's WireGuard file, and sets the LEDs and eco mode. The standard bootstrap theme stays
+available in System > System > Language and Style.
+
+<p align="center"><img src="assets/luci-login.png" alt="LuCI login page with the Neufbox theme" width="46%"></p>
 
 <p align="center">
   <img src="assets/luci-vpn.png" alt="LuCI: Neufbox > VPN" width="49%">
@@ -138,11 +142,12 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 ## Repository
 
 ```
-assets/            photos and diagrams used in this README
+assets/            photos, diagrams and screenshots used in this README
 config/nb6.config  OpenWrt target and package selection
 docker/            Debian 12 build environment
 docs/              hardware, build, flashing, Wi-Fi, LEDs and buttons, extras, porting notes
 files/             added to the image: LED daemon and its settings, VPN and eco helpers, LuCI pages, button handlers, first-boot defaults
+theme/neufbox/     LuCI theme: a style layer over bootstrap (scripts/apply-luci.sh installs it)
 patches/board/     device tree, image recipe, RTL8367R RGMII fix, nb6-hwmon LED driver
 patches/wifi/      BCM6362 WLAN: bcma host, b43 N-PHY r8 / radio 2057 r8, firmware, calibration
 scripts/           build.sh, apply-board.sh, apply-wifi.sh

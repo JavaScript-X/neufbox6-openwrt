@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+### Added
+- LuCI theme **Neufbox**: white, red and purple, always light, with a new login page; used by default
+  (the bootstrap themes stay available). Built from bootstrap's templates by `scripts/apply-luci.sh`.
+
+### Changed
+- The Neufbox pages show drawn icons instead of a photo of the box.
+
 ## 2.1 (2026-11-14)
 ### Added
 - Two WireGuard tunnels on the SFR button: tailnet (short press) and commercial VPN (long press),

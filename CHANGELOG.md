@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2 (2026-11-14)
 ### Added
 - **Home** page (Status > Home, opened after login): connection, box, VPN, connected devices, and a
   photo of the box with the current state of its ring LEDs. Data from `luci.nb6 home`;
@@ -10,6 +10,8 @@
 
 ### Changed
 - The Neufbox pages show drawn icons instead of a photo of the box.
+- The ring LEDs are named after their function everywhere: Internet, VPN and System.
+- Login page: full OpenWrt logo; Home page title: information icon.
 
 ## 2.1 (2026-11-14)
 ### Added

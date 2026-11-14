@@ -1,5 +1,5 @@
 #!/bin/sh
-# rpcd backend for the LuCI "Neufbox" pages (VPN, LEDs and eco mode).
+# rpcd backend for the LuCI "Neufbox" pages (Home, Devices, Wi-Fi and guests, VPN, LEDs, backup).
 # Private keys are never returned: only public keys and tunnel status.
 
 . /usr/share/libubox/jshn.sh
@@ -103,18 +103,16 @@ devices_json() {
 		printf '{"mac":"%s","ip":"%s","name":"%s","expires":%s}' "$mac" "$ip" "$(echo "$name" | strip)" "${exp:-0}"
 	done < /tmp/dhcp.leases 2>/dev/null
 	printf '],"neigh":['
-	first=1
-	ip -4 neigh show dev br-lan 2>/dev/null | while read -r ip _ mac st; do
-		case "$mac" in *:*) ;; *) continue ;; esac
-		[ $first = 1 ] || printf ','; first=0
-		printf '{"ip":"%s","mac":"%s","state":"%s"}' "$ip" "$mac" "$st"
-	done
+	# home and guest networks; a line per neighbour: ip mac state network
+	for d in br-lan br-guest; do ip -4 neigh show dev $d 2>/dev/null | sed "s/\$/ $d/"; done | awk '
+		$2 == "lladdr" { printf "%s{\"ip\":\"%s\",\"mac\":\"%s\",\"state\":\"%s\",\"guest\":%s}", (n++ ? "," : ""), $1, $3, $4, ($NF == "br-guest" ? "true" : "false") }'
 	printf '],"wifi":['
-	iw dev phy0-ap0 station dump 2>/dev/null | awk '
+	{ iw dev phy0-ap0 station dump; echo "GUEST"; iw dev phy0-ap0-guest station dump; } 2>/dev/null | awk '
+		/^GUEST/ { if (mac) out(); mac = ""; g = 1 }
 		/^Station/ { if (mac) out(); mac = $2; sig = ""; ct = 0 }
 		/signal:/ && !/avg/ { sig = $2 }
 		/connected time:/ { ct = $3 }
-		function out() { printf "%s{\"mac\":\"%s\",\"signal\":%s,\"connected\":%s}", (n++ ? "," : ""), mac, (sig == "" ? "null" : sig), ct }
+		function out() { printf "%s{\"mac\":\"%s\",\"signal\":%s,\"connected\":%s,\"guest\":%s}", (n++ ? "," : ""), mac, (sig == "" ? "null" : sig), ct, (g ? "true" : "false") }
 		END { if (mac) out() }'
 	printf '],"traffic":'
 	nlbw -c json -g mac 2>/dev/null || printf 'null'
@@ -125,6 +123,14 @@ devices_json() {
 		printf '{"mac":"%s","start":"%s","stop":"%s","days":"%s"}' \
 			"$(uci -q get firewall.$sec.src_mac)" "$(uci -q get firewall.$sec.start_time)" \
 			"$(uci -q get firewall.$sec.stop_time)" "$(uci -q get firewall.$sec.weekdays)"
+	done
+	printf '],"hosts":['
+	first=1
+	for sec in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^.=]*\)=host$/\1/p'); do
+		[ -n "$(uci -q get dhcp.$sec.mac)" ] || continue
+		[ $first = 1 ] || printf ','; first=0
+		printf '{"mac":"%s","name":"%s","ip":"%s"}' "$(uci -q get dhcp.$sec.mac | tr 'A-F' 'a-f')" \
+			"$(uci -q get dhcp.$sec.name | strip)" "$(uci -q get dhcp.$sec.ip)"
 	done
 	printf ']}\n'
 }
@@ -171,10 +177,98 @@ adblock_bg() { # run an adblock-fast action in the background (it downloads and 
 	( touch /tmp/nb6-adblock.busy; /etc/init.d/adblock-fast "$@" >/dev/null 2>&1; rm -f /tmp/nb6-adblock.busy ) &
 }
 
+wifi_json() {
+	local enc en
+	enc=$(uci -q get wireless.default_radio0.encryption)
+	{ [ "$(uci -q get wireless.radio0.disabled)" = 1 ] || [ "$(uci -q get wireless.default_radio0.disabled)" = 1 ]; } && en=0 || en=1
+	json_init
+	json_add_boolean enabled $en
+	json_add_string ssid "$(uci -q get wireless.default_radio0.ssid)"
+	json_add_string key "$(uci -q get wireless.default_radio0.key)"
+	json_add_string encryption "${enc:-none}"
+	json_add_string channel "$(uci -q get wireless.radio0.channel)"
+	json_add_int clients "$(iw dev phy0-ap0 station dump 2>/dev/null | grep -c '^Station')"
+	json_dump
+}
+
+wifi_set() { # ssid key enabled
+	local enc=$(uci -q get wireless.default_radio0.encryption)
+	if [ "$3" = 0 ]; then
+		uci set wireless.default_radio0.disabled=1
+	else
+		{ [ ${#1} -ge 1 ] && [ ${#1} -le 32 ] && ! printf '%s' "$1" | grep -q '[[:cntrl:]]'; } \
+			|| { echo '{"error":"the Wi-Fi name needs 1 to 32 characters"}'; return; }
+		if [ "${enc:-none}" != none ]; then
+			{ [ ${#2} -ge 8 ] && [ ${#2} -le 63 ] && ! printf '%s' "$2" | grep -q '[^ -~]'; } \
+				|| { echo '{"error":"the Wi-Fi password needs 8 to 63 characters (letters, digits, symbols)"}'; return; }
+			{ [ "$(uci -q get nb6.guest.enabled)" = 1 ] && [ "$2" = "$(uci -q get nb6.guest.key)" ]; } \
+				&& { echo '{"error":"the Wi-Fi password must differ from the guest password"}'; return; }
+			uci set wireless.default_radio0.key="$2"
+		fi
+		uci set wireless.default_radio0.ssid="$1"
+		uci -q delete wireless.default_radio0.disabled
+		uci set wireless.radio0.disabled=0
+	fi
+	uci commit wireless
+	# in the background: the reply goes out before the Wi-Fi restarts
+	( sleep 1; wifi reload ) >/dev/null 2>&1 &
+	echo '{"ok":true}'
+}
+
+net_of() { # address, netmask or prefix length -> network address
+	case "$2" in *.*) ipcalc.sh "$1" "$2" ;; *) ipcalc.sh "$1/$2" ;; esac | sed -n 's/^NETWORK=//p'
+}
+
+host_set() { # mac name ip -> fixed address and name (dhcp host nb6_host_<mac>)
+	local mac=$(echo "$1" | tr 'A-F' 'a-f') name ip=$3 sec s lan mask
+	valid_mac "$mac" || { echo '{"error":"invalid MAC address"}'; return; }
+	name=$(printf '%s' "$2" | tr ' _' '--' | tr -cd 'A-Za-z0-9-' | cut -c1-63)
+	sec=nb6_host_$(echo "$mac" | tr -d ':')
+	if [ -n "$ip" ]; then
+		echo "$ip" | grep -qE '^([0-9]{1,3}\.){3}[0-9]{1,3}$' || { echo '{"error":"invalid IP address"}'; return; }
+		lan=$(uci -q get network.lan.ipaddr); mask=$(uci -q get network.lan.netmask)
+		case "$lan" in */*) mask=${lan#*/}; lan=${lan%/*} ;; esac
+		[ "$(net_of "$ip" "${mask:-24}")" = "$(net_of "$lan" "${mask:-24}")" ] \
+			|| { echo '{"error":"the address must be in the local network"}'; return; }
+		[ "$ip" != "$lan" ] || { echo '{"error":"this is the address of the box"}'; return; }
+		for s in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^.=]*\)=host$/\1/p'); do
+			[ "$s" != "$sec" ] && [ "$(uci -q get dhcp.$s.ip)" = "$ip" ] \
+				&& { echo '{"error":"this address is already given to another device"}'; return; }
+		done
+	fi
+	uci -q delete dhcp.$sec
+	if [ -n "$name" ] || [ -n "$ip" ]; then
+		uci set dhcp.$sec=host
+		uci set dhcp.$sec.mac="$mac"
+		[ -n "$name" ] && uci set dhcp.$sec.name="$name"
+		[ -n "$ip" ] && uci set dhcp.$sec.ip="$ip"
+	fi
+	uci commit dhcp
+	/etc/init.d/dnsmasq reload >/dev/null 2>&1
+	echo '{"ok":true}'
+}
+
+backup_json() { # flash partitions, with the checksums of the two that are unique to each box
+	local dev size name
+	json_init
+	json_add_array parts
+	while read -r dev size _ name; do
+		case "$dev" in mtd*:) ;; *) continue ;; esac
+		name=$(echo "$name" | tr -d '"')
+		json_add_object
+		json_add_string name "$name"
+		json_add_int size $((0x$size))
+		case "$name" in cfe|nvram) json_add_string sha256 "$(sha256sum /dev/${dev%:} | cut -d' ' -f1)" ;; esac
+		json_close_object
+	done < /proc/mtd
+	json_close_array
+	json_dump
+}
+
 case "$1" in
 list)
 	cat <<'EOF'
-{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {} }
+{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {}, "wifi": {}, "wifi_set": { "ssid": "str", "key": "str", "enabled": true }, "guest": {}, "guest_set": { "enabled": true, "key": "str", "port4": true }, "host_set": { "mac": "str", "name": "str", "ip": "str" }, "backup_info": {} }
 EOF
 	;;
 call)
@@ -233,6 +327,37 @@ call)
 		;;
 	update_status)
 		/usr/sbin/nb6-update status
+		;;
+	wifi)
+		wifi_json
+		;;
+	wifi_set)
+		read -r input; json_load "$input"
+		json_get_var ssid ssid; json_get_var key key; json_get_var enabled enabled
+		wifi_set "$ssid" "$key" "${enabled:-1}"
+		;;
+	guest)
+		/usr/sbin/nb6-guest status
+		;;
+	guest_set)
+		read -r input; json_load "$input"
+		json_get_var enabled enabled; json_get_var key key; json_get_var port4 port4
+		if [ "$enabled" = 1 ]; then
+			err=$(/usr/sbin/nb6-guest on "$key" $([ "$port4" = 1 ] && echo port4) 2>&1 >/dev/null)
+		else
+			err=$(/usr/sbin/nb6-guest off 2>&1 >/dev/null)
+		fi
+		json_init
+		if [ -n "$err" ]; then json_add_string error "$err"; else json_add_boolean ok 1; fi
+		json_dump
+		;;
+	host_set)
+		read -r input; json_load "$input"
+		json_get_var mac mac; json_get_var name name; json_get_var ip ip
+		host_set "$mac" "$name" "$ip"
+		;;
+	backup_info)
+		backup_json
 		;;
 	pubkey)
 		json_init

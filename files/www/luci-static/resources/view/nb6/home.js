@@ -4,6 +4,7 @@
 'require poll';
 'require ui';
 'require nb6.icons as icons';
+'require nb6.qr as qr';
 
 /*
  * Neufbox 6 home page: connection, box information, VPN, a photo of the box with the ring LEDs
@@ -12,6 +13,8 @@
  */
 
 const callHome = rpc.declare({ object: 'luci.nb6', method: 'home', expect: { '': {} } });
+const callWifi = rpc.declare({ object: 'luci.nb6', method: 'wifi', expect: { '': {} } });
+const callWifiSet = rpc.declare({ object: 'luci.nb6', method: 'wifi_set', params: ['ssid', 'key', 'enabled'], expect: { '': {} } });
 /*
  * The update calls go straight to ubus over HTTP: through rpc.declare the update_check reply never
  * reached the page on this box (it works with a direct request, same session and permissions).
@@ -151,7 +154,87 @@ const STYLE = `
 
 return view.extend({
 	load() {
-		return L.resolveDefault(callHome(), {});
+		return Promise.all([L.resolveDefault(callHome(), {}), L.resolveDefault(callWifi(), {})]).then(([h, w]) => {
+			this.wifi = w;
+			return h;
+		});
+	},
+
+	/* Wi-Fi card: name, password (hidden until asked), QR code to join, and editing */
+	wifiCard() {
+		const w = this.wifi || {}, secured = w.encryption && w.encryption != 'none';
+		const key = !secured ? _('none (open network)')
+			: E('span', {}, [
+				E('code', { 'style': 'font-size:13px' }, this.showKey ? w.key : '•'.repeat(10)), ' ',
+				E('a', { 'href': '#', 'click': ev => { ev.preventDefault(); this.showKey = !this.showKey; this.redrawWifi(); } },
+					this.showKey ? _('hide') : _('show'))
+			]);
+
+		return E('div', { 'class': 'nb6-card', 'id': 'nb6-wifi' }, [
+			E('h3', {}, _('Wi-Fi')),
+			table([
+				[_('State'), w.enabled ? dot(LED.green, _('On')) : dot(LED.off, _('Off'))],
+				[_('Network name'), w.ssid || '-'],
+				[_('Password'), key],
+				[_('Connected devices'), String(w.clients || 0)],
+				[_('Channel'), w.channel ? _('%s (2.4 GHz)').format(w.channel) : '-']
+			]),
+			E('div', { 'style': 'margin-top:.6em;text-align:right' }, [
+				E('button', {
+					'class': 'btn cbi-button', 'disabled': (!w.enabled || !w.ssid) ? '' : null,
+					'click': ui.createHandlerFn(this, () => this.showQr())
+				}, _('QR code')), ' ',
+				E('button', { 'class': 'btn cbi-button-action', 'click': ui.createHandlerFn(this, () => this.editWifi()) }, _('Edit'))
+			])
+		]);
+	},
+
+	redrawWifi() {
+		const old = document.getElementById('nb6-wifi');
+		if (old) old.replaceWith(this.wifiCard());
+	},
+
+	showQr() {
+		const w = this.wifi || {};
+		ui.showModal(_('Join %s').format(w.ssid), [
+			E('p', {}, _('Point the camera of a phone or tablet at the code to join the Wi-Fi without typing the password.')),
+			E('div', { 'style': 'text-align:center;margin:1em 0' }, qr.img(qr.wifiText(w.ssid, w.key, w.encryption), 260)),
+			E('p', { 'style': 'text-align:center' }, E('strong', {}, w.ssid)),
+			E('div', { 'class': 'right' }, E('button', { 'class': 'btn cbi-button-action', 'click': ui.hideModal }, _('Close')))
+		]);
+	},
+
+	editWifi() {
+		const w = this.wifi || {}, secured = w.encryption && w.encryption != 'none';
+		const on = E('input', { 'type': 'checkbox', 'checked': w.enabled ? '' : null });
+		const ssid = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': w.ssid || '', 'maxlength': 32, 'style': 'width:100%' });
+		const key = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': w.key || '', 'maxlength': 63, 'style': 'width:100%', 'autocomplete': 'off' });
+		const row = (label, field) => E('div', { 'style': 'margin:.6em 0' }, [E('label', { 'style': 'display:block;font-weight:600' }, label), field]);
+
+		ui.showModal(_('Wi-Fi'), [
+			E('label', { 'style': 'display:block;margin:.3em 0' }, [on, ' ', _('Wi-Fi on')]),
+			row(_('Network name'), ssid),
+			secured ? row(_('Password (8 to 63 characters)'), key) : E([]),
+			E('p', { 'class': 'cbi-value-description' }, _('The Wi-Fi restarts for a few seconds. Devices connected over Wi-Fi reconnect by themselves, or with the new password if you change it.')),
+			E('div', { 'class': 'right' }, [
+				E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Cancel')), ' ',
+				E('button', {
+					'class': 'btn cbi-button-action',
+					'click': ui.createHandlerFn(this, () => callWifiSet(ssid.value.trim(), key.value, on.checked).then(r => {
+						if (r && r.error) {
+							ui.addNotification(null, E('p', r.error), 'danger');
+							return;
+						}
+						ui.hideModal();
+						ui.addNotification(null, E('p', _('Wi-Fi settings saved. The Wi-Fi restarts now.')), 'info');
+						/* read back after the restart */
+						window.setTimeout(() => L.resolveDefault(callWifi(), null).then(n => { if (n) { this.wifi = n; this.redrawWifi(); } }), 8000);
+						this.wifi = Object.assign({}, w, { ssid: ssid.value.trim(), key: key.value, enabled: on.checked });
+						this.redrawWifi();
+					}))
+				}, _('Save'))
+			])
+		]);
 	},
 
 	/* the update check runs after the page is shown, never blocking it */
@@ -260,7 +343,8 @@ return view.extend({
 							[_('IPv4 address'), w.ipv4 || '-'],
 							[_('IPv6 address'), w.ipv6 || '-']
 						])
-					])
+					]),
+					this.wifiCard()
 				]),
 				E('div', { 'class': 'nb6-center' }, [
 					boxPhoto(h),

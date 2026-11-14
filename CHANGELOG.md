@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.4 (2026-11-14)
+### Added
+- **Wi-Fi card** on the Home page: network name, password (hidden until asked), connected devices,
+  a **QR code** to join from a phone camera, and editing of the name, password and on/off. The QR code
+  is drawn in the browser (`nb6/qr.js`), the password goes to no other program.
+- **Guest network** page (Neufbox > Guest network): guests join the same Wi-Fi name with their own
+  password (hostapd multi-PSK, the b43 chip has a single access point), which puts them on
+  192.168.30.0/24, internet only (and the commercial VPN when it is on). Ethernet port 4 can join it.
+  QR code for guests. `nb6-guest`.
+- **Names and fixed addresses** on the Devices page: a name and an always-same address per device
+  (DHCP host). Guest devices are shown as such.
+- **Backup** page (Neufbox > Backup): download the settings archive, or a copy of the whole 16 MB flash
+  (CFE, firmware, nvram) in one click, streamed by `/cgi-bin/nb6-backup`; checksums of the CFE and
+  nvram to check a copy.
+
+### Fixed
+- One-click update: the checksum file is fetched before the image, while memory is still free
+  (the update failed with "no checksum for the image"); downloads use curl with retries.
+- Upgrades no longer turn ad blocking off or reset the Wi-Fi schedule: those defaults are applied
+  on the first install only.
+- Devices page: impossible signal values reported by the b43 driver (such as -4 dBm) are hidden.
+
 ## 2.3 (2026-11-14)
 ### Added
 - **One-click updates**: the Home page shows the latest release on GitHub and installs it (download,

@@ -63,5 +63,21 @@
 			"type": "view",
 			"path": "nb6/adblock"
 		}
+	},
+	"admin/nb6/guest": {
+		"title": "Guest network",
+		"order": 9,
+		"action": {
+			"type": "view",
+			"path": "nb6/guest"
+		}
+	},
+	"admin/nb6/backup": {
+		"title": "Backup",
+		"order": 30,
+		"action": {
+			"type": "view",
+			"path": "nb6/backup"
+		}
 	}
 }

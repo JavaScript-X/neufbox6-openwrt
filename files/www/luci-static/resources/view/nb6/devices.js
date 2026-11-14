@@ -7,8 +7,9 @@
 
 /*
  * Neufbox 6: devices on the LAN. Merges DHCP leases, the neighbour table, Wi-Fi stations and
- * per-device traffic (nlbwmon), and manages internet access per device (block, or block on a
- * schedule) through firewall rules named nb6_block_<mac>. Data: luci.nb6 "devices".
+ * per-device traffic (nlbwmon). Per device: a name and a fixed address (DHCP host nb6_host_<mac>),
+ * internet access (block, or block on a schedule, firewall rules nb6_block_<mac>) and Wake-on-LAN.
+ * Data: luci.nb6 "devices".
  */
 
 const callDevices = rpc.declare({ object: 'luci.nb6', method: 'devices', expect: { '': {} } });
@@ -17,6 +18,7 @@ const callAccess = rpc.declare({
 	params: ['mac', 'mode', 'start', 'stop', 'days', 'name'], expect: { '': {} }
 });
 const callWake = rpc.declare({ object: 'luci.nb6', method: 'device_wake', params: ['mac'], expect: { '': {} } });
+const callHost = rpc.declare({ object: 'luci.nb6', method: 'host_set', params: ['mac', 'name', 'ip'], expect: { '': {} } });
 
 const DAYS = [['Mon', _('Mon')], ['Tue', _('Tue')], ['Wed', _('Wed')], ['Thu', _('Thu')],
 	['Fri', _('Fri')], ['Sat', _('Sat')], ['Sun', _('Sun')]];
@@ -30,7 +32,8 @@ function bytes(n) {
 }
 
 function signalText(dbm) {
-	if (dbm == null) return '';
+	/* b43 on the BCM6362 sometimes reports values like -4 dBm, which are not real measurements */
+	if (dbm == null || dbm > -10) return '';
 	const q = dbm >= -55 ? _('excellent') : dbm >= -67 ? _('good') : dbm >= -75 ? _('fair') : _('weak');
 	return '%d dBm (%s)'.format(dbm, q);
 }
@@ -44,15 +47,18 @@ function merge(d) {
 		const e = get(l.mac);
 		if (l.name && l.name != '*') e.name = l.name;
 		if (l.ip && !e.ips.includes(l.ip)) e.ips.push(l.ip);
+		if (/^192\.168\.30\./.test(l.ip || '')) e.guest = true;
 	});
 	(d.neigh || []).forEach(n => {
 		const e = get(n.mac);
 		if (n.ip && !e.ips.includes(n.ip)) e.ips.push(n.ip);
 		if (/REACHABLE|DELAY|PROBE/.test(n.state)) e.online = true;
+		if (n.guest) e.guest = true;
 	});
 	(d.wifi || []).forEach(w => {
 		const e = get(w.mac);
 		e.wifi = true; e.signal = w.signal; e.online = true;
+		if (w.guest) e.guest = true;
 	});
 	if (d.traffic && d.traffic.columns) {
 		const c = d.traffic.columns, im = c.indexOf('mac'), ir = c.indexOf('rx_bytes'), it = c.indexOf('tx_bytes');
@@ -62,6 +68,12 @@ function merge(d) {
 			e.down = r[ir]; e.up = r[it];
 		});
 	}
+	(d.hosts || []).forEach(h => {
+		if (!dev[h.mac.toLowerCase()]) return;	/* only devices seen on the LAN */
+		const e = get(h.mac);
+		e.host = h;
+		if (h.name) e.name = h.name;
+	});
 	(d.rules || []).forEach(r => {
 		const e = get(r.mac);
 		e.rule = r;
@@ -89,12 +101,41 @@ const STYLE = `
 .nb6-ok { background:#e6f7ea; color:#13793a; }
 .nb6-off { background:#fde6e9; color:#b90016; }
 .nb6-sched { background:#f3edf8; color:#5c2483; }
+.nb6-guest { background:#e5f4fb; color:#0b5f86; }
 .nb6-days label { margin-right:10px; white-space:nowrap; }
 `;
 
 return view.extend({
 	load() {
 		return L.resolveDefault(callDevices(), {});
+	},
+
+	hostDialog(e) {
+		const h = e.host || {};
+		const name = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': h.name || e.name || '', 'maxlength': 63, 'style': 'width:100%', 'placeholder': _('for example laptop-anna') });
+		const fixed = E('input', { 'type': 'checkbox', 'checked': h.ip ? '' : null });
+		const ip = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': h.ip || e.ips[0] || '', 'style': 'width:12em' });
+
+		ui.showModal(_('Name and address: %s').format(e.name || e.mac), [
+			E('div', { 'style': 'margin:.4em 0' }, [E('label', { 'style': 'display:block;font-weight:600' }, _('Name')), name,
+				E('div', { 'class': 'cbi-value-description' }, _('Letters, digits and dashes. The device is also reachable under this name on the local network.'))]),
+			E('div', { 'style': 'margin:1em 0 .4em' }, [E('label', {}, [fixed, ' ', _('Always give it the same address')]), ' ', ip]),
+			E('div', { 'class': 'cbi-value-description' }, _('Useful for a printer, a NAS or a port forward. The device gets the address at its next connection (unplug it or turn its Wi-Fi off and on).')),
+			E('div', { 'class': 'right', 'style': 'margin-top:1em' }, [
+				E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Cancel')), ' ',
+				E('button', {
+					'class': 'btn cbi-button-action',
+					'click': ui.createHandlerFn(this, () => callHost(e.mac, name.value.trim(), fixed.checked ? ip.value.trim() : '').then(r => {
+						if (r && r.error) {
+							ui.addNotification(null, E('p', r.error), 'danger');
+							return;
+						}
+						ui.hideModal();
+						return this.refresh();
+					}))
+				}, _('Save'))
+			])
+		]);
 	},
 
 	accessDialog(e) {
@@ -144,11 +185,13 @@ return view.extend({
 				E('span', { 'class': 'nb6-name' }, e.name || _('Unnamed device')), E('br'),
 				E('small', {}, e.mac)
 			]),
-			E('td', { 'class': 'td' }, e.ips.join(', ') || '-'),
-			E('td', { 'class': 'td' }, e.wifi ? [_('Wi-Fi'), E('br'), E('small', {}, signalText(e.signal))] : (e.online ? _('Wired') : '-')),
+			E('td', { 'class': 'td' }, [e.ips.join(', ') || '-', e.host && e.host.ip ? [E('br'), E('small', {}, _('fixed address'))] : '']),
+			E('td', { 'class': 'td' }, e.wifi ? [e.guest ? _('Guest Wi-Fi') : _('Wi-Fi'), E('br'), E('small', {}, signalText(e.signal))]
+				: (e.online ? (e.guest ? _('Guest, wired') : _('Wired')) : '-')),
 			E('td', { 'class': 'td' }, e.down != null ? '↓ %s · ↑ %s'.format(bytes(e.down), bytes(e.up)) : '-'),
-			E('td', { 'class': 'td' }, accessText(e.rule)),
-			E('td', { 'class': 'td' }, [
+			E('td', { 'class': 'td' }, e.guest ? E('span', { 'class': 'nb6-pill nb6-guest' }, _('Guest network')) : accessText(e.rule)),
+			E('td', { 'class': 'td' }, e.guest ? E('small', {}, _('Internet only, managed on the Guest network page')) : [
+				E('button', { 'class': 'btn cbi-button', 'click': ui.createHandlerFn(this, () => this.hostDialog(e)) }, _('Name')), ' ',
 				E('button', { 'class': 'btn cbi-button', 'click': ui.createHandlerFn(this, () => this.accessDialog(e)) }, _('Internet access')), ' ',
 				E('button', {
 					'class': 'btn cbi-button', 'title': _('Wake-on-LAN: start this device from the network'),
@@ -187,7 +230,7 @@ return view.extend({
 				E('div', {}, [
 					E('h2', {}, _('Devices')),
 					E('div', { 'class': 'cbi-map-descr' },
-						_('Devices seen on the local network, with their connection and traffic. Internet access can be blocked per device, always or during set hours.'))
+						_('Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, block its internet access (always or during set hours) or wake it up.'))
 				])
 			]),
 			E('div', { 'class': 'cbi-section' }, this.table(merge(d)))

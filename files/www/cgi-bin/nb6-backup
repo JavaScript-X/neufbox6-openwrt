@@ -1,0 +1,48 @@
+#!/bin/sh
+# Downloads for LuCI > Neufbox > Backup, streamed (nothing is copied to RAM first):
+#   what=flash    the whole 16 MB SPI flash (cfe + firmware + nvram, in flash order)
+#   what=config   the settings archive (same as "sysupgrade -b")
+# POST fields: sessionid (a LuCI session with write access to luci-app-nb6), what.
+
+body=$(head -c "${CONTENT_LENGTH:-0}" 2>/dev/null)
+field() { printf '%s' "$body" | tr '&' '\n' | sed -n "s/^$1=//p" | head -1; }
+sid=$(field sessionid | tr -cd '0-9a-f')
+what=$(field what)
+
+deny() { printf 'Status: 403 Forbidden\r\nContent-Type: text/plain\r\n\r\n%s\n' "$1"; exit 0; }
+
+[ "$REQUEST_METHOD" = POST ] || deny "POST only"
+[ ${#sid} = 32 ] || deny "no session"
+[ "$(ubus call session access "{\"ubus_rpc_session\":\"$sid\",\"scope\":\"access-group\",\"object\":\"luci-app-nb6\",\"function\":\"write\"}" 2>/dev/null \
+	| jsonfilter -e '@.access' 2>/dev/null)" = true ] || deny "access denied"
+
+day=$(date +%Y-%m-%d)
+send() { # file name, size or "", then the data on stdin
+	printf 'Status: 200 OK\r\nContent-Type: application/octet-stream\r\n'
+	printf 'Content-Disposition: attachment; filename="%s"\r\nCache-Control: no-store\r\n' "$1"
+	[ -n "$2" ] && printf 'Content-Length: %s\r\n' "$2"
+	printf '\r\n'
+	cat
+}
+
+case "$what" in
+flash)
+	devs=""; total=0
+	for p in cfe firmware nvram; do
+		d=$(sed -n "s/^\(mtd[0-9]*\): \([0-9a-f]*\) .*\"$p\"$/\1 \2/p" /proc/mtd)
+		[ -n "$d" ] || deny "partition $p not found"
+		devs="$devs /dev/${d% *}"; total=$((total + 0x${d#* }))
+	done
+	[ $total = 16777216 ] || deny "unexpected flash layout"
+	cat $devs | send "neufbox6-flash-$day.bin" $total
+	;;
+config)
+	f=/tmp/nb6-settings.$$.tar.gz
+	sysupgrade -b $f >/dev/null 2>&1 || deny "backup failed"
+	send "neufbox6-settings-$day.tar.gz" "$(wc -c < $f)" < $f
+	rm -f $f
+	;;
+*)
+	deny "unknown download"
+	;;
+esac

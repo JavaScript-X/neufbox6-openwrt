@@ -1,0 +1,143 @@
+#!/bin/sh
+# Guest network (LuCI > Neufbox > Guest network).
+#
+#   nb6-guest on <wifi-password> [port4]   turn it on; "port4" also puts Ethernet port 4 in it
+#   nb6-guest off                          turn it off (the settings are kept)
+#   nb6-guest status                       JSON
+#
+# The b43 Wi-Fi chip has a single access point, so the guests join the same Wi-Fi name with
+# their own password (hostapd multi-PSK): that password puts them in VLAN 3, bridged into
+# br-guest (192.168.30.1/24). The "guest" firewall zone reaches the internet (and the commercial
+# VPN when it is on), never the local network, the tailnet or the box itself (except DHCP and DNS).
+
+NET=192.168.30.1
+VID=3
+
+valid_key() { [ ${#1} -ge 8 ] && [ ${#1} -le 63 ] && ! printf '%s' "$1" | grep -q '[^ -~]'; }
+
+ports_lan() { # $1 = 1 to take port 4 out of the LAN
+	local s
+	for s in $(uci -q show network | sed -n "s/^network\.\([^.]*\)=switch_vlan$/\1/p"); do
+		[ "$(uci -q get network.$s.vlan)" = 1 ] || continue
+		if [ "$1" = 1 ]; then uci set network.$s.ports='1 2 3 9t'; else uci set network.$s.ports='1 2 3 4 9t'; fi
+	done
+}
+
+on() {
+	local key=$1 port4=$2
+	valid_key "$key" || { echo "the guest password needs 8 to 63 characters (letters, digits, symbols)" >&2; exit 1; }
+	[ "$key" != "$(uci -q get wireless.default_radio0.key)" ] || { echo "the guest password must differ from the main Wi-Fi password" >&2; exit 1; }
+
+	# network: bridge (empty unless port 4 is in it) and interface
+	uci set network.guest_dev=device
+	uci set network.guest_dev.name=br-guest
+	uci set network.guest_dev.type=bridge
+	uci set network.guest_dev.bridge_empty=1
+	uci -q delete network.guest_dev.ports
+	uci set network.guest=interface
+	uci set network.guest.proto=static
+	uci set network.guest.device=br-guest
+	uci set network.guest.ipaddr=$NET
+	uci set network.guest.netmask=255.255.255.0
+	uci -q delete network.guest.disabled
+	if [ "$port4" = port4 ]; then
+		uci set network.guest_vlan=switch_vlan
+		uci set network.guest_vlan.device=switch0
+		uci set network.guest_vlan.vlan=$VID
+		uci set network.guest_vlan.ports="4 9t"
+		uci add_list network.guest_dev.ports=extsw.$VID
+		ports_lan 1
+	else
+		uci -q delete network.guest_vlan
+		ports_lan 0
+	fi
+
+	# Wi-Fi: same name, the guest password leads to VLAN 3
+	uci set wireless.guest_vlan=wifi-vlan
+	uci set wireless.guest_vlan.iface=default_radio0
+	uci set wireless.guest_vlan.name=guest
+	uci set wireless.guest_vlan.vid=$VID
+	uci set wireless.guest_vlan.network=guest
+	uci set wireless.guest_sta=wifi-station
+	uci set wireless.guest_sta.iface=default_radio0
+	uci set wireless.guest_sta.key="$key"
+	uci set wireless.guest_sta.vid=$VID
+
+	# addresses for the guests
+	uci set dhcp.guest=dhcp
+	uci set dhcp.guest.interface=guest
+	uci set dhcp.guest.start=100
+	uci set dhcp.guest.limit=100
+	uci set dhcp.guest.leasetime=2h
+	uci -q delete dhcp.guest.ignore
+
+	# firewall: internet only
+	uci set firewall.guest=zone
+	uci set firewall.guest.name=guest
+	uci set firewall.guest.network=guest
+	uci set firewall.guest.input=REJECT
+	uci set firewall.guest.output=ACCEPT
+	uci set firewall.guest.forward=REJECT
+	uci set firewall.fwd_guest_wan=forwarding
+	uci set firewall.fwd_guest_wan.src=guest
+	uci set firewall.fwd_guest_wan.dest=wan
+	if uci -q get firewall.vpnc >/dev/null; then
+		uci set firewall.fwd_guest_vpnc=forwarding
+		uci set firewall.fwd_guest_vpnc.src=guest
+		uci set firewall.fwd_guest_vpnc.dest=vpnc
+	fi
+	uci set firewall.guest_dhcp=rule
+	uci set firewall.guest_dhcp.name='Guest: DHCP'
+	uci set firewall.guest_dhcp.src=guest
+	uci set firewall.guest_dhcp.proto=udp
+	uci set firewall.guest_dhcp.dest_port=67
+	uci set firewall.guest_dhcp.target=ACCEPT
+	uci set firewall.guest_dns=rule
+	uci set firewall.guest_dns.name='Guest: DNS'
+	uci set firewall.guest_dns.src=guest
+	uci set firewall.guest_dns.proto='tcp udp'
+	uci set firewall.guest_dns.dest_port=53
+	uci set firewall.guest_dns.target=ACCEPT
+
+	uci set nb6.guest=guest
+	uci set nb6.guest.enabled=1
+	uci set nb6.guest.key="$key"
+	uci set nb6.guest.port4=$([ "$port4" = port4 ] && echo 1 || echo 0)
+	commit
+}
+
+off() {
+	uci -q delete network.guest_vlan
+	ports_lan 0
+	uci -q get network.guest >/dev/null && uci set network.guest.disabled=1
+	uci -q delete wireless.guest_vlan
+	uci -q delete wireless.guest_sta
+	uci -q get dhcp.guest >/dev/null && uci set dhcp.guest.ignore=1
+	uci -q get nb6.guest >/dev/null || uci set nb6.guest=guest
+	uci set nb6.guest.enabled=0
+	commit
+}
+
+commit() {
+	uci commit network; uci commit wireless; uci commit dhcp; uci commit firewall; uci commit nb6
+	# in the background: the LuCI request answers before the Wi-Fi restarts
+	( sleep 1; /etc/init.d/network reload; /etc/init.d/firewall reload; /etc/init.d/dnsmasq reload; wifi reload ) >/dev/null 2>&1 &
+}
+
+status() {
+	local n
+	n=$(awk -v ip=192.168.30. 'index($3, ip) == 1' /tmp/dhcp.leases 2>/dev/null | grep -c .)
+	printf '{"enabled":%s,"port4":%s,"ssid":"%s","key":"%s","encryption":"%s","address":"%s","clients":%s}\n' \
+		"$([ "$(uci -q get nb6.guest.enabled)" = 1 ] && echo true || echo false)" \
+		"$([ "$(uci -q get nb6.guest.port4)" = 1 ] && echo true || echo false)" \
+		"$(uci -q get wireless.default_radio0.ssid | tr -d '"\\')" \
+		"$(uci -q get nb6.guest.key | sed 's/\\/\\\\/g; s/"/\\"/g')" \
+		"$(uci -q get wireless.default_radio0.encryption)" "$NET" "${n:-0}"
+}
+
+case "$1" in
+	on) on "$2" "$3" ;;
+	off) off ;;
+	status) status ;;
+	*) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

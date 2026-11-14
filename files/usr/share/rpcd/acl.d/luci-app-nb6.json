@@ -1,17 +1,56 @@
 {
 	"luci-app-nb6": {
-		"description": "Neufbox 6: VPN tunnels, LEDs and eco mode",
+		"description": "Neufbox 6: home page, devices, Wi-Fi and guests, VPN, LEDs, ad blocking, updates, backup",
 		"read": {
 			"ubus": {
-				"luci.nb6": [ "status", "home", "pubkey", "devices", "adblock_status", "update_check", "update_status" ]
+				"luci.nb6": [
+					"status",
+					"home",
+					"pubkey",
+					"devices",
+					"adblock_status",
+					"update_check",
+					"update_status",
+					"wifi",
+					"guest",
+					"backup_info"
+				]
 			},
-			"uci": [ "network", "nb6", "firewall", "adblock-fast" ]
+			"uci": [
+				"network",
+				"nb6",
+				"firewall",
+				"adblock-fast",
+				"dhcp",
+				"wireless"
+			]
 		},
 		"write": {
 			"ubus": {
-				"luci.nb6": [ "init", "rekey", "set_tunnel", "import_commercial", "eco", "device_access", "device_wake", "adblock_set", "adblock_update", "update_install" ]
+				"luci.nb6": [
+					"init",
+					"rekey",
+					"set_tunnel",
+					"import_commercial",
+					"eco",
+					"device_access",
+					"device_wake",
+					"adblock_set",
+					"adblock_update",
+					"update_install",
+					"wifi_set",
+					"guest_set",
+					"host_set"
+				]
 			},
-			"uci": [ "network", "nb6", "firewall", "adblock-fast" ]
+			"uci": [
+				"network",
+				"nb6",
+				"firewall",
+				"adblock-fast",
+				"dhcp",
+				"wireless"
+			]
 		}
 	}
 }

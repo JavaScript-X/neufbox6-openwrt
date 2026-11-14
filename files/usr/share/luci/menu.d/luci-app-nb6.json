@@ -47,5 +47,21 @@
 			"type": "alias",
 			"path": "admin/status/nb6home"
 		}
+	},
+	"admin/nb6/devices": {
+		"title": "Devices",
+		"order": 8,
+		"action": {
+			"type": "view",
+			"path": "nb6/devices"
+		}
+	},
+	"admin/nb6/adblock": {
+		"title": "Ad blocking",
+		"order": 15,
+		"action": {
+			"type": "view",
+			"path": "nb6/adblock"
+		}
 	}
 }

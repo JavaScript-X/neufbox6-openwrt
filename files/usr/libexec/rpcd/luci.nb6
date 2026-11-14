@@ -79,10 +79,8 @@ home_json() {
 	json_add_string provider "$(uci -q get network.vpn_commercial_peer.provider)"
 	json_close_object
 
-	for p in 1 2 3 4; do
-		link=$(swconfig dev switch0 port $p get link 2>/dev/null)
-		case "$link" in *link:up*) lan=$((lan + 1)) ;; esac
-	done
+	# one swconfig call for the four LAN ports (1-4); port 0 is the WAN
+	lan=$(swconfig dev switch0 show 2>/dev/null | grep -cE 'link: port:[1-4] link:up')
 	json_add_object devices
 	json_add_int lan_ports "$lan"
 	json_add_int wifi_clients "$(iw dev phy0-ap0 station dump 2>/dev/null | grep -c '^Station')"
@@ -106,7 +104,13 @@ call)
 		echo "{\"initialized\":$(b $init),\"eco\":$(b $eco),\"vpn\":$(tunnel_json vpn),\"vpn_commercial\":$(tunnel_json vpn_commercial)}"
 		;;
 	home)
-		home_json
+		# several open pages poll this every 10 s: answer from an 8 s cache
+		C=/tmp/luci-nb6-home.json
+		if [ -s $C ] && [ $(( $(date +%s) - $(date -r $C +%s) )) -lt 8 ]; then
+			cat $C
+		else
+			home_json > $C.$$ && mv $C.$$ $C && cat $C
+		fi
 		;;
 	pubkey)
 		json_init

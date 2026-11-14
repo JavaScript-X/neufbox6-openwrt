@@ -71,9 +71,12 @@ provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
 
 ## Web interface
 
-LuCI uses its own **Neufbox** theme (white, red and purple, always light), and the **Neufbox** menu shows both
-tunnels, imports a provider's WireGuard file, and sets the LEDs and eco mode. The standard bootstrap theme stays
-available in System > System > Language and Style.
+LuCI uses its own **Neufbox** theme (white pages, purple menus, red actions, always light). After login, the
+**Home** page shows the connection, the box, the VPN and the connected devices, with a photo of the box and the
+current state of its ring LEDs. The **Neufbox** menu shows both tunnels, imports a provider's WireGuard file,
+and sets the LEDs and eco mode. The standard bootstrap theme and overview stay available.
+
+<p align="center"><img src="assets/luci-home.png" alt="LuCI home page with the Neufbox theme" width="100%"></p>
 
 <p align="center"><img src="assets/luci-login.png" alt="LuCI login page with the Neufbox theme" width="46%"></p>
 
@@ -171,7 +174,8 @@ tools/             serial console, CFE, TFTP and GPIO helpers for flashing and p
 Third-party patches keep their original authorship and trailers. SFR firmware images and calibration files are **not**
 distributed here.
 
-Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png`, `assets/hardware.png` and `assets/vpn.png`: © SFR,
+Product photos of the Neufbox 6 in `assets/banner-openwrt.png`, `assets/leds-buttons.png`, `assets/hardware.png`, `assets/vpn.png`, `assets/luci-home.png` and
+`files/www/luci-static/resources/nb6/box.png` (LuCI home page): © SFR,
 annotated for this project. Neufbox and SFR are trademarks of SFR; this project is not affiliated with SFR.
 Brand icons in the LuCI pages (`files/www/luci-static/resources/nb6/icons.js`), `assets/banner-openwrt.png` and `assets/vpn.png`: [Simple Icons](https://simpleicons.org), CC0 1.0;
 the names and logos are trademarks of their owners and only identify their services.

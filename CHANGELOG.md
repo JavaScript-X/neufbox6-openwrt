@@ -2,7 +2,10 @@
 
 ## Unreleased
 ### Added
-- LuCI theme **Neufbox**: white, red and purple, always light, with a new login page; used by default
+- **Home** page (Status > Home, opened after login): connection, box, VPN, connected devices, and a
+  photo of the box with the current state of its ring LEDs. Data from `luci.nb6 home`;
+  `nb6-leds` publishes the LED states in `/tmp/nb6-leds.state`.
+- LuCI theme **Neufbox**: white pages, purple menus, red actions, always light, with a new login page; used by default
   (the bootstrap themes stay available). Built from bootstrap's templates by `scripts/apply-luci.sh`.
 
 ### Changed

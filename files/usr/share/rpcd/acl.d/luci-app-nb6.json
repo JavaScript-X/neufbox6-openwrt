@@ -3,15 +3,15 @@
 		"description": "Neufbox 6: VPN tunnels, LEDs and eco mode",
 		"read": {
 			"ubus": {
-				"luci.nb6": [ "status", "home", "pubkey" ]
+				"luci.nb6": [ "status", "home", "pubkey", "devices", "adblock_status", "update_check", "update_status" ]
 			},
-			"uci": [ "network", "nb6" ]
+			"uci": [ "network", "nb6", "firewall", "adblock-fast" ]
 		},
 		"write": {
 			"ubus": {
-				"luci.nb6": [ "init", "rekey", "set_tunnel", "import_commercial", "eco" ]
+				"luci.nb6": [ "init", "rekey", "set_tunnel", "import_commercial", "eco", "device_access", "device_wake", "adblock_set", "adblock_update", "update_install" ]
 			},
-			"uci": [ "network", "nb6" ]
+			"uci": [ "network", "nb6", "firewall", "adblock-fast" ]
 		}
 	}
 }

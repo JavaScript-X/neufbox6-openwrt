@@ -90,10 +90,91 @@ home_json() {
 	json_dump
 }
 
+
+strip() { tr -d '"\\001-\037'; }	# safe inside a JSON string
+
+devices_json() {
+	local first mac ip name exp st sec
+	printf '{"leases":['
+	first=1
+	while read -r exp mac ip name _; do
+		[ -n "$mac" ] || continue
+		[ $first = 1 ] || printf ','; first=0
+		printf '{"mac":"%s","ip":"%s","name":"%s","expires":%s}' "$mac" "$ip" "$(echo "$name" | strip)" "${exp:-0}"
+	done < /tmp/dhcp.leases 2>/dev/null
+	printf '],"neigh":['
+	first=1
+	ip -4 neigh show dev br-lan 2>/dev/null | while read -r ip _ mac st; do
+		case "$mac" in *:*) ;; *) continue ;; esac
+		[ $first = 1 ] || printf ','; first=0
+		printf '{"ip":"%s","mac":"%s","state":"%s"}' "$ip" "$mac" "$st"
+	done
+	printf '],"wifi":['
+	iw dev phy0-ap0 station dump 2>/dev/null | awk '
+		/^Station/ { if (mac) out(); mac = $2; sig = ""; ct = 0 }
+		/signal:/ && !/avg/ { sig = $2 }
+		/connected time:/ { ct = $3 }
+		function out() { printf "%s{\"mac\":\"%s\",\"signal\":%s,\"connected\":%s}", (n++ ? "," : ""), mac, (sig == "" ? "null" : sig), ct }
+		END { if (mac) out() }'
+	printf '],"traffic":'
+	nlbw -c json -g mac 2>/dev/null || printf 'null'
+	printf ',"rules":['
+	first=1
+	for sec in $(uci -q show firewall | sed -n 's/^firewall\.\(nb6_block_[0-9a-f]*\)=rule$/\1/p'); do
+		[ $first = 1 ] || printf ','; first=0
+		printf '{"mac":"%s","start":"%s","stop":"%s","days":"%s"}' \
+			"$(uci -q get firewall.$sec.src_mac)" "$(uci -q get firewall.$sec.start_time)" \
+			"$(uci -q get firewall.$sec.stop_time)" "$(uci -q get firewall.$sec.weekdays)"
+	done
+	printf ']}\n'
+}
+
+valid_mac() { echo "$1" | grep -qiE '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'; }
+
+device_access() { # mac mode(allow|block|schedule) start stop days name
+	local mac=$(echo "$1" | tr 'A-F' 'a-f') sec
+	valid_mac "$mac" || { echo '{"error":"invalid MAC address"}'; return; }
+	sec=nb6_block_$(echo "$mac" | tr -d ':')
+	uci -q delete firewall.$sec
+	case "$2" in
+	block|schedule)
+		uci set firewall.$sec=rule
+		uci set firewall.$sec.name="Neufbox: no internet for $(echo "${6:-$mac}" | strip)"
+		uci set firewall.$sec.src=lan
+		uci set firewall.$sec.dest='*'
+		uci set firewall.$sec.src_mac="$mac"
+		uci set firewall.$sec.proto=all
+		uci set firewall.$sec.target=REJECT
+		if [ "$2" = schedule ]; then
+			echo "$3$4" | grep -qE '^([01][0-9]|2[0-3]):[0-5][0-9]([01][0-9]|2[0-3]):[0-5][0-9]$' \
+				|| { uci revert firewall; echo '{"error":"invalid time"}'; return; }
+			uci set firewall.$sec.start_time="$3:00"
+			uci set firewall.$sec.stop_time="$4:00"
+			[ -n "$5" ] && uci set firewall.$sec.weekdays="$(echo "$5" | tr -cd 'A-Za-z ')"
+		fi ;;
+	esac
+	uci commit firewall
+	/etc/init.d/firewall reload >/dev/null 2>&1
+	echo '{"ok":true}'
+}
+
+adblock_json() {
+	local f=/var/run/adblock-fast/dnsmasq.servers n=0 t=0
+	[ -s $f ] && { n=$(grep -c . $f); t=$(date -r $f +%s); }
+	printf '{"installed":%s,"enabled":%s,"domains":%s,"updated":%s,"busy":%s}\n' \
+		"$([ -x /etc/init.d/adblock-fast ] && echo true || echo false)" \
+		"$([ "$(uci -q get adblock-fast.config.enabled)" = 1 ] && echo true || echo false)" \
+		"$n" "$t" "$([ -e /tmp/nb6-adblock.busy ] && echo true || echo false)"
+}
+
+adblock_bg() { # run an adblock-fast action in the background (it downloads and restarts dnsmasq)
+	( touch /tmp/nb6-adblock.busy; /etc/init.d/adblock-fast "$@" >/dev/null 2>&1; rm -f /tmp/nb6-adblock.busy ) &
+}
+
 case "$1" in
 list)
 	cat <<'EOF'
-{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" } }
+{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {} }
 EOF
 	;;
 call)
@@ -111,6 +192,47 @@ call)
 		else
 			home_json > $C.$$ && mv $C.$$ $C && cat $C
 		fi
+		;;
+	devices)
+		devices_json
+		;;
+	device_access)
+		read -r input; json_load "$input"
+		json_get_var mac mac; json_get_var mode mode; json_get_var start start
+		json_get_var stop stop; json_get_var days days; json_get_var name name
+		device_access "$mac" "$mode" "$start" "$stop" "$days" "$name"
+		;;
+	device_wake)
+		read -r input; json_load "$input"; json_get_var mac mac
+		if valid_mac "$mac" && etherwake -i br-lan "$mac" >/dev/null 2>&1; then echo '{"ok":true}'; else echo '{"error":"wake failed"}'; fi
+		;;
+	adblock_status)
+		adblock_json
+		;;
+	adblock_set)
+		read -r input; json_load "$input"; json_get_var enabled enabled
+		if [ "$enabled" = 1 ]; then
+			uci set adblock-fast.config.enabled=1; uci commit adblock-fast
+			/etc/init.d/adblock-fast enable; adblock_bg start
+		else
+			uci set adblock-fast.config.enabled=0; uci commit adblock-fast
+			/etc/init.d/adblock-fast disable; adblock_bg stop
+		fi
+		echo '{"ok":true}'
+		;;
+	adblock_update)
+		adblock_bg dl
+		echo '{"ok":true}'
+		;;
+	update_check)
+		read -r input; json_load "$input"; json_get_var force force
+		/usr/sbin/nb6-update check "$([ "$force" = 1 ] && echo force)"
+		;;
+	update_install)
+		/usr/sbin/nb6-update install
+		;;
+	update_status)
+		/usr/sbin/nb6-update status
 		;;
 	pubkey)
 		json_init

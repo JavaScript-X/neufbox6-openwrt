@@ -3,7 +3,7 @@
 		"description": "Neufbox 6: VPN tunnels, LEDs and eco mode",
 		"read": {
 			"ubus": {
-				"luci.nb6": [ "status", "pubkey" ]
+				"luci.nb6": [ "status", "home", "pubkey" ]
 			},
 			"uci": [ "network", "nb6" ]
 		},

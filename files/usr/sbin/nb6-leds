@@ -146,6 +146,8 @@ while true; do
 	[ $((tick % CONFIG_EVERY)) -eq 0 ] && load_brightness
 	if [ $((tick % STATE_EVERY)) -eq 0 ]; then
 		internet_state; vpn_state; health_state
+		# for the LuCI home page (luci.nb6 home): states of LEDs a, b, c
+		echo "$S_A $S_B $S_C" > /tmp/nb6-leds.state
 	fi
 	[ $((tick % LEASES_EVERY)) -eq 0 ] && new_device_check
 

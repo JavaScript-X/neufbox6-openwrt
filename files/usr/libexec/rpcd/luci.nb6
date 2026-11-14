@@ -28,10 +28,74 @@ tunnel_json() { # $1 = interface -> one JSON object on stdout
 	printf '"endpoint":"%s","handshake_age":%s,"rx_bytes":%s,"tx_bytes":%s}' "$ep" "$age" "$rx" "$tx"
 }
 
+tunnel_word() { # $1 = interface -> unconfigured | off | connecting | up
+	local i=$1 st dev hs
+	{ [ "$(uci -q get network.$i.proto)" = wireguard ] && [ -n "$(uci -q get network.$i.private_key)" ]; } || { echo unconfigured; return; }
+	[ "$(uci -q get network.$i.disabled)" = 1 ] && { echo off; return; }
+	st=$(ifstatus $i 2>/dev/null)
+	[ "$(echo "$st" | jsonfilter -e '@.up' 2>/dev/null)" = true ] || { echo connecting; return; }
+	dev=$(echo "$st" | jsonfilter -e '@.l3_device' 2>/dev/null)
+	hs=$(wg show ${dev:-$i} latest-handshakes 2>/dev/null | awk '{print $2}' | sort -n | tail -1)
+	[ -n "$hs" ] && [ "$hs" -gt 0 ] && [ $(( $(date +%s) - hs )) -lt 180 ] && echo up || echo connecting
+}
+
+home_json() {
+	local st w6 lan=0 p link t v u n
+	json_init
+
+	# LED states published by nb6-leds: "a b c" (green/orange/red/off/connecting/both/error)
+	set -- $(cat /tmp/nb6-leds.state 2>/dev/null)
+	json_add_object leds
+	json_add_string a "${1:-off}"; json_add_string b "${2:-off}"; json_add_string c "${3:-off}"
+	json_close_object
+
+	st=$(ifstatus wan 2>/dev/null)
+	w6=$(ifstatus wan6 2>/dev/null)
+	json_add_object wan
+	json_add_string internet "${1:-unknown}"
+	json_add_string proto "$(uci -q get network.wan.proto)"
+	json_add_string link "$(swconfig dev switch0 port 0 get link 2>/dev/null | sed -n 's/.*speed:\([0-9]*\)baseT.*/\1/p')"
+	json_add_string ipv4 "$(echo "$st" | jsonfilter -e '@["ipv4-address"][0].address' 2>/dev/null)"
+	json_add_string ipv6 "$(echo "$w6" | jsonfilter -e '@["ipv6-address"][0].address' 2>/dev/null)"
+	u=$(echo "$st" | jsonfilter -e '@.uptime' 2>/dev/null); json_add_int uptime "${u:-0}"
+	json_close_object
+
+	json_add_object box
+	json_add_string model "$(cat /tmp/sysinfo/model 2>/dev/null)"
+	json_add_string release "$(cat /etc/nb6-release 2>/dev/null)"
+	json_add_string openwrt "$(. /etc/openwrt_release; echo "$DISTRIB_DESCRIPTION")"
+	json_add_string kernel "$(uname -r)"
+	json_add_int uptime "$(cut -d. -f1 /proc/uptime)"
+	t=$(cat /sys/class/hwmon/hwmon*/temp1_input 2>/dev/null | head -1); json_add_int temperature "${t:-0}"
+	v=$(cat /sys/class/hwmon/hwmon*/in0_input 2>/dev/null | head -1); json_add_int voltage "${v:-0}"
+	json_add_int mem_total "$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+	json_add_int mem_available "$(awk '/MemAvailable/{print $2}' /proc/meminfo)"
+	json_add_boolean eco "$([ "$(uci -q get nb6.eco.enabled)" = 1 ] && echo 1 || echo 0)"
+	json_close_object
+
+	json_add_object vpn
+	json_add_string tailnet "$(tunnel_word vpn)"
+	json_add_string commercial "$(tunnel_word vpn_commercial)"
+	json_add_string provider "$(uci -q get network.vpn_commercial_peer.provider)"
+	json_close_object
+
+	for p in 1 2 3 4; do
+		link=$(swconfig dev switch0 port $p get link 2>/dev/null)
+		case "$link" in *link:up*) lan=$((lan + 1)) ;; esac
+	done
+	json_add_object devices
+	json_add_int lan_ports "$lan"
+	json_add_int wifi_clients "$(iw dev phy0-ap0 station dump 2>/dev/null | grep -c '^Station')"
+	json_add_string ssid "$(iw dev phy0-ap0 info 2>/dev/null | sed -n 's/^\s*ssid //p')"
+	n=$(grep -c . /tmp/dhcp.leases 2>/dev/null); json_add_int leases "${n:-0}"
+	json_close_object
+	json_dump
+}
+
 case "$1" in
 list)
 	cat <<'EOF'
-{ "status": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" } }
+{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" } }
 EOF
 	;;
 call)
@@ -40,6 +104,9 @@ call)
 		uci -q get network.vpn >/dev/null && init=1 || init=0
 		[ "$(uci -q get nb6.eco.enabled)" = 1 ] && eco=1 || eco=0
 		echo "{\"initialized\":$(b $init),\"eco\":$(b $eco),\"vpn\":$(tunnel_json vpn),\"vpn_commercial\":$(tunnel_json vpn_commercial)}"
+		;;
+	home)
+		home_json
 		;;
 	pubkey)
 		json_init

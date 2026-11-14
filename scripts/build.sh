@@ -38,6 +38,8 @@ bash "$PORT/scripts/apply-luci.sh" "$SRC"
 echo "== $(date -u) image files (LED daemon, button handlers, first-boot defaults)"
 rm -rf files && cp -r "$PORT/files" files
 chmod 755 files/usr/sbin/* files/etc/init.d/* files/etc/rc.button/* files/etc/uci-defaults/*
+# version shown on the LuCI home page: first heading of CHANGELOG.md ("2.2 (date)" or "Unreleased")
+echo "neufbox6-openwrt $(sed -n 's/^## //p' "$PORT/CHANGELOG.md" | head -1)" > files/etc/nb6-release
 
 echo "== $(date -u) config"
 cp "$PORT/config/nb6.config" .config

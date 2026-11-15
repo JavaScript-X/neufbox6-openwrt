@@ -23,22 +23,25 @@
 
 The Neufbox 6 was SFR's ADSL/fibre box in the 2010s. Thousands ended up as e-waste. OpenWrt supported it up to
 **23.05**, then dropped the whole `bcm63xx` target. This project moves the box to the modern **`bmips`** target and
-goes further than the official port ever did:
+goes further than both SFR's own firmware and the official port:
 
-| | OpenWrt 23.05 (official, last) | **neufbox6-openwrt** |
-|---|:---:|:---:|
-| OpenWrt / Linux | 23.05 / 5.15 | **25.12 / 6.12** |
-| Security updates | ❌ end of life | ✅ follows the 25.12 branch |
-| Integrated Wi-Fi | ❌ | ✅ access point, WPA2 |
-| Front LEDs (Internet, VPN, System, traffic) | ❌ | ✅ with status meanings |
-| SFR button | ❌ | ✅ tailnet / commercial VPN on/off |
-| ECO button | ❌ | ✅ eco mode |
-| Sensors (temperature, voltage) | ❌ | ✅ with graphs in LuCI |
-| Compressed swap (zram), watchdog | ❌ | ✅ |
-| Wi-Fi schedule, LED night mode | ❌ | ✅ |
-| Guest network, Wi-Fi QR code | ❌ | ✅ |
-| One-click updates, full flash backup from the web | ❌ | ✅ |
-| Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ |
+| | SFR firmware (original) | OpenWrt 23.05 (official, last) | **neufbox6-openwrt 2.4** |
+|---|:---:|:---:|:---:|
+| System / Linux | SFR R3.5.15 / 2.6.30 | OpenWrt 23.05 / 5.15 | **OpenWrt 25.12 / 6.12** |
+| Security updates | ❌ ended with the service | ❌ end of life | ✅ follows the 25.12 branch |
+| Integrated Wi-Fi | ✅ Broadcom driver | ❌ | ✅ access point, WPA2 |
+| Front LEDs | ✅ SFR service states | ❌ | ✅ Internet, VPN, System, traffic |
+| SFR button | ✅ long press: admin login without password | ❌ | ✅ tailnet / commercial VPN on/off |
+| ECO button | ✅ eco mode | ❌ | ✅ eco mode |
+| Sensors (temperature, voltage) | - | ❌ | ✅ with graphs in LuCI |
+| Compressed swap (zram), watchdog | watchdog only | ❌ | ✅ |
+| Wi-Fi schedule, LED night mode | Wi-Fi schedule | ❌ | ✅ |
+| VPN (WireGuard, Tailscale network) | ❌ | ❌ | ✅ |
+| Guest network, Wi-Fi QR code | - | ❌ | ✅ |
+| Ad blocking, parental control per device | - | ❌ | ✅ |
+| Updates | pushed by SFR, ended | manual | ✅ one click from the web interface |
+| Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ | ✅ |
+| ADSL / VDSL, telephony | ✅ | ❌ | ❌ closed Broadcom drivers |
 
 ## Hardware
 

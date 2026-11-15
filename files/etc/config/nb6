@@ -20,3 +20,11 @@ config eco 'eco'
 	option pause_stats '1'
 	# 1 = also turn the Wi-Fi off
 	option wifi_off '0'
+
+config maint 'maint'
+	# health check every 5 minutes: restarts what has stopped, and the statistics when memory runs low
+	option health '1'
+	# weekly restart (off by default): day 0 = Sunday .. 6 = Saturday, time HH:MM
+	option reboot '0'
+	option reboot_day '0'
+	option reboot_time '04:00'

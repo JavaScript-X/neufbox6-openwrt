@@ -31,9 +31,9 @@ def sources():
     menu = json.load(open(os.path.join(ROOT, 'files/usr/share/luci/menu.d/luci-app-nb6.json'), encoding='utf-8'))
     for v in menu.values():
         add(v['title'])
-    for f in ('usr/libexec/rpcd/luci.nb6', 'usr/sbin/nb6-guest', 'usr/sbin/nb6-wps', 'usr/sbin/nb6-update'):
+    for f in ('usr/libexec/rpcd/luci.nb6', 'usr/sbin/nb6-guest', 'usr/sbin/nb6-wps', 'usr/sbin/nb6-update', 'usr/sbin/nb6-maint'):
         src = open(os.path.join(ROOT, 'files', f), encoding='utf-8').read()
-        for pat in (r'"error":"([^"]+)"', r'echo "([a-z][^"$]*)" >&2', r'fail "([^"$]+)"'):
+        for pat in (r'"error":"([^"]+)"', r'echo "([a-z][^"$]*)" >&2', r'fail "([^"$]+)"', r'event "([^"$]+)"'):
             for m in re.finditer(pat, src):
                 add(m.group(1))
     return out

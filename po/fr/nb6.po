@@ -632,6 +632,123 @@ msgstr "Les voyants Internet, VPN et Système de l'anneau, et le mode éco activ
 msgid "Built with"
 msgstr "Réalisé avec"
 
+msgid "Sunday"
+msgstr "Dimanche"
+
+msgid "Monday"
+msgstr "Lundi"
+
+msgid "Tuesday"
+msgstr "Mardi"
+
+msgid "Wednesday"
+msgstr "Mercredi"
+
+msgid "Thursday"
+msgstr "Jeudi"
+
+msgid "Friday"
+msgstr "Vendredi"
+
+msgid "Saturday"
+msgstr "Samedi"
+
+msgid "never"
+msgstr "jamais"
+
+msgid "Maintenance settings saved."
+msgstr "Réglages de maintenance enregistrés."
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Keeps the box running by itself: checks it every 5 minutes, and can restart it once a week at night."
+msgstr "Garde la box en forme toute seule : la vérifie toutes les 5 minutes, et peut la redémarrer une fois par semaine la nuit."
+
+msgid "Health check"
+msgstr "Vérification"
+
+msgid "Every 5 minutes, the box checks that DNS and DHCP, the Wi-Fi and the web interface are running, and restarts what has stopped. When memory runs low, it restarts the statistics services, which are the first to grow."
+msgstr "Toutes les 5 minutes, la box vérifie que le DNS et le DHCP, le Wi-Fi et l'interface web fonctionnent, et relance ce qui s'est arrêté. Quand la mémoire manque, elle relance les services de statistiques, qui sont les premiers à grossir."
+
+msgid "Check the box every 5 minutes"
+msgstr "Vérifier la box toutes les 5 minutes"
+
+msgid "Free memory"
+msgstr "Mémoire libre"
+
+msgid "Scheduler"
+msgstr "Planificateur"
+
+msgid "running"
+msgstr "en marche"
+
+msgid "stopped"
+msgstr "arrêté"
+
+msgid "Weekly restart"
+msgstr "Redémarrage hebdomadaire"
+
+msgid "A restart once a week clears the memory of this 64 MB box. It takes about 2 minutes, at night when nobody uses the network. It is skipped during an update or if the box started less than an hour before."
+msgstr "Un redémarrage par semaine libère la mémoire de cette box de 64 Mo. Il dure environ 2 minutes, la nuit quand personne n'utilise le réseau. Il est sauté pendant une mise à jour ou si la box a démarré moins d'une heure avant."
+
+msgid "Restart the box every week"
+msgstr "Redémarrer la box chaque semaine"
+
+msgid "at"
+msgstr "à"
+
+msgid "Last weekly restart"
+msgstr "Dernier redémarrage hebdomadaire"
+
+msgid "Restart the box"
+msgstr "Redémarrer la box"
+
+msgid "Internet, Wi-Fi and the VPN are cut for about 2 minutes. Your settings are kept."
+msgstr "Internet, le Wi-Fi et le VPN sont coupés pendant environ 2 minutes. Vos réglages sont conservés."
+
+msgid "Restarting"
+msgstr "Redémarrage"
+
+msgid "The box restarts. This page reloads when it is back."
+msgstr "La box redémarre. Cette page se recharge à son retour."
+
+msgid "Restart"
+msgstr "Redémarrer"
+
+msgid "Restart now"
+msgstr "Redémarrer maintenant"
+
+msgid "Recent events"
+msgstr "Événements récents"
+
+msgid "Nothing to report since the box started."
+msgstr "Rien à signaler depuis le démarrage de la box."
+
+msgid "Guests"
+msgstr "Invités"
+
+msgid "Network map"
+msgstr "Carte du réseau"
+
+msgid "%d device(s) connected"
+msgstr "%d appareil(s) connecté(s)"
+
+msgid "nothing connected"
+msgstr "rien de connecté"
+
+msgid "internet blocked or scheduled"
+msgstr "internet bloqué ou programmé"
+
+msgid "%d other device(s) seen recently, now offline."
+msgstr "%d autre(s) appareil(s) vu(s) récemment, maintenant hors ligne."
+
+msgid "All devices and their settings"
+msgstr "Tous les appareils et leurs réglages"
+
+msgid "The box, its internet connection and VPN tunnels, and the devices connected right now."
+msgstr "La box, sa connexion internet et ses tunnels VPN, et les appareils connectés en ce moment."
+
 msgid "Other (choose the ports)"
 msgstr "Autre (choisir les ports)"
 
@@ -733,9 +850,6 @@ msgstr "Bouton SFR, appui long (3 s)"
 
 msgid "Product names and logos are trademarks of their owners and only identify their services. Icons: Simple Icons (CC0)."
 msgstr "Les noms et logos de produits sont des marques de leurs propriétaires et servent seulement à identifier leurs services. Icônes : Simple Icons (CC0)."
-
-msgid "never"
-msgstr "jamais"
 
 msgid "%d s ago"
 msgstr "il y a %d s"
@@ -1043,6 +1157,9 @@ msgstr "UPnP n'est pas installé"
 msgid "wake failed"
 msgstr "échec du réveil"
 
+msgid "invalid day"
+msgstr "jour invalide"
+
 msgid "the guest password needs 8 to 63 characters (letters, digits, symbols)"
 msgstr "le mot de passe invités doit faire de 8 à 63 caractères (lettres, chiffres, symboles)"
 
@@ -1066,4 +1183,28 @@ msgstr "somme de contrôle incorrecte"
 
 msgid "image rejected by sysupgrade -T"
 msgstr "image refusée par sysupgrade -T"
+
+msgid "DNS and DHCP service had stopped: restarted"
+msgstr "Le service DNS et DHCP s'était arrêté : relancé"
+
+msgid "web server had stopped: restarted"
+msgstr "Le serveur web s'était arrêté : relancé"
+
+msgid "web interface backend had stopped: restarted"
+msgstr "Le service de l'interface web s'était arrêté : relancé"
+
+msgid "Wi-Fi service had stopped: restarted"
+msgstr "Le service Wi-Fi s'était arrêté : relancé"
+
+msgid "memory low: statistics services restarted"
+msgstr "Mémoire faible : services de statistiques relancés"
+
+msgid "weekly restart skipped: the box started less than an hour ago"
+msgstr "Redémarrage hebdomadaire sauté : la box a démarré il y a moins d'une heure"
+
+msgid "weekly restart skipped: an update is running"
+msgstr "Redémarrage hebdomadaire sauté : une mise à jour est en cours"
+
+msgid "weekly restart"
+msgstr "Redémarrage hebdomadaire"
 

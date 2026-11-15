@@ -382,7 +382,7 @@ upnp_set() {
 case "$1" in
 list)
 	cat <<'EOF'
-{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {}, "wifi": {}, "wifi_set": { "ssid": "str", "key": "str", "enabled": true }, "guest": {}, "guest_set": { "enabled": true, "key": "str", "port4": true }, "host_set": { "mac": "str", "name": "str", "ip": "str" }, "backup_info": {}, "wifi_scan": {}, "wifi_channel": { "channel": "str" }, "wps_start": {}, "wps_cancel": {}, "wps_status": {}, "forwards": {}, "forward_add": { "name": "str", "proto": "str", "ext": "str", "int": "str", "ip": "str", "mac": "str" }, "forward_set": { "id": "str", "action": "str" }, "upnp_set": { "enabled": true } }
+{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {}, "wifi": {}, "wifi_set": { "ssid": "str", "key": "str", "enabled": true }, "guest": {}, "guest_set": { "enabled": true, "key": "str", "port4": true }, "host_set": { "mac": "str", "name": "str", "ip": "str" }, "backup_info": {}, "wifi_scan": {}, "wifi_channel": { "channel": "str" }, "wps_start": {}, "wps_cancel": {}, "wps_status": {}, "forwards": {}, "forward_add": { "name": "str", "proto": "str", "ext": "str", "int": "str", "ip": "str", "mac": "str" }, "forward_set": { "id": "str", "action": "str" }, "upnp_set": { "enabled": true }, "maint": {}, "maint_set": { "health": true, "reboot": true, "day": "str", "time": "str" }, "maint_reboot": {} }
 EOF
 	;;
 call)
@@ -502,6 +502,28 @@ call)
 	upnp_set)
 		read -r input; json_load "$input"; json_get_var enabled enabled
 		upnp_set "$enabled"
+		;;
+	maint)
+		/usr/sbin/nb6-maint status
+		;;
+	maint_set)
+		read -r input; json_load "$input"
+		json_get_var health health; json_get_var reboot reboot; json_get_var day day; json_get_var time time
+		case "$day" in [0-6]) ;; *) echo '{"error":"invalid day"}'; exit 0 ;; esac
+		echo "$time" | grep -qE '^([01][0-9]|2[0-3]):[0-5][0-9]$' || { echo '{"error":"invalid time"}'; exit 0; }
+		uci -q get nb6.maint >/dev/null || uci set nb6.maint=maint
+		uci set nb6.maint.health="$([ "$health" = 1 ] && echo 1 || echo 0)"
+		uci set nb6.maint.reboot="$([ "$reboot" = 1 ] && echo 1 || echo 0)"
+		uci set nb6.maint.reboot_day="$day"
+		uci set nb6.maint.reboot_time="$time"
+		uci commit nb6
+		/usr/sbin/nb6-maint apply
+		echo '{"ok":true}'
+		;;
+	maint_reboot)
+		logger -t nb6-maint "restart requested from the web interface"
+		( sleep 2; sync; reboot ) >/dev/null 2>&1 &
+		echo '{"ok":true}'
 		;;
 	backup_info)
 		backup_json

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.6 (2026-11-15)
+### Added
+- **Network map** page (Neufbox > Network map): the internet connection and the VPN tunnels above the
+  box, the devices connected right now below it (wired, Wi-Fi, guests), with their state; refreshed
+  every 15 s. Drawn as SVG from the same data as the Home and Devices pages.
+- **Maintenance** page (Neufbox > Maintenance), `nb6-maint`:
+  - a **health check** every 5 minutes (cron) restarts DNS and DHCP, the web interface or the Wi-Fi
+    service if they have stopped, and the statistics services when memory runs low; on by default;
+  - an optional **weekly restart** at night (day and time to choose), skipped during an update or
+    within an hour of a boot;
+  - *Restart now*, and the recent events in plain words.
+
 ## 2.5 (2026-11-15)
 ### Added
 - **French interface**: the Neufbox pages, their menus and messages are translated (`po/fr/nb6.po`,

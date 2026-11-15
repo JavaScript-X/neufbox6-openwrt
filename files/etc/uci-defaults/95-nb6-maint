@@ -1,0 +1,13 @@
+#!/bin/sh
+# Scheduled maintenance (LuCI > Neufbox > Maintenance): settings for boxes upgraded from an earlier
+# version (their /etc/config/nb6 is kept), then the cron entries. The user's choices are kept.
+uci -q get nb6.maint >/dev/null || {
+	uci set nb6.maint=maint
+	uci set nb6.maint.health=1
+	uci set nb6.maint.reboot=0
+	uci set nb6.maint.reboot_day=0
+	uci set nb6.maint.reboot_time=04:00
+	uci commit nb6
+}
+/usr/sbin/nb6-maint apply
+exit 0

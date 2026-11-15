@@ -24,6 +24,8 @@ All of them are in the image; the ones that change the box's behaviour are off u
 | Wi-Fi channel scan, WPS | `nb6/wifi` page, `nb6-wps` | on | LuCI > Neufbox > Wi-Fi |
 | Port forwarding, UPnP | `nb6/ports` page, `luci-app-upnp` | UPnP off | LuCI > Neufbox > Games and servers |
 | French interface | `po/fr/nb6.po`, `luci-i18n-*-fr` | follows the browser | everywhere |
+| Network map | `nb6/map` page | on | LuCI > Neufbox > Network map |
+| Health check, weekly restart | `nb6-maint`, cron | health check on, weekly restart off | LuCI > Neufbox > Maintenance |
 
 ## zram swap
 Part of the RAM is used as a compressed swap device (lzo), so the 54 MB that Linux sees behave like
@@ -178,3 +180,25 @@ The Neufbox pages, their menu entries and the messages from the box are translat
 packages translate the rest. LuCI follows the browser language (System > System > Language to force one).
 After changing a page, `python3 scripts/i18n-extract.py` adds the new strings to the catalog and lists
 the ones without a translation.
+
+## Network map
+LuCI > Neufbox > Network map draws the internet connection (green, orange or red like the Internet LED)
+and the two VPN tunnels above the box, and the devices connected right now below it, in three groups:
+wired, Wi-Fi and guests. A red dot marks a device whose internet access is blocked or scheduled. The map
+refreshes every 15 s; a click on a device opens the Devices page. Devices seen recently but offline are
+counted under the map.
+
+## Maintenance
+LuCI > Neufbox > Maintenance (`nb6-maint`, settings in `/etc/config/nb6`, section `maint`):
+- **Health check** (on by default), every 5 minutes from cron: restarts dnsmasq (DNS and DHCP), uhttpd
+  and rpcd (web interface) or hostapd if they have stopped, and collectd and nlbwmon when less than 3 MB of
+  memory is available. It does nothing during an update. The Wi-Fi switch, eco mode and the Wi-Fi
+  schedule are respected (they take the Wi-Fi interface down, the check only acts when hostapd itself is
+  gone).
+- **Weekly restart** (off by default): day and time to choose, for example Sunday at 04:00. Skipped during
+  an update or when the box started less than an hour before. The time of the last one is kept in
+  `/etc/nb6-maint.last`.
+- *Restart now*, and the recent events (also in the system log, tag `nb6-maint`).
+
+From the command line: `nb6-maint health`, `nb6-maint status`, `nb6-maint apply` (after editing the
+settings by hand).

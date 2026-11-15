@@ -95,5 +95,21 @@
 			"type": "view",
 			"path": "nb6/ports"
 		}
+	},
+	"admin/nb6/maint": {
+		"title": "Maintenance",
+		"order": 28,
+		"action": {
+			"type": "view",
+			"path": "nb6/maint"
+		}
+	},
+	"admin/nb6/map": {
+		"title": "Network map",
+		"order": 6,
+		"action": {
+			"type": "view",
+			"path": "nb6/map"
+		}
 	}
 }

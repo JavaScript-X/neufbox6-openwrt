@@ -1,0 +1,105 @@
+#!/bin/sh
+# Scheduled maintenance (LuCI > Neufbox > Maintenance), settings in /etc/config/nb6, section "maint".
+#
+#   nb6-maint apply     write the cron entries from the settings and (re)start cron
+#   nb6-maint health    check the box and repair what is broken (cron, every 5 minutes)
+#   nb6-maint reboot    weekly restart (cron); skipped right after a boot or during an update
+#   nb6-maint status    JSON for LuCI
+#
+# The health check restarts what has stopped (DNS/DHCP, Wi-Fi, web interface) and, when memory runs
+# low, the statistics services, which are the first to grow. Events go to the system log and to
+# /tmp/nb6-maint.log (the last 40); the time of the last weekly restart is kept in /etc/nb6-maint.last.
+
+LOG=/tmp/nb6-maint.log
+LAST=/etc/nb6-maint.last
+CRON=/etc/crontabs/root
+TAG='# nb6-maint'
+
+event() {
+	logger -t nb6-maint "$1"
+	echo "$(date +%s) $1" >> $LOG
+	tail -n 40 $LOG > $LOG.tmp && mv $LOG.tmp $LOG
+}
+
+get() { uci -q get nb6.maint.$1; }
+
+apply() {
+	local en day time h m
+	mkdir -p /etc/crontabs
+	touch $CRON
+	grep -v "$TAG" $CRON > $CRON.tmp; mv $CRON.tmp $CRON
+	[ "$(get health)" = 0 ] || echo "*/5 * * * * /usr/sbin/nb6-maint health $TAG" >> $CRON
+	if [ "$(get reboot)" = 1 ]; then
+		day=$(get reboot_day); time=$(get reboot_time)
+		h=${time%:*}; m=${time#*:}
+		case "$day" in [0-6]) ;; *) day=0 ;; esac
+		echo "$h$m" | grep -qE '^([01][0-9]|2[0-3])[0-5][0-9]$' || { h=04; m=00; }
+		echo "${m#0} ${h#0} * * $day /usr/sbin/nb6-maint reboot $TAG" >> $CRON
+	fi
+	/etc/init.d/cron enable
+	/etc/init.d/cron restart >/dev/null 2>&1
+}
+
+running() { pidof "$1" >/dev/null; }	# pgrep -x misses programs started with their full path
+
+health() {
+	local avail
+	# an update or a flash in progress: do not touch anything
+	case "$(cat /tmp/nb6-update.status 2>/dev/null)" in downloading|checking|flashing|"freeing memory") return ;; esac
+	pgrep -f "sysupgrade" >/dev/null && return
+
+	running dnsmasq || { /etc/init.d/dnsmasq restart; event "DNS and DHCP service had stopped: restarted"; }
+	running uhttpd || { /etc/init.d/uhttpd restart; event "web server had stopped: restarted"; }
+	running rpcd || { /etc/init.d/rpcd restart; event "web interface backend had stopped: restarted"; }
+	# hostapd itself gone (the Wi-Fi switch, eco mode and the Wi-Fi schedule only take the interface down)
+	if [ "$(uci -q get wireless.radio0.disabled)" != 1 ] && ! running hostapd; then
+		/etc/init.d/wpad restart >/dev/null 2>&1
+		sleep 5
+		[ "$(uci -q get nb6.eco.enabled)" = 1 ] && [ "$(uci -q get nb6.eco.wifi_off)" = 1 ] || wifi up
+		event "Wi-Fi service had stopped: restarted"
+	fi
+
+	avail=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
+	if [ "${avail:-99999}" -lt 3072 ]; then
+		for s in collectd nlbwmon; do
+			[ -x /etc/init.d/$s ] && /etc/init.d/$s enabled && /etc/init.d/$s restart >/dev/null 2>&1
+		done
+		sync; echo 3 > /proc/sys/vm/drop_caches
+		logger -t nb6-maint "$avail KB of memory available"
+		event "memory low: statistics services restarted"
+	fi
+}
+
+reboot_now() {
+	local up=$(cut -d. -f1 /proc/uptime)
+	[ "$up" -lt 3600 ] && { event "weekly restart skipped: the box started less than an hour ago"; return; }
+	case "$(cat /tmp/nb6-update.status 2>/dev/null)" in downloading|checking|flashing|"freeing memory")
+		event "weekly restart skipped: an update is running"; return ;; esac
+	date +%s > $LAST
+	event "weekly restart"
+	sync
+	reboot
+}
+
+status() {
+	local first=1 t msg
+	printf '{"health":%s,"reboot":%s,"reboot_day":"%s","reboot_time":"%s","last_reboot":%s,"uptime":%s,"mem_available":%s,"cron":%s,"events":[' \
+		"$([ "$(get health)" = 0 ] && echo false || echo true)" \
+		"$([ "$(get reboot)" = 1 ] && echo true || echo false)" \
+		"$(get reboot_day)" "$(get reboot_time)" "$(cat $LAST 2>/dev/null || echo 0)" \
+		"$(cut -d. -f1 /proc/uptime)" "$(awk '/MemAvailable/ {print $2}' /proc/meminfo)" \
+		"$(pidof crond >/dev/null && echo true || echo false)"
+	[ -s $LOG ] && while read -r t msg; do
+		[ $first = 1 ] || printf ','; first=0
+		printf '{"time":%s,"text":"%s"}' "$t" "$(echo "$msg" | tr -d '"\\')"
+	done < $LOG
+	printf ']}\n'
+}
+
+case "$1" in
+	apply) apply ;;
+	health) health ;;
+	reboot) reboot_now ;;
+	status) status ;;
+	*) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

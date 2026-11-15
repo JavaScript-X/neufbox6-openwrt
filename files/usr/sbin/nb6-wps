@@ -1,0 +1,43 @@
+#!/bin/sh
+# WPS push-button pairing (Wi-Fi switch pushed past "on", or LuCI > Neufbox > Wi-Fi).
+#
+#   nb6-wps start    open pairing for 2 minutes on every access point (the wlan LED blinks)
+#   nb6-wps cancel   close it
+#   nb6-wps status   JSON: {"status":"Active|Timed-out|Disabled|...","last":"Success|None|..."}
+#
+# hostapd in OpenWrt 25.12 is driven over ubus. The LED blinks at 500 ms: faster blinking floods
+# the I2C LED controller.
+
+LED=/sys/class/leds/white:wlan
+
+aps() { ubus -S list 'hostapd.*'; }
+
+case "$1" in
+start)
+	ok=0
+	for obj in $(aps); do ubus -S call "$obj" wps_start >/dev/null 2>&1 && ok=1; done
+	if [ $ok = 1 ]; then
+		logger -t nb6-wps "pairing open for 120 s"
+		echo timer > $LED/trigger
+		echo 500 > $LED/delay_on; echo 500 > $LED/delay_off
+		( sleep 120; /etc/init.d/led restart ) >/dev/null 2>&1 &
+		echo '{"ok":true}'
+	else
+		logger -t nb6-wps "no access point accepted wps_start"
+		echo '{"error":"no Wi-Fi access point accepted WPS (is the Wi-Fi on?)"}'
+	fi
+	;;
+cancel)
+	for obj in $(aps); do ubus -S call "$obj" wps_cancel >/dev/null 2>&1; done
+	/etc/init.d/led restart >/dev/null 2>&1
+	echo '{"ok":true}'
+	;;
+status)
+	obj=$(aps | head -1)
+	st=$([ -n "$obj" ] && ubus -S call "$obj" wps_status 2>/dev/null)
+	printf '{"status":"%s","last":"%s"}\n' \
+		"$(echo "$st" | jsonfilter -e '@.pbc_status' 2>/dev/null)" "$(echo "$st" | jsonfilter -e '@.last_wps_result' 2>/dev/null)"
+	;;
+*)
+	sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

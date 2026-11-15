@@ -203,7 +203,7 @@ return view.extend({
 							c.preshared_key || '', c.endpoint_host, c.endpoint_port || '51820', provider).then(res => {
 							ui.hideModal();
 							if (res && res.error)
-								ui.addNotification(null, E('p', res.error), 'danger');
+								ui.addNotification(null, E('p', _(res.error)), 'danger');
 							else
 								window.location.reload();
 						});

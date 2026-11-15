@@ -79,5 +79,21 @@
 			"type": "view",
 			"path": "nb6/backup"
 		}
+	},
+	"admin/nb6/wifi": {
+		"title": "Wi-Fi",
+		"order": 7,
+		"action": {
+			"type": "view",
+			"path": "nb6/wifi"
+		}
+	},
+	"admin/nb6/ports": {
+		"title": "Games and servers",
+		"order": 12,
+		"action": {
+			"type": "view",
+			"path": "nb6/ports"
+		}
 	}
 }

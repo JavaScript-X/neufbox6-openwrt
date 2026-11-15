@@ -50,6 +50,17 @@ grep -E "DEVICE_sfr|B43_FW_DSL|kmod-b43=|kmod-switch-rtl8367=|wpad-mbedtls=|kmod
 echo "== $(date -u) download"
 make -j"$JOBS" download >/dev/null
 
+echo "== $(date -u) translations of the Neufbox pages"
+# po/<lang>/nb6.po -> /usr/lib/lua/luci/i18n/nb6.<lang>.lmo, loaded by LuCI next to its own catalogs
+PO2LMO=staging_dir/hostpkg/bin/po2lmo
+[ -x $PO2LMO ] || make -j"$JOBS" package/feeds/luci/luci-base/host/compile >/dev/null
+mkdir -p files/usr/lib/lua/luci/i18n
+for po in "$PORT"/po/*/nb6.po; do
+	lang=$(basename "$(dirname "$po")")
+	$PO2LMO "$po" files/usr/lib/lua/luci/i18n/nb6.$lang.lmo
+	echo "nb6.$lang.lmo: $(wc -c < files/usr/lib/lua/luci/i18n/nb6.$lang.lmo) bytes"
+done
+
 echo "== $(date -u) build"
 make -j"$JOBS" target/linux/clean
 nice -n 10 make -j"$JOBS" || { make -j1 V=s 2>&1 | tail -80; exit 1; }

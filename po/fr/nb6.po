@@ -1,0 +1,1069 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgid "Not installed"
+msgstr "Non installé"
+
+msgid "Working... (about 1 minute)"
+msgstr "En cours... (environ 1 minute)"
+
+msgid "Active"
+msgstr "Actif"
+
+msgid "Starting"
+msgstr "Démarrage"
+
+msgid "Off"
+msgstr "Désactivé"
+
+msgid "Ad and tracker blocking"
+msgstr "Blocage des publicités et des traqueurs"
+
+msgid "State"
+msgstr "État"
+
+msgid "Blocked domains"
+msgstr "Domaines bloqués"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Peter Lowe's ad servers"
+msgstr "Serveurs publicitaires de Peter Lowe"
+
+msgid "Last update"
+msgstr "Dernière mise à jour"
+
+msgid "Turn off"
+msgstr "Désactiver"
+
+msgid "Turn on"
+msgstr "Activer"
+
+msgid "Update the list now"
+msgstr "Mettre à jour la liste"
+
+msgid "Ad blocking"
+msgstr "Blocage des pubs"
+
+msgid "Blocks advertising servers for every device on the network, through the box's DNS. The list is updated automatically and uses about 1.5 MB of RAM while active."
+msgstr "Bloque les serveurs publicitaires pour tous les appareils du réseau, via le DNS de la box. La liste se met à jour automatiquement et occupe environ 1,5 Mo de mémoire quand le blocage est actif."
+
+msgid "Good to know"
+msgstr "Bon à savoir"
+
+msgid "Devices must use the box as their DNS server (the default with DHCP)."
+msgstr "Les appareils doivent utiliser la box comme serveur DNS (c'est le cas par défaut avec le DHCP)."
+
+msgid "If a site no longer works, turn blocking off to check, then report the domain to the list maintainers."
+msgstr "Si un site ne fonctionne plus, désactivez le blocage pour vérifier, puis signalez le domaine aux auteurs de la liste."
+
+msgid "The list is Peter Lowe's ad server list (about 3 500 domains). Bigger lists do not fit in the 64 MB of RAM of this box: the DNS service would be stopped for lack of memory."
+msgstr "La liste utilisée est celle des serveurs publicitaires de Peter Lowe (environ 3 500 domaines). Des listes plus grandes ne tiennent pas dans les 64 Mo de mémoire de cette box : le service DNS serait arrêté faute de mémoire."
+
+msgid "CFE bootloader"
+msgstr "Chargeur de démarrage CFE"
+
+msgid "firmware (OpenWrt and its settings)"
+msgstr "firmware (OpenWrt et ses réglages)"
+
+msgid "kernel"
+msgstr "noyau"
+
+msgid "system"
+msgstr "système"
+
+msgid "settings and installed packages"
+msgstr "réglages et paquets installés"
+
+msgid "nvram (MAC address, calibration)"
+msgstr "nvram (adresse MAC, calibrage)"
+
+msgid "Backup"
+msgstr "Sauvegarde"
+
+msgid "Keep a copy of the settings, and of the whole flash memory of the box."
+msgstr "Gardez une copie des réglages, et de toute la mémoire flash de la box."
+
+msgid "Settings"
+msgstr "Réglages"
+
+msgid "All the settings: network, Wi-Fi, VPN, devices, guest network. Restore it in System > Backup / Flash Firmware, or keep it before an experiment."
+msgstr "Tous les réglages : réseau, Wi-Fi, VPN, appareils, réseau invités. À restaurer dans Système > Sauvegarde / Mise à jour, ou à garder avant un essai."
+
+msgid "The archive contains the Wi-Fi passwords and the VPN private keys: keep it private."
+msgstr "L'archive contient les mots de passe Wi-Fi et les clés privées des VPN : gardez-la pour vous."
+
+msgid "Download the settings"
+msgstr "Télécharger les réglages"
+
+msgid "Full flash copy"
+msgstr "Copie complète de la flash"
+
+msgid "The whole 16 MB chip, byte for byte: bootloader, firmware and nvram, which holds the MAC address and radio calibration of this box. With it, the box can be brought back to this exact state through the serial console."
+msgstr "Toute la puce de 16 Mo, octet par octet : chargeur de démarrage, firmware et nvram, qui contient l'adresse MAC et le calibrage radio de cette box. Avec ce fichier, la box peut être remise exactement dans cet état par la console série."
+
+msgid "Takes under a minute on the local network. Keep the file somewhere safe, it is the only copy of this box's nvram."
+msgstr "Moins d'une minute sur le réseau local. Gardez le fichier en lieu sûr : c'est la seule copie de la nvram de cette box."
+
+msgid "Download the flash (%s)"
+msgstr "Télécharger la flash (%s)"
+
+msgid "Flash layout"
+msgstr "Organisation de la flash"
+
+msgid "Partition"
+msgstr "Partition"
+
+msgid "Content"
+msgstr "Contenu"
+
+msgid "Size"
+msgstr "Taille"
+
+msgid "SHA-256 (to check a copy)"
+msgstr "SHA-256 (pour vérifier une copie)"
+
+msgid "The flash copy is these three parts in order: cfe, firmware, nvram. Its first 64 KB and its last 64 KB must match the checksums above."
+msgstr "La copie de la flash contient ces trois parties dans l'ordre : cfe, firmware, nvram. Ses 64 premiers Ko et ses 64 derniers Ko doivent correspondre aux sommes ci-dessus."
+
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Wed"
+msgstr "Mer"
+
+msgid "Thu"
+msgstr "Jeu"
+
+msgid "Fri"
+msgstr "Ven"
+
+msgid "Sat"
+msgstr "Sam"
+
+msgid "Sun"
+msgstr "Dim"
+
+msgid "excellent"
+msgstr "excellent"
+
+msgid "good"
+msgstr "bon"
+
+msgid "fair"
+msgstr "moyen"
+
+msgid "weak"
+msgstr "faible"
+
+msgid "Allowed"
+msgstr "Autorisé"
+
+msgid "Blocked %s-%s"
+msgstr "Bloqué %s-%s"
+
+msgid "Blocked"
+msgstr "Bloqué"
+
+msgid "for example laptop-anna"
+msgstr "par exemple portable-anna"
+
+msgid "Name and address: %s"
+msgstr "Nom et adresse : %s"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Letters, digits and dashes. The device is also reachable under this name on the local network."
+msgstr "Lettres, chiffres et tirets. L'appareil est aussi joignable sous ce nom sur le réseau local."
+
+msgid "Always give it the same address"
+msgstr "Toujours lui donner la même adresse"
+
+msgid "Useful for a printer, a NAS or a port forward. The device gets the address at its next connection (unplug it or turn its Wi-Fi off and on)."
+msgstr "Utile pour une imprimante, un NAS ou une redirection de port. L'appareil reçoit l'adresse à sa prochaine connexion (débranchez-le ou coupez et rallumez son Wi-Fi)."
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Internet access: %s"
+msgstr "Accès à internet : %s"
+
+msgid "Blocked during these hours (for example at night)"
+msgstr "Bloqué pendant ces heures (par exemple la nuit)"
+
+msgid "From"
+msgstr "De"
+
+msgid "to"
+msgstr "à"
+
+msgid "The time window may cross midnight. The device stays on the local network."
+msgstr "La plage horaire peut passer minuit. L'appareil reste sur le réseau local."
+
+msgid "Unnamed device"
+msgstr "Appareil sans nom"
+
+msgid "fixed address"
+msgstr "adresse fixe"
+
+msgid "Guest Wi-Fi"
+msgstr "Wi-Fi invités"
+
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+msgid "Guest, wired"
+msgstr "Invité, câblé"
+
+msgid "Wired"
+msgstr "Câblé"
+
+msgid "Guest network"
+msgstr "Réseau invités"
+
+msgid "Internet only, managed on the Guest network page"
+msgstr "Internet seulement, géré dans la page Réseau invités"
+
+msgid "Internet access"
+msgstr "Accès à internet"
+
+msgid "Wake-on-LAN: start this device from the network"
+msgstr "Wake-on-LAN : allumer cet appareil depuis le réseau"
+
+msgid "Wake-on-LAN packet sent to %s"
+msgstr "Paquet Wake-on-LAN envoyé à %s"
+
+msgid "Could not send the Wake-on-LAN packet"
+msgstr "Impossible d'envoyer le paquet Wake-on-LAN"
+
+msgid "Wake up"
+msgstr "Réveiller"
+
+msgid "Device"
+msgstr "Appareil"
+
+msgid "IP address"
+msgstr "Adresse IP"
+
+msgid "Connection"
+msgstr "Connexion"
+
+msgid "Traffic"
+msgstr "Trafic"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "No device seen yet."
+msgstr "Aucun appareil vu pour l'instant."
+
+msgid "Devices"
+msgstr "Appareils"
+
+msgid "Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, block its internet access (always or during set hours) or wake it up."
+msgstr "Les appareils vus sur le réseau local, avec leur connexion et leur trafic. Donnez un nom et une adresse fixe à un appareil, bloquez son accès à internet (toujours ou à certaines heures) ou réveillez-le."
+
+msgid "guest password: %s"
+msgstr "mot de passe invités : %s"
+
+msgid "Guests scan this code to join."
+msgstr "Les invités scannent ce code pour se connecter."
+
+msgid "The QR code for guests appears here once the guest network is on."
+msgstr "Le QR code pour les invités apparaît ici une fois le réseau invités activé."
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Wi-Fi name"
+msgstr "Nom du Wi-Fi"
+
+msgid "Guests connected"
+msgstr "Invités connectés"
+
+msgid "Ethernet port 4"
+msgstr "Port Ethernet 4"
+
+msgid "guest network"
+msgstr "réseau invités"
+
+msgid "home network"
+msgstr "réseau de la maison"
+
+msgid "Guest network on"
+msgstr "Réseau invités activé"
+
+msgid "Guest password"
+msgstr "Mot de passe invités"
+
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+msgid "8 to 63 characters, different from the main Wi-Fi password. Change it to cut off the current guests."
+msgstr "8 à 63 caractères, différent du mot de passe Wi-Fi principal. Changez-le pour déconnecter les invités actuels."
+
+msgid "Ethernet port 4 also goes to the guest network"
+msgstr "Le port Ethernet 4 va aussi sur le réseau invités"
+
+msgid "For a wired guest, a TV or a games console. A computer plugged into port 4 then no longer reaches the home network."
+msgstr "Pour un invité en câble, une TV ou une console. Un ordinateur branché sur le port 4 n'accède alors plus au réseau de la maison."
+
+msgid "Saved. The Wi-Fi restarts for a few seconds."
+msgstr "Enregistré. Le Wi-Fi redémarre quelques secondes."
+
+msgid "The main Wi-Fi has no password: give it one first (Home page, Wi-Fi card), the guest network uses a password of its own."
+msgstr "Le Wi-Fi principal n'a pas de mot de passe : donnez-lui-en un d'abord (page Accueil, carte Wi-Fi), le réseau invités utilise un mot de passe à lui."
+
+msgid "How it works: "
+msgstr "Comment ça marche : "
+
+msgid "this Wi-Fi chip has a single access point, so guests join the same Wi-Fi name as you, with the guest password. That password puts them on a separate network (192.168.30.x) that reaches the internet, and the commercial VPN when it is on, but not your devices, the tailnet or the box settings."
+msgstr "cette puce Wi-Fi n'a qu'un seul point d'accès, les invités se connectent donc au même nom de Wi-Fi que vous, avec le mot de passe invités. Ce mot de passe les place sur un réseau séparé (192.168.30.x) qui a accès à internet, et au VPN commercial quand il est actif, mais pas à vos appareils, au tailnet ni aux réglages de la box."
+
+msgid "Internet access for visitors, kept apart from your devices."
+msgstr "Un accès à internet pour les visiteurs, séparé de vos appareils."
+
+msgid "Starting..."
+msgstr "Démarrage..."
+
+msgid "Freeing memory (Wi-Fi turns off for a moment)..."
+msgstr "Libération de la mémoire (le Wi-Fi se coupe un moment)..."
+
+msgid "Downloading the new version (about 11 MB)..."
+msgstr "Téléchargement de la nouvelle version (environ 11 Mo)..."
+
+msgid "Checking the download..."
+msgstr "Vérification du téléchargement..."
+
+msgid "Installing. The box restarts by itself; do not unplug it."
+msgstr "Installation. La box redémarre toute seule ; ne la débranchez pas."
+
+msgid "%d d"
+msgstr "%d j"
+
+msgid "%d h"
+msgstr "%d h"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "Internet available"
+msgstr "Internet disponible"
+
+msgid "WAN link up, no internet"
+msgstr "Lien WAN actif, pas d'internet"
+
+msgid "WAN cable unplugged"
+msgstr "Câble WAN débranché"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Connected"
+msgstr "Connecté"
+
+msgid "Connecting"
+msgstr "Connexion en cours"
+
+msgid "Not configured"
+msgstr "Non configuré"
+
+msgid "SFR Neufbox 6"
+msgstr "SFR Neufbox 6"
+
+msgid "SFR Neufbox 6 (product photo (c) SFR)"
+msgstr "SFR Neufbox 6 (photo produit (c) SFR)"
+
+msgid "Internet"
+msgstr "Internet"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "System"
+msgstr "Système"
+
+msgid "none (open network)"
+msgstr "aucun (réseau ouvert)"
+
+msgid "hide"
+msgstr "masquer"
+
+msgid "show"
+msgstr "afficher"
+
+msgid "Network name"
+msgstr "Nom du réseau"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Connected devices"
+msgstr "Appareils connectés"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "%s (2.4 GHz)"
+msgstr "%s (2,4 GHz)"
+
+msgid "QR code"
+msgstr "QR code"
+
+msgid "Edit"
+msgstr "Modifier"
+
+msgid "Join %s"
+msgstr "Se connecter à %s"
+
+msgid "Point the camera of a phone or tablet at the code to join the Wi-Fi without typing the password."
+msgstr "Visez le code avec l'appareil photo d'un téléphone ou d'une tablette pour se connecter au Wi-Fi sans taper le mot de passe."
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Wi-Fi on"
+msgstr "Wi-Fi activé"
+
+msgid "Password (8 to 63 characters)"
+msgstr "Mot de passe (8 à 63 caractères)"
+
+msgid "The Wi-Fi restarts for a few seconds. Devices connected over Wi-Fi reconnect by themselves, or with the new password if you change it."
+msgstr "Le Wi-Fi redémarre quelques secondes. Les appareils en Wi-Fi se reconnectent tout seuls, ou avec le nouveau mot de passe si vous le changez."
+
+msgid "Wi-Fi settings saved. The Wi-Fi restarts now."
+msgstr "Réglages Wi-Fi enregistrés. Le Wi-Fi redémarre."
+
+msgid "Install version %s"
+msgstr "Installer la version %s"
+
+msgid "Check for updates"
+msgstr "Rechercher une mise à jour"
+
+msgid "Software"
+msgstr "Logiciel"
+
+msgid "Installed version"
+msgstr "Version installée"
+
+msgid "Latest version"
+msgstr "Dernière version"
+
+msgid "checking..."
+msgstr "vérification..."
+
+msgid "GitHub not reachable"
+msgstr "GitHub injoignable"
+
+msgid "Update available"
+msgstr "Mise à jour disponible"
+
+msgid "Up to date"
+msgstr "À jour"
+
+msgid "The box downloads the new version from GitHub, checks it, installs it and restarts. Your settings are kept."
+msgstr "La box télécharge la nouvelle version sur GitHub, la vérifie, l'installe et redémarre. Vos réglages sont conservés."
+
+msgid "Internet and Wi-Fi are cut for about 10 minutes. Do not unplug the box."
+msgstr "Internet et le Wi-Fi sont coupés pendant environ 10 minutes. Ne débranchez pas la box."
+
+msgid "Install"
+msgstr "Installer"
+
+msgid "Updating"
+msgstr "Mise à jour"
+
+msgid "Update failed"
+msgstr "Échec de la mise à jour"
+
+msgid "Error: %s"
+msgstr "Erreur : %s"
+
+msgid "Nothing was written: the box keeps its current version."
+msgstr "Rien n'a été écrit : la box garde sa version actuelle."
+
+msgid "The box takes longer than expected. Reload this page in a few minutes."
+msgstr "La box met plus de temps que prévu. Rechargez cette page dans quelques minutes."
+
+msgid "Connection type"
+msgstr "Type de connexion"
+
+msgid "Fibre port (WAN)"
+msgstr "Port Fibre (WAN)"
+
+msgid "Addressing"
+msgstr "Adressage"
+
+msgid "automatic (DHCP)"
+msgstr "automatique (DHCP)"
+
+msgid "static"
+msgstr "statique"
+
+msgid "Connected for"
+msgstr "Connecté depuis"
+
+msgid "IPv4 address"
+msgstr "Adresse IPv4"
+
+msgid "IPv6 address"
+msgstr "Adresse IPv6"
+
+msgid "The box"
+msgstr "La box"
+
+msgid "Running for"
+msgstr "Allumée depuis"
+
+msgid "Kernel"
+msgstr "Noyau"
+
+msgid "Temperature"
+msgstr "Température"
+
+msgid "Power supply"
+msgstr "Alimentation"
+
+msgid "Memory in use"
+msgstr "Mémoire utilisée"
+
+msgid "Eco mode"
+msgstr "Mode éco"
+
+msgid "Tailnet"
+msgstr "Tailnet"
+
+msgid "Commercial VPN"
+msgstr "VPN commercial"
+
+msgid "Devices and services"
+msgstr "Appareils et services"
+
+msgid "What is connected to the box right now."
+msgstr "Ce qui est connecté à la box en ce moment."
+
+msgid "Ethernet ports in use"
+msgstr "Ports Ethernet utilisés"
+
+msgid "Wi-Fi clients on %s"
+msgstr "Appareils Wi-Fi sur %s"
+
+msgid "Wi-Fi is off"
+msgstr "Le Wi-Fi est coupé"
+
+msgid "devices with an address (DHCP)"
+msgstr "appareils avec une adresse (DHCP)"
+
+msgid "VPN tunnels up"
+msgstr "Tunnels VPN actifs"
+
+msgid "Information"
+msgstr "Informations"
+
+msgid "Ring LEDs"
+msgstr "Voyants de l'anneau"
+
+msgid "Brightness"
+msgstr "Luminosité"
+
+msgid "1 (dim) to 31 (full)."
+msgstr "1 (faible) à 31 (maximum)."
+
+msgid "Night dimming"
+msgstr "Atténuation de nuit"
+
+msgid "HH:MM, 24 h. The window may cross midnight."
+msgstr "HH:MM, sur 24 h. La plage peut passer minuit."
+
+msgid "Use HH:MM, e.g. 23:00"
+msgstr "Format HH:MM, par ex. 23:00"
+
+msgid "Until"
+msgstr "Jusqu'à"
+
+msgid "Use HH:MM, e.g. 07:00"
+msgstr "Format HH:MM, par ex. 07:00"
+
+msgid "Night brightness"
+msgstr "Luminosité de nuit"
+
+msgid "The ECO button switches it. This hardware cannot slow its LAN ports down nor lower its Wi-Fi power, so eco mode dims the LEDs and pauses background work."
+msgstr "Le bouton ECO l'active ou le désactive. Ce matériel ne peut ni ralentir ses ports LAN ni baisser sa puissance Wi-Fi : le mode éco atténue donc les voyants et met en pause les tâches de fond."
+
+msgid "On: turn off"
+msgstr "Activé : désactiver"
+
+msgid "Off: turn on"
+msgstr "Désactivé : activer"
+
+msgid "Ring brightness in eco mode"
+msgstr "Luminosité de l'anneau en mode éco"
+
+msgid "Keep the traffic LEDs"
+msgstr "Garder les voyants de trafic"
+
+msgid "White Wi-Fi and Accès LEDs keep blinking with traffic."
+msgstr "Les voyants blancs Wi-Fi et Accès continuent de clignoter avec le trafic."
+
+msgid "Pause statistics"
+msgstr "Mettre en pause les statistiques"
+
+msgid "Stops collectd (graphs) and nlbwmon (per-device traffic) while eco mode is on."
+msgstr "Arrête collectd (graphiques) et nlbwmon (trafic par appareil) pendant le mode éco."
+
+msgid "Turn Wi-Fi off"
+msgstr "Couper le Wi-Fi"
+
+msgid "LEDs and eco mode"
+msgstr "Voyants et mode éco"
+
+msgid "The Internet, VPN and System LEDs on the ring, and the eco mode switched by the ECO button."
+msgstr "Les voyants Internet, VPN et Système de l'anneau, et le mode éco activé par le bouton ECO."
+
+msgid "Built with"
+msgstr "Réalisé avec"
+
+msgid "Other (choose the ports)"
+msgstr "Autre (choisir les ports)"
+
+msgid "Web server (HTTP)"
+msgstr "Serveur web (HTTP)"
+
+msgid "Web server (HTTPS)"
+msgstr "Serveur web (HTTPS)"
+
+msgid "Remote desktop"
+msgstr "Bureau à distance"
+
+msgid "for example Game server"
+msgstr "par exemple Serveur de jeu"
+
+msgid "No device on the home network"
+msgstr "Aucun appareil sur le réseau de la maison"
+
+msgid "e.g. 25565 or 27000-27030"
+msgstr "par ex. 25565 ou 27000-27030"
+
+msgid "same as the internet port"
+msgstr "le même que le port internet"
+
+msgid "Open a port"
+msgstr "Ouvrir un port"
+
+msgid "Service"
+msgstr "Service"
+
+msgid "Protocol"
+msgstr "Protocole"
+
+msgid "Internet port"
+msgstr "Port internet"
+
+msgid "Device port"
+msgstr "Port de l'appareil"
+
+msgid "The device keeps its current address from now on, so the rule keeps working. Only open ports for services you trust: they become reachable from the whole internet."
+msgstr "L'appareil garde désormais son adresse actuelle, pour que la règle continue de fonctionner. N'ouvrez des ports que pour des services de confiance : ils deviennent joignables depuis tout internet."
+
+msgid "Open"
+msgstr "Ouvert"
+
+msgid "Paused"
+msgstr "En pause"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Resume"
+msgstr "Reprendre"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "The box is behind another router (its internet address is a private one). Open the same ports on that router too, towards this box, or nothing will reach your devices."
+msgstr "La box est derrière un autre routeur (son adresse internet est une adresse privée). Ouvrez aussi les mêmes ports sur ce routeur, vers cette box, sinon rien n'atteindra vos appareils."
+
+msgid "Open ports"
+msgstr "Ports ouverts"
+
+msgid "Lets a game server, a NAS or a camera be reached from the internet: connections to a port of the box go to the device you choose."
+msgstr "Rend un serveur de jeu, un NAS ou une caméra joignable depuis internet : les connexions vers un port de la box vont à l'appareil choisi."
+
+msgid "Port"
+msgstr "Port"
+
+msgid "No port is open."
+msgstr "Aucun port n'est ouvert."
+
+msgid "Automatic opening (UPnP)"
+msgstr "Ouverture automatique (UPnP)"
+
+msgid "Consoles (PlayStation, Xbox, Switch) and some games open the ports they need by themselves. It improves online play (open NAT type), but any program on the home network can then open ports."
+msgstr "Les consoles (PlayStation, Xbox, Switch) et certains jeux ouvrent eux-mêmes les ports dont ils ont besoin. Cela améliore le jeu en ligne (NAT ouvert), mais tout programme du réseau de la maison peut alors ouvrir des ports."
+
+msgid "UPnP is not installed in this firmware."
+msgstr "UPnP n'est pas installé dans ce firmware."
+
+msgid "Opened by"
+msgstr "Ouvert par"
+
+msgid "No port opened automatically right now."
+msgstr "Aucun port ouvert automatiquement en ce moment."
+
+msgid "Games and servers"
+msgstr "Jeux et serveurs"
+
+msgid "Open ports towards a device, and automatic opening for consoles."
+msgstr "Ouvrir des ports vers un appareil, et ouverture automatique pour les consoles."
+
+msgid "SFR button, short press"
+msgstr "Bouton SFR, appui court"
+
+msgid "SFR button, long press (3 s)"
+msgstr "Bouton SFR, appui long (3 s)"
+
+msgid "Product names and logos are trademarks of their owners and only identify their services. Icons: Simple Icons (CC0)."
+msgstr "Les noms et logos de produits sont des marques de leurs propriétaires et servent seulement à identifier leurs services. Icônes : Simple Icons (CC0)."
+
+msgid "never"
+msgstr "jamais"
+
+msgid "%d s ago"
+msgstr "il y a %d s"
+
+msgid "%d min ago"
+msgstr "il y a %d min"
+
+msgid "%d h ago"
+msgstr "il y a %d h"
+
+msgid "set it up below"
+msgstr "configurez-le ci-dessous"
+
+msgid "Tunnel"
+msgstr "Tunnel"
+
+msgid "Endpoint"
+msgstr "Serveur"
+
+msgid "Last handshake"
+msgstr "Dernier échange"
+
+msgid "Received / sent"
+msgstr "Reçu / envoyé"
+
+msgid "Action"
+msgstr "Action"
+
+msgid "Import a WireGuard file"
+msgstr "Importer un fichier WireGuard"
+
+msgid "Download the WireGuard configuration from your provider (Mullvad, Proton VPN, NordVPN, Surfshark, ...), then choose the file or paste its content. It is sent to the box only."
+msgstr "Téléchargez la configuration WireGuard chez votre fournisseur (Mullvad, Proton VPN, NordVPN, Surfshark...), puis choisissez le fichier ou collez son contenu. Il n'est envoyé qu'à la box."
+
+msgid "This does not look like a WireGuard file: PrivateKey, Address, PublicKey and Endpoint are needed."
+msgstr "Ce n'est pas un fichier WireGuard : PrivateKey, Address, PublicKey et Endpoint sont nécessaires."
+
+msgid "Import"
+msgstr "Importer"
+
+msgid "Set up"
+msgstr "Configurer"
+
+msgid "Creates the two WireGuard interfaces (disabled) and their firewall zones, and generates the tailnet key on the box."
+msgstr "Crée les deux interfaces WireGuard (désactivées) et leurs zones de pare-feu, et génère la clé du tailnet sur la box."
+
+msgid "VPN interfaces"
+msgstr "Interfaces VPN"
+
+msgid "Tunnel to a WireGuard server that routes to your Tailscale network (or any private network). Only those networks go through it. See docs/VPN.md for the server side."
+msgstr "Tunnel vers un serveur WireGuard qui mène à votre réseau Tailscale (ou à tout réseau privé). Seuls ces réseaux passent par lui. Voir docs/VPN.md pour le côté serveur."
+
+msgid "Public key of the box"
+msgstr "Clé publique de la box"
+
+msgid "Add it as a peer on the server, with AllowedIPs = the tunnel address of the box and its LAN."
+msgstr "Ajoutez-la comme pair sur le serveur, avec AllowedIPs = l'adresse de tunnel de la box et son réseau local."
+
+msgid "Key"
+msgstr "Clé"
+
+msgid "Generate a new key"
+msgstr "Générer une nouvelle clé"
+
+msgid "The server will refuse the box until its peer is updated with the new public key. Continue?"
+msgstr "Le serveur refusera la box tant que son pair n'aura pas la nouvelle clé publique. Continuer ?"
+
+msgid "Tunnel address of the box"
+msgstr "Adresse de tunnel de la box"
+
+msgid "Tailnet server"
+msgstr "Serveur du tailnet"
+
+msgid "Server public key"
+msgstr "Clé publique du serveur"
+
+msgid "A WireGuard key is 44 base64 characters ending with \"=\""
+msgstr "Une clé WireGuard fait 44 caractères base64 et se termine par \"=\""
+
+msgid "Server address"
+msgstr "Adresse du serveur"
+
+msgid "Host name or IP address of the server."
+msgstr "Nom ou adresse IP du serveur."
+
+msgid "Server port"
+msgstr "Port du serveur"
+
+msgid "Remote networks"
+msgstr "Réseaux distants"
+
+msgid "Networks reached through the tunnel. 100.64.0.0/10 is the Tailscale address range."
+msgstr "Réseaux joints par le tunnel. 100.64.0.0/10 est la plage d'adresses de Tailscale."
+
+msgid "Route the remote networks"
+msgstr "Router les réseaux distants"
+
+msgid "Keepalive (s)"
+msgstr "Maintien de connexion (s)"
+
+msgid "All internet traffic of the LAN goes through the provider while this tunnel is up. The tailnet keeps working (its routes are more specific)."
+msgstr "Tout le trafic internet du réseau local passe par le fournisseur tant que ce tunnel est actif. Le tailnet continue de fonctionner (ses routes sont plus précises)."
+
+msgid "Provider file"
+msgstr "Fichier du fournisseur"
+
+msgid "Import a WireGuard file..."
+msgstr "Importer un fichier WireGuard..."
+
+msgid "Private key"
+msgstr "Clé privée"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid "DNS servers"
+msgstr "Serveurs DNS"
+
+msgid "Resolvers of the provider, used while the tunnel is up."
+msgstr "Serveurs DNS du fournisseur, utilisés tant que le tunnel est actif."
+
+msgid "Provider server"
+msgstr "Serveur du fournisseur"
+
+msgid "Provider"
+msgstr "Fournisseur"
+
+msgid "Only used for the logo; found automatically when importing a file."
+msgstr "Sert seulement pour le logo ; détecté automatiquement à l'import d'un fichier."
+
+msgid "Other"
+msgstr "Autre"
+
+msgid "Public key"
+msgstr "Clé publique"
+
+msgid "Preshared key"
+msgstr "Clé prépartagée"
+
+msgid "Networks through the tunnel"
+msgstr "Réseaux par le tunnel"
+
+msgid "Keep 0.0.0.0/1 and 128.0.0.0/1: they carry all internet traffic without removing the WAN default route, so the server stays reachable."
+msgstr "Gardez 0.0.0.0/1 et 128.0.0.0/1 : ils font passer tout le trafic internet sans supprimer la route par défaut du WAN, pour que le serveur reste joignable."
+
+msgid "Route them through the tunnel"
+msgstr "Les router par le tunnel"
+
+msgid "Two WireGuard tunnels, switched with the SFR button. VPN LED: green = tailnet, orange = commercial VPN, alternating = both, orange blinking = connecting."
+msgstr "Deux tunnels WireGuard, activés avec le bouton SFR. Voyant VPN : vert = tailnet, orange = VPN commercial, en alternance = les deux, orange clignotant = connexion en cours."
+
+msgid "Status"
+msgstr "État"
+
+msgid "strong"
+msgstr "fort"
+
+msgid "medium"
+msgstr "moyen"
+
+msgid "Scan to see the Wi-Fi networks around the box and which channel is the least crowded."
+msgstr "Lancez une analyse pour voir les réseaux Wi-Fi autour de la box et le canal le moins encombré."
+
+msgid "Current channel"
+msgstr "Canal actuel"
+
+msgid "automatic"
+msgstr "automatique"
+
+msgid "Scan the networks around"
+msgstr "Analyser les réseaux alentour"
+
+msgid "Scanning (a few seconds, Wi-Fi devices may pause briefly)..."
+msgstr "Analyse en cours (quelques secondes, les appareils Wi-Fi peuvent marquer une courte pause)..."
+
+msgid "%d network(s) on channel %d"
+msgstr "%d réseau(x) sur le canal %d"
+
+msgid "The box already uses the best channel (%d)."
+msgstr "La box utilise déjà le meilleur canal (%d)."
+
+msgid "Recommended: channel %d."
+msgstr "Recommandé : canal %d."
+
+msgid "It is the least crowded of channels 1, 6 and 11, the three that do not overlap."
+msgstr "C'est le moins encombré des canaux 1, 6 et 11, les trois qui ne se chevauchent pas."
+
+msgid "Switching to channel %d. The Wi-Fi restarts for a few seconds."
+msgstr "Passage au canal %d. Le Wi-Fi redémarre quelques secondes."
+
+msgid "Use channel %d"
+msgstr "Utiliser le canal %d"
+
+msgid "hidden network"
+msgstr "réseau masqué"
+
+msgid "Crowding per channel (networks that overlap it, the strongest counting most):"
+msgstr "Encombrement par canal (réseaux qui le chevauchent, les plus forts comptent le plus) :"
+
+msgid "current"
+msgstr "actuel"
+
+msgid "recommended"
+msgstr "recommandé"
+
+msgid "Network"
+msgstr "Réseau"
+
+msgid "Signal"
+msgstr "Signal"
+
+msgid "No other network found."
+msgstr "Aucun autre réseau trouvé."
+
+msgid "The scan failed: %s"
+msgstr "L'analyse a échoué : %s"
+
+msgid "WPS pairing"
+msgstr "Appairage WPS"
+
+msgid "For a printer, a TV or a repeater with a WPS button: start pairing here (or push the Wi-Fi switch on the box past \"on\"), then press the WPS button of the device within 2 minutes. It joins the main Wi-Fi without typing the password."
+msgstr "Pour une imprimante, une TV ou un répéteur avec un bouton WPS : lancez l'appairage ici (ou poussez l'interrupteur Wi-Fi de la box au-delà de « on »), puis appuyez sur le bouton WPS de l'appareil dans les 2 minutes. Il rejoint le Wi-Fi principal sans taper le mot de passe."
+
+msgid "Start pairing"
+msgstr "Lancer l'appairage"
+
+msgid "Pairing stopped."
+msgstr "Appairage arrêté."
+
+msgid "Stop"
+msgstr "Arrêter"
+
+msgid "A device has joined the Wi-Fi."
+msgstr "Un appareil a rejoint le Wi-Fi."
+
+msgid "Waiting for a device: press its WPS button (%d s left)."
+msgstr "En attente d'un appareil : appuyez sur son bouton WPS (encore %d s)."
+
+msgid "No device paired in 2 minutes."
+msgstr "Aucun appareil appairé en 2 minutes."
+
+msgid "Channel and WPS pairing. The network name and password are on the Home page."
+msgstr "Canal et appairage WPS. Le nom du réseau et le mot de passe sont sur la page Accueil."
+
+msgid "Neufbox"
+msgstr "Neufbox"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "invalid MAC address"
+msgstr "adresse MAC invalide"
+
+msgid "invalid time"
+msgstr "heure invalide"
+
+msgid "the Wi-Fi name needs 1 to 32 characters"
+msgstr "le nom du Wi-Fi doit faire de 1 à 32 caractères"
+
+msgid "the Wi-Fi password needs 8 to 63 characters (letters, digits, symbols)"
+msgstr "le mot de passe Wi-Fi doit faire de 8 à 63 caractères (lettres, chiffres, symboles)"
+
+msgid "the Wi-Fi password must differ from the guest password"
+msgstr "le mot de passe Wi-Fi doit être différent du mot de passe invités"
+
+msgid "invalid IP address"
+msgstr "adresse IP invalide"
+
+msgid "the address must be in the local network"
+msgstr "l'adresse doit être dans le réseau local"
+
+msgid "this is the address of the box"
+msgstr "c'est l'adresse de la box"
+
+msgid "this address is already given to another device"
+msgstr "cette adresse est déjà donnée à un autre appareil"
+
+msgid "invalid channel"
+msgstr "canal invalide"
+
+msgid "give the rule a name"
+msgstr "donnez un nom à la règle"
+
+msgid "invalid protocol"
+msgstr "protocole invalide"
+
+msgid "invalid external port"
+msgstr "port internet invalide"
+
+msgid "invalid device port"
+msgstr "port de l'appareil invalide"
+
+msgid "the device must be on the home network"
+msgstr "l'appareil doit être sur le réseau de la maison"
+
+msgid "this port is already forwarded"
+msgstr "ce port est déjà redirigé"
+
+msgid "unknown rule"
+msgstr "règle inconnue"
+
+msgid "UPnP is not installed"
+msgstr "UPnP n'est pas installé"
+
+msgid "wake failed"
+msgstr "échec du réveil"
+
+msgid "the guest password needs 8 to 63 characters (letters, digits, symbols)"
+msgstr "le mot de passe invités doit faire de 8 à 63 caractères (lettres, chiffres, symboles)"
+
+msgid "the guest password must differ from the main Wi-Fi password"
+msgstr "le mot de passe invités doit être différent du mot de passe Wi-Fi principal"
+
+msgid "no Wi-Fi access point accepted WPS (is the Wi-Fi on?)"
+msgstr "aucun point d'accès Wi-Fi n'a accepté le WPS (le Wi-Fi est-il activé ?)"
+
+msgid "no image in the latest release"
+msgstr "pas d'image dans la dernière version"
+
+msgid "no checksum for the image"
+msgstr "pas de somme de contrôle pour l'image"
+
+msgid "download failed"
+msgstr "échec du téléchargement"
+
+msgid "checksum mismatch"
+msgstr "somme de contrôle incorrecte"
+
+msgid "image rejected by sysupgrade -T"
+msgstr "image refusée par sysupgrade -T"
+

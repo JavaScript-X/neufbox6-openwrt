@@ -1,6 +1,6 @@
 {
 	"luci-app-nb6": {
-		"description": "Neufbox 6: home page, devices, Wi-Fi and guests, VPN, LEDs, ad blocking, updates, backup",
+		"description": "Neufbox 6: home page, devices, Wi-Fi and guests, games and servers, VPN, LEDs, ad blocking, updates, backup",
 		"read": {
 			"ubus": {
 				"luci.nb6": [
@@ -13,7 +13,9 @@
 					"update_status",
 					"wifi",
 					"guest",
-					"backup_info"
+					"backup_info",
+					"wps_status",
+					"forwards"
 				]
 			},
 			"uci": [
@@ -22,7 +24,8 @@
 				"firewall",
 				"adblock-fast",
 				"dhcp",
-				"wireless"
+				"wireless",
+				"upnpd"
 			]
 		},
 		"write": {
@@ -40,7 +43,14 @@
 					"update_install",
 					"wifi_set",
 					"guest_set",
-					"host_set"
+					"host_set",
+					"wifi_scan",
+					"wifi_channel",
+					"wps_start",
+					"wps_cancel",
+					"forward_add",
+					"forward_set",
+					"upnp_set"
 				]
 			},
 			"uci": [
@@ -49,7 +59,8 @@
 				"firewall",
 				"adblock-fast",
 				"dhcp",
-				"wireless"
+				"wireless",
+				"upnpd"
 			]
 		}
 	}

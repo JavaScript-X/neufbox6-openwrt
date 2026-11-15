@@ -79,7 +79,7 @@ return view.extend({
 							'class': 'btn cbi-button-action',
 							'click': ui.createHandlerFn(this, () => callGuestSet(on.checked, key.value.trim(), port4.checked).then(r => {
 								if (r && r.error) {
-									ui.addNotification(null, E('p', r.error), 'danger');
+									ui.addNotification(null, E('p', _(r.error)), 'danger');
 									return;
 								}
 								ui.addNotification(null, E('p', _('Saved. The Wi-Fi restarts for a few seconds.')), 'info');

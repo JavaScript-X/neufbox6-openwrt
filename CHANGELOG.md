@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.5 (2026-11-15)
+### Added
+- **French interface**: the Neufbox pages, their menus and messages are translated (`po/fr/nb6.po`,
+  compiled to `nb6.fr.lmo` at build time), with LuCI's own French packages. LuCI follows the browser
+  language. `scripts/i18n-extract.py` updates the catalog from the sources.
+- **Wi-Fi** page (Neufbox > Wi-Fi): scans the networks around (names, channel, signal, never their
+  hardware addresses), charts how crowded each channel is, recommends the best of channels 1, 6 and 11
+  and switches to it in one click.
+- **WPS pairing** works: from the Wi-Fi page or with the Wi-Fi switch pushed past "on" (`nb6-wps`).
+  hostapd is driven over ubus.
+- **Games and servers** page (Neufbox > Games and servers): open a port towards a device in a few
+  clicks, with presets (Minecraft, web server, remote desktop, SSH, Plex, WireGuard); the device keeps a
+  fixed address. Warns when the box is behind another router. **UPnP** on/off for consoles
+  (`luci-app-upnp`), with the ports they opened.
+
+### Changed
+- Error messages from the box are shown translated.
+
 ## 2.4 (2026-11-14)
 ### Added
 - **Wi-Fi card** on the Home page: network name, password (hidden until asked), connected devices,

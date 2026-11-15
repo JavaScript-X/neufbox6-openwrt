@@ -127,7 +127,7 @@ return view.extend({
 					'class': 'btn cbi-button-action',
 					'click': ui.createHandlerFn(this, () => callHost(e.mac, name.value.trim(), fixed.checked ? ip.value.trim() : '').then(r => {
 						if (r && r.error) {
-							ui.addNotification(null, E('p', r.error), 'danger');
+							ui.addNotification(null, E('p', _(r.error)), 'danger');
 							return;
 						}
 						ui.hideModal();
@@ -169,7 +169,7 @@ return view.extend({
 						return callAccess(e.mac, m, start.value, stop.value, d.length == 7 ? '' : d.join(' '), e.name || '')
 							.then(res => {
 								ui.hideModal();
-								if (res && res.error) ui.addNotification(null, E('p', res.error), 'danger');
+								if (res && res.error) ui.addNotification(null, E('p', _(res.error)), 'danger');
 								return this.refresh();
 							});
 					})

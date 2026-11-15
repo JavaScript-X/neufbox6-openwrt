@@ -14,13 +14,15 @@ SRC=/work/openwrt
 
 echo "== $(date -u) source: $REF"
 if [ ! -d "$SRC/.git" ]; then
-  git clone -q --depth 1 --branch "$REF" https://github.com/openwrt/openwrt.git "$SRC"
-else
-  # reuse the existing tree (keeps build_dir/staging_dir caches) but reset all tracked/untracked sources
-  git -C "$SRC" fetch -q --depth 1 origin "$REF"
-  git -C "$SRC" checkout -q -f FETCH_HEAD
-  git -C "$SRC" clean -q -fd -e /dl -e /feeds -e /build_dir -e /staging_dir -e /bin -e /tmp -e /logs -e /.config
+  # new tree; $SRC may already hold a restored download cache (dl/), so init in place instead of cloning
+  mkdir -p "$SRC"
+  git -C "$SRC" init -q
+  git -C "$SRC" remote add origin https://github.com/openwrt/openwrt.git
 fi
+# reuse the existing tree (keeps build_dir/staging_dir caches) but reset all tracked/untracked sources
+git -C "$SRC" fetch -q --depth 1 origin "$REF"
+git -C "$SRC" checkout -q -f FETCH_HEAD
+git -C "$SRC" clean -q -fd -e /dl -e /feeds -e /build_dir -e /staging_dir -e /bin -e /tmp -e /logs -e /.config
 cd "$SRC"
 git log -1 --format="   %h %cd %s"
 
@@ -53,7 +55,12 @@ make -j"$JOBS" download >/dev/null
 echo "== $(date -u) translations of the Neufbox pages"
 # po/<lang>/nb6.po -> /usr/lib/lua/luci/i18n/nb6.<lang>.lmo, loaded by LuCI next to its own catalogs
 PO2LMO=staging_dir/hostpkg/bin/po2lmo
-[ -x $PO2LMO ] || make -j"$JOBS" package/feeds/luci/luci-base/host/compile >/dev/null
+if [ ! -x $PO2LMO ]; then
+	# fresh tree (CI): build LuCI's po2lmo from its sources, in a copy so the feed stays clean
+	rm -rf /tmp/nb6-po2lmo && cp -r feeds/luci/modules/luci-base/src /tmp/nb6-po2lmo
+	make -s -C /tmp/nb6-po2lmo po2lmo >/dev/null
+	PO2LMO=/tmp/nb6-po2lmo/po2lmo
+fi
 mkdir -p files/usr/lib/lua/luci/i18n
 for po in "$PORT"/po/*/nb6.po; do
 	lang=$(basename "$(dirname "$po")")

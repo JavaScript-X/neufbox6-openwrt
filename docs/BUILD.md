@@ -39,3 +39,12 @@ docker run --rm --network host -v "$PWD":/port:ro -v /srv/nb6-work:/work nb6-bui
 - The firmware choice `B43_FW_DSL_3580L` is a Kconfig *choice*: delete `tmp/` before `make defconfig`
   or the default (5.100.138) stays selected.
 - Keep scripts with LF line endings (`.gitattributes`): CRLF breaks `set -o pipefail`.
+
+## Builds on GitHub
+`.github/workflows/build.yml` runs the same `scripts/build.sh` in the same `docker/Dockerfile` image on a
+GitHub runner (about 2 hours from scratch; the downloaded sources are cached between runs):
+- **Actions > Build > Run workflow** builds the current `main` (optionally another OpenWrt branch or tag)
+  and keeps the images as a workflow artifact for 14 days;
+- **pushing a tag `vX.Y`** does the same, then creates a **draft release** with the images, `SHA256SUMS`
+  and the CHANGELOG section of that version. It is published by hand after testing on a box, so the
+  one-click update never offers an untested image.

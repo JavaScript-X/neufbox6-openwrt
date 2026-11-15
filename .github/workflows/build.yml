@@ -1,0 +1,88 @@
+# Builds the firmware with scripts/build.sh in the docker/Dockerfile image, the same way as a local build.
+#
+# - Run by hand (Actions > Build > Run workflow): the images are kept as a workflow artifact for 14 days.
+# - Pushing a tag vX.Y: same build, then a draft GitHub release with the images, SHA256SUMS and the
+#   CHANGELOG section of that version. The draft is published by hand after testing on a box.
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      openwrt_ref:
+        description: OpenWrt branch or tag
+        default: openwrt-25.12
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af >/dev/null
+          df -h / /mnt
+
+      - name: Work directory (uid 1000 = builder in the image)
+        run: |
+          sudo mkdir -p /mnt/work/openwrt/dl
+          sudo chown -R 1000:1000 /mnt/work
+
+      - name: Cache downloaded sources
+        uses: actions/cache@v4
+        with:
+          path: /mnt/work/openwrt/dl
+          key: dl-${{ hashFiles('config/nb6.config', 'scripts/build.sh') }}-${{ github.run_id }}
+          restore-keys: dl-
+
+      - name: Build environment
+        run: docker build -t nb6-builder docker/
+
+      - name: Build
+        run: |
+          sudo chown -R 1000:1000 /mnt/work
+          docker run --rm --network host \
+            -e OPENWRT_REF="${{ github.event.inputs.openwrt_ref || 'openwrt-25.12' }}" \
+            -e JOBS="$(nproc)" \
+            -v "$PWD":/port:ro -v /mnt/work:/work \
+            nb6-builder bash /port/scripts/build.sh
+
+      - name: Collect the images
+        run: |
+          mkdir -p out
+          B=/mnt/work/openwrt/bin/targets/bmips/bcm6362
+          cp $B/*neufbox-6*-cfe.bin $B/*neufbox-6*-sysupgrade.bin $B/*neufbox-6*.manifest $B/feeds.buildinfo $B/version.buildinfo out/
+          (cd out && sha256sum * > SHA256SUMS && cat SHA256SUMS)
+          # release notes: the CHANGELOG section of this version
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '$0 ~ "^## " v " " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Build of $GITHUB_REF_NAME" > notes.md
+          { echo; echo "Built by GitHub Actions from \`$GITHUB_SHA\` ($(cat out/version.buildinfo))."; } >> notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neufbox6-openwrt-${{ github.ref_name }}
+          path: out/
+          retention-days: 14
+
+      - name: Draft release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "release $GITHUB_REF_NAME exists already: images kept as the workflow artifact only"
+          else
+            gh release create "$GITHUB_REF_NAME" out/* --draft --title "neufbox6-openwrt ${GITHUB_REF_NAME#v}" --notes-file notes.md
+          fi

@@ -67,4 +67,4 @@ driver only reads the port link, and b43 ignores transmit power changes.
 - Wi-Fi switch: off/on works.
 - Sensors: temperature ~51 °C, voltage ~12.2 V, boot counter readable.
 - I2C load: the SFR microcontroller refuses (NAKs) writes when LEDs change faster than ~2/s; traffic and WPS blinks are therefore 500 ms. The driver retries up to 5 times.
-- **WPS** works since 2.5 (tested with a Windows laptop: `WPS-SUCCESS` 3 s after the switch). It can also be started from LuCI > Neufbox > Wi-Fi. Earlier images lacked hostapd's ubus WPS calls.
+- **WPS** works since 2.5 (refused while the guest network is on, see [EXTRAS.md](EXTRAS.md#wi-fi-page)) (tested with a Windows laptop: `WPS-SUCCESS` 3 s after the switch). It can also be started from LuCI > Neufbox > Wi-Fi. Earlier images lacked hostapd's ubus WPS calls.

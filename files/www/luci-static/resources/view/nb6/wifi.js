@@ -143,9 +143,10 @@ return view.extend({
 		return E('div', { 'class': 'cbi-section' }, [
 			E('h3', {}, _('WPS pairing')),
 			E('p', {}, _('For a printer, a TV or a repeater with a WPS button: start pairing here (or push the Wi-Fi switch on the box past "on"), then press the WPS button of the device within 2 minutes. It joins the main Wi-Fi without typing the password.')),
+			w.guest ? E('p', { 'class': 'alert-message warning' }, _('WPS is not available while the guest network is on: with it, a device paired by WPS would lose the Wi-Fi at the next restart. Use the QR code of the Home page instead.')) : E([]),
 			E('div', { 'class': 'nb6-wps' }, [
 				E('button', {
-					'class': 'btn cbi-button-action', 'disabled': w.enabled ? null : '',
+					'class': 'btn cbi-button-action', 'disabled': (w.enabled && !w.guest) ? null : '',
 					'click': ui.createHandlerFn(this, () => callWpsStart().then(r => {
 						if (r && r.error) return ui.addNotification(null, E('p', _(r.error)), 'danger');
 						this.followWps(Date.now());

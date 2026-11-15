@@ -161,6 +161,9 @@ LuCI > Neufbox > Wi-Fi:
   pairing for 2 minutes (`nb6-wps start`, hostapd over ubus), with the progress and the result. The device
   joins the main Wi-Fi (not the guest network). Phones generally cannot: Android dropped WPS in version 9;
   Windows can (it offers "connect by pressing the button on the router").
+  WPS is refused while the guest network is on: hostapd then gives each WPS device a random key of its
+  own, kept in memory only, and the device would lose the Wi-Fi at the next restart. Use the QR code
+  instead (Home page, Wi-Fi card).
 
 ## Games and servers
 LuCI > Neufbox > Games and servers:

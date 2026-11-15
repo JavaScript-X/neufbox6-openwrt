@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.6.1 (2026-11-15)
+### Fixed
+- WPS is refused while the guest network is on. With the guest network, hostapd uses a multi-password
+  file and then gives each WPS device a random key of its own, kept in memory only: the device lost the
+  Wi-Fi at the next Wi-Fi restart or reboot. The Wi-Fi page explains it and points to the QR code, which
+  works in every case. Without the guest network, WPS gives the normal password as before.
+- Builds from a fresh tree (GitHub Actions): LuCI's `po2lmo` is compiled from its sources when the tree
+  does not have it yet.
+
 ## 2.6 (2026-11-15)
 ### Added
 - **Network map** page (Neufbox > Network map): the internet connection and the VPN tunnels above the

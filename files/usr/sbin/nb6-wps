@@ -1,7 +1,8 @@
 #!/bin/sh
 # WPS push-button pairing (Wi-Fi switch pushed past "on", or LuCI > Neufbox > Wi-Fi).
 #
-#   nb6-wps start    open pairing for 2 minutes on every access point (the wlan LED blinks)
+#   nb6-wps start    open pairing for 2 minutes on every access point (the wlan LED blinks);
+#                    refused while the guest network is on (see below)
 #   nb6-wps cancel   close it
 #   nb6-wps status   JSON: {"status":"Active|Timed-out|Disabled|...","last":"Success|None|..."}
 #
@@ -14,6 +15,13 @@ aps() { ubus -S list 'hostapd.*'; }
 
 case "$1" in
 start)
+	# With the guest network on, hostapd uses a multi-password file and then gives each WPS device a
+	# random key of its own, kept in memory only: the device would lose the Wi-Fi at the next restart.
+	if [ "$(uci -q get nb6.guest.enabled)" = 1 ]; then
+		logger -t nb6-wps "refused: the guest network is on"
+		echo '{"error":"WPS is not available while the guest network is on: use the QR code of the Home page instead"}'
+		exit 0
+	fi
 	ok=0
 	for obj in $(aps); do ubus -S call "$obj" wps_start >/dev/null 2>&1 && ok=1; done
 	if [ $ok = 1 ]; then

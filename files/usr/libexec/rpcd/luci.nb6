@@ -188,6 +188,7 @@ wifi_json() {
 	json_add_string encryption "${enc:-none}"
 	json_add_string channel "$(uci -q get wireless.radio0.channel)"
 	json_add_int clients "$(iw dev phy0-ap0 station dump 2>/dev/null | grep -c '^Station')"
+	json_add_boolean guest "$([ "$(uci -q get nb6.guest.enabled)" = 1 ] && echo 1 || echo 0)"
 	json_dump
 }
 

@@ -1073,6 +1073,9 @@ msgstr "Appairage WPS"
 msgid "For a printer, a TV or a repeater with a WPS button: start pairing here (or push the Wi-Fi switch on the box past \"on\"), then press the WPS button of the device within 2 minutes. It joins the main Wi-Fi without typing the password."
 msgstr "Pour une imprimante, une TV ou un répéteur avec un bouton WPS : lancez l'appairage ici (ou poussez l'interrupteur Wi-Fi de la box au-delà de « on »), puis appuyez sur le bouton WPS de l'appareil dans les 2 minutes. Il rejoint le Wi-Fi principal sans taper le mot de passe."
 
+msgid "WPS is not available while the guest network is on: with it, a device paired by WPS would lose the Wi-Fi at the next restart. Use the QR code of the Home page instead."
+msgstr "Le WPS n'est pas disponible quand le réseau invités est activé : un appareil appairé par WPS perdrait alors le Wi-Fi au prochain redémarrage. Utilisez plutôt le QR code de la page Accueil."
+
 msgid "Start pairing"
 msgstr "Lancer l'appairage"
 
@@ -1165,6 +1168,9 @@ msgstr "le mot de passe invités doit faire de 8 à 63 caractères (lettres, chi
 
 msgid "the guest password must differ from the main Wi-Fi password"
 msgstr "le mot de passe invités doit être différent du mot de passe Wi-Fi principal"
+
+msgid "WPS is not available while the guest network is on: use the QR code of the Home page instead"
+msgstr "le WPS n'est pas disponible quand le réseau invités est activé : utilisez plutôt le QR code de la page Accueil"
 
 msgid "no Wi-Fi access point accepted WPS (is the Wi-Fi on?)"
 msgstr "aucun point d'accès Wi-Fi n'a accepté le WPS (le Wi-Fi est-il activé ?)"

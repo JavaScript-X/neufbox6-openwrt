@@ -98,8 +98,9 @@ gives dnsmasq and netifd an `oom_score_adj` of -800 so that the kernel stops oth
 The **Software** card of the Home page compares the installed version (`/etc/nb6-release`) with the
 latest release on GitHub (checked at most every 6 hours, or with *Check for updates*). *Install*
 runs `nb6-update install`, which:
-1. stops the optional services and Wi-Fi to free memory (the image is held in RAM);
-2. downloads the sysupgrade image and the release's `SHA256SUMS`, and checks the checksum;
+1. stops the optional services and Wi-Fi to free memory, lowers the kernel memory reserve and keeps
+   the image out of the zram swap (the image is held in RAM and does not compress);
+2. downloads the release's `SHA256SUMS`, then the sysupgrade image, and checks the checksum;
 3. runs `sysupgrade -T`, then `sysupgrade` with the settings kept.
 
 Nothing is written if any step fails; the services come back and the error is shown. The box restarts

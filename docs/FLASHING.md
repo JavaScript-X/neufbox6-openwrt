@@ -29,9 +29,13 @@ CFE notes:
 
 ## Updates from OpenWrt
 Use the sysupgrade image (settings are kept). The image (~10.6 MB) is held in RAM during the
-upgrade, which leaves little room on a 64 MB box: stop the optional services first.
+upgrade, which leaves little room on a 64 MB box: restart the box, then free memory first.
+From 2.4 on, the Home page does all of this with one click.
 ```sh
-service collectd stop; service nlbwmon stop; service ttyd stop; wifi down
+service collectd stop; service nlbwmon stop; service ttyd stop; service adblock-fast stop
+wifi down; service wpad stop
+# the box restarts after flashing: smaller kernel reserve, keep the image out of the zram swap
+echo 2048 > /proc/sys/vm/min_free_kbytes; echo 10 > /proc/sys/vm/swappiness
 sync; echo 3 > /proc/sys/vm/drop_caches
 # from a PC on the LAN, e.g. python -m http.server 8000
 wget -O /tmp/fw.bin http://<pc>:8000/openwrt-bmips-bcm6362-sfr_neufbox-6-sercomm-r0-squashfs-sysupgrade.bin

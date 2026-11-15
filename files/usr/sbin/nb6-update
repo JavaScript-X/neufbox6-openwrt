@@ -63,6 +63,9 @@ state() { echo "$1" > $STATUS; logger -t nb6-update "$1"; }
 fail() {
 	state "error: $1"
 	rm -f $FW
+	[ -n "$MINFREE" ] && echo $MINFREE > /proc/sys/vm/min_free_kbytes
+	[ -n "$SWAPPY" ] && echo $SWAPPY > /proc/sys/vm/swappiness
+	/etc/init.d/wpad start
 	wifi up
 	for s in collectd nlbwmon ttyd adblock-fast; do [ -x /etc/init.d/$s ] && /etc/init.d/$s enabled && /etc/init.d/$s start; done
 	exit 1
@@ -75,6 +78,12 @@ run() {
 	state "freeing memory"
 	for s in collectd nlbwmon ttyd adblock-fast; do [ -x /etc/init.d/$s ] && /etc/init.d/$s stop; done
 	wifi down
+	/etc/init.d/wpad stop
+	# the box restarts after flashing: lower the kernel reserve (8 MB by default on 64 MB boxes) and keep
+	# the image, which does not compress, out of the zram swap; without this sysupgrade runs out of memory
+	MINFREE=$(cat /proc/sys/vm/min_free_kbytes); SWAPPY=$(cat /proc/sys/vm/swappiness)
+	echo 2048 > /proc/sys/vm/min_free_kbytes
+	echo 10 > /proc/sys/vm/swappiness
 	sync; echo 3 > /proc/sys/vm/drop_caches
 
 	state "downloading"

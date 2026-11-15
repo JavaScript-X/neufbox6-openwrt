@@ -16,8 +16,9 @@
   nvram to check a copy.
 
 ### Fixed
-- One-click update: the checksum file is fetched before the image, while memory is still free
-  (the update failed with "no checksum for the image"); downloads use curl with retries.
+- One-click update: the checksum file is fetched before the image (the update failed with "no checksum
+  for the image"), and while flashing the kernel memory reserve is lowered and the image is kept out of
+  the zram swap (sysupgrade ran out of memory). Downloads use curl with retries.
 - Upgrades no longer turn ad blocking off or reset the Wi-Fi schedule: those defaults are applied
   on the first install only.
 - Devices page: impossible signal values reported by the b43 driver (such as -4 dBm) are hidden.

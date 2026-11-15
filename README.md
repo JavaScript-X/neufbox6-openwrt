@@ -25,7 +25,7 @@ The Neufbox 6 was SFR's ADSL/fibre box in the 2010s. Thousands ended up as e-was
 **23.05**, then dropped the whole `bcm63xx` target. This project moves the box to the modern **`bmips`** target and
 goes further than both SFR's own firmware and the official port:
 
-| | SFR firmware (original) | OpenWrt 23.05 (official, last) | **neufbox6-openwrt 2.4** |
+| | SFR firmware (original) | OpenWrt 23.05 (official, last) | **neufbox6-openwrt 2.5** |
 |---|:---:|:---:|:---:|
 | System / Linux | SFR R3.5.15 / 2.6.30 | OpenWrt 23.05 / 5.15 | **OpenWrt 25.12 / 6.12** |
 | Security updates | ❌ ended with the service | ❌ end of life | ✅ follows the 25.12 branch |
@@ -38,6 +38,9 @@ goes further than both SFR's own firmware and the official port:
 | Wi-Fi schedule, LED night mode | Wi-Fi schedule | ❌ | ✅ |
 | VPN (WireGuard, Tailscale network) | ❌ | ❌ | ✅ |
 | Guest network, Wi-Fi QR code | - | ❌ | ✅ |
+| WPS pairing (Wi-Fi switch) | ✅ | ❌ | ✅ |
+| Wi-Fi channel scan, port forwarding and UPnP made simple | - | ❌ | ✅ |
+| French interface | ✅ | ✅ | ✅ |
 | Ad blocking, parental control per device | - | ❌ | ✅ |
 | Updates | pushed by SFR, ended | manual | ✅ one click from the web interface |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ | ✅ |
@@ -57,12 +60,12 @@ SFR LED/sensor microcontroller on I²C. Full details, GPIO map, flash layout and
 
 <p align="center"><img src="assets/leds-buttons.png" alt="LEDs and buttons" width="100%"></p>
 
-> Tested on real hardware: LED colours and order, SFR and ECO buttons, eco mode, Wi-Fi switch, sensors (51 °C, 12.2 V).
-> Work in progress: WPS (switch pushed past "on") is detected but does not start pairing yet, because hostapd in OpenWrt 25.12 exposes no per-interface WPS call here. See [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md).
+> Tested on real hardware: LED colours and order, SFR and ECO buttons, eco mode, Wi-Fi switch, WPS pairing
+> (a Windows laptop joined with the switch), sensors (51 °C, 12.2 V).
 
 - **SFR** button → short press: **tailnet** tunnel (Tailscale network through a WireGuard server); long press: **commercial VPN**. The **VPN LED** shows which tunnels are up. → **[docs/VPN.md](docs/VPN.md)**
 - **ECO** button → **eco mode**: ring LEDs dimmed, traffic LEDs off, statistics paused (optionally Wi-Fi off); kept across reboots.
-- **Wi-Fi switch** → radio on / off; pushed further → **WPS** (work in progress).
+- **Wi-Fi switch** → radio on / off; pushed further → **WPS** pairing for 2 minutes (the Wi-Fi LED blinks).
 
 More in **[docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md)**.
 
@@ -78,8 +81,8 @@ provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
 
 LuCI uses its own **Neufbox** theme (white pages, purple menus, red actions, always light). After login, the
 **Home** page shows the connection, the Wi-Fi (with a QR code to join), the box, the VPN and the connected devices,
-with a photo of the box and the current state of its ring LEDs. The **Neufbox** menu lists the devices (names, fixed addresses, internet
-blocking), runs the guest network and ad blocking, shows both VPN tunnels, sets the LEDs and eco mode, and makes backups. The standard bootstrap theme and overview stay available.
+with a photo of the box and the current state of its ring LEDs. The pages follow the browser language (English or French). The **Neufbox** menu lists the devices (names, fixed
+addresses, internet blocking), picks the Wi-Fi channel, opens ports for games and servers, runs the guest network and ad blocking, shows both VPN tunnels, sets the LEDs and eco mode, and makes backups. The standard bootstrap theme and overview stay available.
 
 <p align="center"><img src="assets/luci-home.png" alt="LuCI home page with the Neufbox theme" width="100%"></p>
 
@@ -92,6 +95,13 @@ blocking), runs the guest network and ad blocking, shows both VPN tunnels, sets 
   <img src="assets/luci-guest.png" alt="LuCI: Neufbox > Guest network, with a QR code for guests" width="49%">
   <img src="assets/luci-backup.png" alt="LuCI: Neufbox > Backup, settings and full flash copy" width="49%">
 </p>
+
+<p align="center">
+  <img src="assets/luci-wifi.png" alt="LuCI: Neufbox > Wi-Fi, channel scan and WPS" width="49%">
+  <img src="assets/luci-ports.png" alt="LuCI: Neufbox > Games and servers" width="49%">
+</p>
+
+<p align="center"><img src="assets/luci-home-fr.png" alt="The Home page in French" width="80%"></p>
 
 <p align="center"><img src="assets/luci-login.png" alt="LuCI login page with the Neufbox theme" width="46%"></p>
 
@@ -113,7 +123,8 @@ More out of 64 MB of RAM: **zram** compressed swap, hardware **watchdog**, **gra
 CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED **brightness and night mode**,
 **Wake-on-LAN** and a **web terminal** in LuCI, a **devices** page with per-device internet blocking and schedules,
 **ad blocking** for the whole network, **one-click updates** from GitHub, a **guest network** with its own
-Wi-Fi password, a **Wi-Fi QR code**, **names and fixed addresses** for devices, and a **full flash backup** in one click. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
+Wi-Fi password, a **Wi-Fi QR code**, **names and fixed addresses** for devices, a **full flash backup** in one click, a **Wi-Fi
+channel scan** with WPS, a **games and servers** page (ports, UPnP), and a **French interface**. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
 
 ## Getting started
 

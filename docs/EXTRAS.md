@@ -21,6 +21,9 @@ All of them are in the image; the ones that change the box's behaviour are off u
 | Guest network | `nb6-guest`, hostapd multi-PSK | off | LuCI > Neufbox > Guest network |
 | Names and fixed addresses | DHCP hosts `nb6_host_<mac>` | on | LuCI > Neufbox > Devices |
 | Settings and full flash backup | `/cgi-bin/nb6-backup` | on | LuCI > Neufbox > Backup |
+| Wi-Fi channel scan, WPS | `nb6/wifi` page, `nb6-wps` | on | LuCI > Neufbox > Wi-Fi |
+| Port forwarding, UPnP | `nb6/ports` page, `luci-app-upnp` | UPnP off | LuCI > Neufbox > Games and servers |
+| French interface | `po/fr/nb6.po`, `luci-i18n-*-fr` | follows the browser | everywhere |
 
 ## zram swap
 Part of the RAM is used as a compressed swap device (lzo), so the 54 MB that Linux sees behave like
@@ -144,3 +147,34 @@ session; nothing is copied to RAM first):
 
 The page lists the flash partitions with the SHA-256 of `cfe` and `nvram`: the first and last 64 KB of a
 flash copy must match them.
+
+## Wi-Fi page
+LuCI > Neufbox > Wi-Fi:
+- **Channel**: *Scan the networks around* runs `iw scan` on the access point (a few seconds; Wi-Fi
+  devices may pause briefly). The page lists the networks by name, channel and signal (never their hardware
+  addresses), charts how crowded each channel is (overlapping networks count, the strongest the most) and
+  recommends the least crowded of channels 1, 6 and 11, the three that do not overlap. *Use channel N*
+  switches to it (the Wi-Fi restarts for a few seconds).
+- **WPS pairing**: *Start pairing* does the same as the Wi-Fi switch pushed past "on": WPS push-button
+  pairing for 2 minutes (`nb6-wps start`, hostapd over ubus), with the progress and the result. The device
+  joins the main Wi-Fi (not the guest network). Phones generally cannot: Android dropped WPS in version 9;
+  Windows can (it offers "connect by pressing the button on the router").
+
+## Games and servers
+LuCI > Neufbox > Games and servers:
+- **Open ports**: *Open a port* forwards an internet port (or range) of the box to a device of the home
+  network, with presets (Minecraft, web server, remote desktop, SSH, Plex, WireGuard). Each rule is a
+  firewall redirect named `nb6_fwd_<id>`; it can be paused or deleted. The device keeps its current address
+  from then on (a DHCP host is created if it had none), so the rule keeps working.
+- When the box's own internet address is a private one (the box is behind another router), the page says
+  so: the same ports must then be opened on that router too, towards the box.
+- **UPnP** (`miniupnpd`, off by default): consoles and some games open the ports they need themselves
+  (open NAT type). The page lists the ports opened this way. Any program on the home network can then open
+  ports, which is why it is off until you turn it on.
+
+## French interface
+The Neufbox pages, their menu entries and the messages from the box are translated in
+`po/fr/nb6.po`, compiled to `/usr/lib/lua/luci/i18n/nb6.fr.lmo` by `scripts/build.sh`; LuCI's own French
+packages translate the rest. LuCI follows the browser language (System > System > Language to force one).
+After changing a page, `python3 scripts/i18n-extract.py` adds the new strings to the catalog and lists
+the ones without a translation.

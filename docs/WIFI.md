@@ -29,4 +29,5 @@ The Wi-Fi MAC is CFE base MAC + 1.
 
 ## Configuration
 LuCI → Network → Wireless: band 2.4 GHz, channel 1-13, country code set (FR here). WPS push button
-is enabled by the first-boot defaults (needs `wpad-mbedtls`, the full wpad).
+is enabled by the first-boot defaults (needs `wpad-mbedtls`, the full wpad). LuCI > Neufbox > Wi-Fi scans the
+nearby networks and switches to the least crowded of channels 1, 6 and 11 (see [EXTRAS.md](EXTRAS.md#wi-fi-page)).

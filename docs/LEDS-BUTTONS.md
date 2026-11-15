@@ -32,7 +32,7 @@ handles blinking, and an LED is written only when its value changes.
 | SFR (top) | `BTN_0` | short press: tailnet tunnel `vpn` on / off; long press (≥ 3 s): commercial VPN `vpn_commercial` on / off; 3 red flashes on the VPN LED if that tunnel is not configured |
 | ECO (top) | `BTN_1` | eco mode on / off (`nb6-eco`, see below) |
 | Wi-Fi slide switch | `wlan` | ON position = radios on, OFF = radios off |
-| Wi-Fi switch pushed further | `wps` | `hostapd_cli wps_pbc` on every AP, wlan LED blinks (500 ms) for 120 s |
+| Wi-Fi switch pushed further | `wps` | `nb6-wps start`: WPS push-button pairing on every access point (hostapd over ubus), wlan LED blinks (500 ms) for 120 s |
 | Reset (rear) | `reset` | OpenWrt default: < 5 s reboot, > 5 s factory reset |
 
 ## Sensors
@@ -67,4 +67,4 @@ driver only reads the port link, and b43 ignores transmit power changes.
 - Wi-Fi switch: off/on works.
 - Sensors: temperature ~51 °C, voltage ~12.2 V, boot counter readable.
 - I2C load: the SFR microcontroller refuses (NAKs) writes when LEDs change faster than ~2/s; traffic and WPS blinks are therefore 500 ms. The driver retries up to 5 times.
-- **WPS: not working yet.** The press is detected, but hostapd in OpenWrt 25.12 exposes no `hostapd.<iface>` ubus object or `hostapd_cli` here, so `wps_start` cannot be called. In one test the access point dropped ~14 s after the WPS press and needed `wifi up`. To investigate.
+- **WPS** works since 2.5 (tested with a Windows laptop: `WPS-SUCCESS` 3 s after the switch). It can also be started from LuCI > Neufbox > Wi-Fi. Earlier images lacked hostapd's ubus WPS calls.

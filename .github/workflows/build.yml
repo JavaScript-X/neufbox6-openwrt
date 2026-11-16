@@ -1,8 +1,10 @@
 # Builds the firmware with scripts/build.sh in the docker/Dockerfile image, the same way as a local build.
 #
-# - Run by hand (Actions > Build > Run workflow): the images are kept as a workflow artifact for 14 days.
-# - Pushing a tag vX.Y: same build, then a draft GitHub release with the images, SHA256SUMS and the
-#   CHANGELOG section of that version. The draft is published by hand after testing on a box.
+# Runs only by hand (Actions > Build > Run workflow): releases are normally built on a local machine,
+# which reuses its build tree and is much faster than a runner starting from scratch.
+# - Run on a branch: the images are kept as a workflow artifact for 14 days.
+# - Run on a tag vX.Y ("Use workflow from" > the tag): same build, then a draft GitHub release with the
+#   images, SHA256SUMS and the CHANGELOG section of that version, published by hand after testing on a box.
 name: Build
 
 on:
@@ -11,8 +13,6 @@ on:
       openwrt_ref:
         description: OpenWrt branch or tag
         default: openwrt-25.12
-  push:
-    tags: ['v*']
 
 permissions:
   contents: write

@@ -29,3 +29,19 @@ sed -i "s/^\tconst darkpref = .*/\tconst darkpref = 'false';/" "$THEME/ucode/tem
 grep -q "const darkpref = 'false';" "$THEME/ucode/template/themes/neufbox/header.ut" \
   || { echo "apply-luci: darkpref line not found in header.ut" >&2; exit 1; }
 echo "apply-luci: Neufbox theme added"
+
+# "Neufbox dark" (always dark) and "Neufbox automatic" (follows the dark mode of the device): the same
+# templates; dark.css swaps the neutral colours for near-black ones, the purple and red stay.
+for v in dark auto; do
+  mkdir -p "$THEME/htdocs/luci-static/neufbox-$v" "$THEME/ucode/template/themes/neufbox-$v"
+  cp "$PORT"/theme/neufbox-$v/*.css "$THEME/htdocs/luci-static/neufbox-$v/"
+  cp "$THEME/htdocs/luci-static/bootstrap/logo.svg" "$THEME/htdocs/luci-static/bootstrap/logo_48.png"      "$THEME/htdocs/luci-static/neufbox-$v/"
+  for t in header footer sysauth; do
+    cp "$THEME/ucode/template/themes/bootstrap/$t.ut" "$THEME/ucode/template/themes/neufbox-$v/$t.ut"
+  done
+done
+# dark: the bootstrap rules for dark pages apply too (data-darkmode="true"); automatic keeps the
+# bootstrap behaviour, which follows the device
+sed -i "s/^\tconst darkpref = .*/\tconst darkpref = 'true';/" "$THEME/ucode/template/themes/neufbox-dark/header.ut"
+grep -q "const darkpref = 'true';" "$THEME/ucode/template/themes/neufbox-dark/header.ut"   || { echo "apply-luci: darkpref line not found in header.ut" >&2; exit 1; }
+echo "apply-luci: Neufbox dark and automatic themes added"

@@ -1,0 +1,4 @@
+set nb6_blocked {
+	type ether_addr
+	comment "Neufbox parental controls: devices without internet right now"
+}

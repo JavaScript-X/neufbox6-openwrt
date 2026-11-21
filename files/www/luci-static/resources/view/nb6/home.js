@@ -13,6 +13,7 @@
  */
 
 const callHome = rpc.declare({ object: 'luci.nb6', method: 'home', expect: { '': {} } });
+const callSetup = rpc.declare({ object: 'luci.nb6', method: 'setup', expect: { '': {} } });
 const callWifi = rpc.declare({ object: 'luci.nb6', method: 'wifi', expect: { '': {} } });
 const callWifiSet = rpc.declare({ object: 'luci.nb6', method: 'wifi_set', params: ['ssid', 'key', 'enabled'], expect: { '': {} } });
 /*
@@ -125,22 +126,22 @@ const STYLE = `
 .nb6-home-title { text-align:center; margin:.4em 0 1em; }
 .nb6-home-title h2 { display:inline-flex; align-items:center; gap:.5em; letter-spacing:.06em; text-transform:uppercase; }
 .nb6-grid { display:grid; grid-template-columns: 1fr minmax(240px, 420px) 1fr; gap:22px; align-items:start; }
-.nb6-card { background:#fff; border:1px solid #e4e4ea; border-radius:14px; padding:14px 18px 10px; box-shadow:0 1px 4px rgba(30,20,50,.05); }
+.nb6-card { background:var(--nb-card,#fff); border:1px solid var(--nb-line,#e4e4ea); border-radius:14px; padding:14px 18px 10px; box-shadow:0 1px 4px rgba(30,20,50,.05); }
 .nb6-card + .nb6-card { margin-top:18px; }
 .nb6-card h3 { margin:0 0 .6em; font-size:15px; text-transform:uppercase; letter-spacing:.05em; }
 .nb6-kv { width:100%; border-collapse:collapse; font-size:13px; }
-.nb6-kv th, .nb6-kv td { padding:7px 6px; border-top:1px solid #eeeef3; text-align:left; vertical-align:top; }
+.nb6-kv th, .nb6-kv td { padding:7px 6px; border-top:1px solid var(--nb-line-soft,#eeeef3); text-align:left; vertical-align:top; }
 .nb6-kv tr:first-child th, .nb6-kv tr:first-child td { border-top:0; }
-.nb6-kv th { color:#6d6d78; font-weight:600; width:42%; }
-.nb6-kv td { color:#2b2b33; word-break:break-word; }
+.nb6-kv th { color:var(--nb-muted,#6d6d78); font-weight:600; width:42%; }
+.nb6-kv td { color:var(--nb-text,#2b2b33); word-break:break-word; }
 .nb6-dot { display:inline-flex; align-items:center; gap:4px; }
 .nb6-dot > span:first-child { width:10px; height:10px; border-radius:50%; display:inline-block; }
 .nb6-center { text-align:center; padding-top:10px; }
-.nb6-leds { display:flex; justify-content:center; gap:16px; margin-top:.4em; font-size:12px; color:#6d6d78; }
+.nb6-leds { display:flex; justify-content:center; gap:16px; margin-top:.4em; font-size:12px; color:var(--nb-muted,#6d6d78); }
 .nb6-led { display:inline-flex; align-items:center; gap:5px; font-weight:700; }
 .nb6-led > span { width:12px; height:12px; border-radius:50%; display:inline-block; }
-.nb6-center .nb6-name { font-weight:700; color:#5c2483; margin-top:.6em; font-size:16px; }
-.nb6-center .nb6-sub { color:#6d6d78; font-size:12px; }
+.nb6-center .nb6-name { font-weight:700; color:var(--nb-accent,#5c2483); margin-top:.6em; font-size:16px; }
+.nb6-center .nb6-sub { color:var(--nb-muted,#6d6d78); font-size:12px; }
 .nb6-band { margin:26px -5px 10px; padding:22px 20px 26px; border-radius:16px; color:#fff;
             background:linear-gradient(135deg, #5c2483 0%, #7a2a8c 60%, #8e1f6a 100%); text-align:center; }
 .nb6-band h3 { color:#fff; border:0; padding:0; margin:0 0 .2em; text-transform:uppercase; letter-spacing:.08em; }
@@ -154,7 +155,14 @@ const STYLE = `
 
 return view.extend({
 	load() {
-		return Promise.all([L.resolveDefault(callHome(), {}), L.resolveDefault(callWifi(), {})]).then(([h, w]) => {
+		/* a new box: the setup wizard first */
+		return L.resolveDefault(callSetup(), {}).then(s => {
+			if (s.done === false) {
+				window.location.replace(L.url('admin/nb6/setup'));
+				return new Promise(() => {});
+			}
+			return Promise.all([L.resolveDefault(callHome(), {}), L.resolveDefault(callWifi(), {})]);
+		}).then(([h, w]) => {
 			this.wifi = w;
 			return h;
 		});

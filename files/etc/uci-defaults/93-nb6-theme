@@ -1,8 +1,11 @@
 #!/bin/sh
-# LuCI theme "Neufbox" (white, red, purple): registered and used by default.
+# LuCI themes "Neufbox" (white, red, purple), "Neufbox dark" (near-black pages, same purple and red)
+# and "Neufbox automatic" (follows the dark mode of the device): registered; "Neufbox" by default.
 # The bootstrap themes stay available in System > System > Language and Style.
 uci -q get luci.themes >/dev/null || exit 0
 uci set luci.themes.Neufbox='/luci-static/neufbox'
+uci set luci.themes.Neufbox_dark='/luci-static/neufbox-dark'
+uci set luci.themes.Neufbox_automatic='/luci-static/neufbox-auto'
 case "$(uci -q get luci.main.mediaurlbase)" in
 	''|/luci-static/bootstrap) uci set luci.main.mediaurlbase='/luci-static/neufbox' ;;
 esac

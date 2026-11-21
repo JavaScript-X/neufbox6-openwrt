@@ -1,0 +1,3 @@
+# Neufbox parental controls (/usr/sbin/nb6-parental): before "established connections are accepted",
+# so a device in the set loses the internet at once
+ether saddr @nb6_blocked counter reject comment "Neufbox parental controls"

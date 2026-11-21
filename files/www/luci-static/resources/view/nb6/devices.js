@@ -8,20 +8,13 @@
 /*
  * Neufbox 6: devices on the LAN. Merges DHCP leases, the neighbour table, Wi-Fi stations and
  * per-device traffic (nlbwmon). Per device: a name and a fixed address (DHCP host nb6_host_<mac>),
- * internet access (block, or block on a schedule, firewall rules nb6_block_<mac>) and Wake-on-LAN.
- * Data: luci.nb6 "devices".
+ * its internet access (parental controls page) and Wake-on-LAN. Data: luci.nb6 "devices", "parental".
  */
 
 const callDevices = rpc.declare({ object: 'luci.nb6', method: 'devices', expect: { '': {} } });
-const callAccess = rpc.declare({
-	object: 'luci.nb6', method: 'device_access',
-	params: ['mac', 'mode', 'start', 'stop', 'days', 'name'], expect: { '': {} }
-});
+const callParental = rpc.declare({ object: 'luci.nb6', method: 'parental', expect: { '': {} } });
 const callWake = rpc.declare({ object: 'luci.nb6', method: 'device_wake', params: ['mac'], expect: { '': {} } });
 const callHost = rpc.declare({ object: 'luci.nb6', method: 'host_set', params: ['mac', 'name', 'ip'], expect: { '': {} } });
-
-const DAYS = [['Mon', _('Mon')], ['Tue', _('Tue')], ['Wed', _('Wed')], ['Thu', _('Thu')],
-	['Fri', _('Fri')], ['Sat', _('Sat')], ['Sun', _('Sun')]];
 
 function bytes(n) {
 	n = +n || 0;
@@ -38,8 +31,8 @@ function signalText(dbm) {
 	return '%d dBm (%s)'.format(dbm, q);
 }
 
-/* one entry per MAC address, from all the sources */
-function merge(d) {
+/* one entry per MAC address, from all the sources; pc = parental controls status */
+function merge(d, pc) {
 	const dev = {};
 	const get = mac => (dev[mac = mac.toLowerCase()] ??= { mac: mac, ips: [] });
 
@@ -74,20 +67,18 @@ function merge(d) {
 		e.host = h;
 		if (h.name) e.name = h.name;
 	});
-	(d.rules || []).forEach(r => {
-		const e = get(r.mac);
-		e.rule = r;
-	});
+	((pc && pc.profiles) || []).forEach(p => p.macs.forEach(m => {
+		const e = dev[m.toLowerCase()];
+		if (e) e.profile = p;
+	}));
 
 	return Object.values(dev).sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0) || (a.name || a.mac).localeCompare(b.name || b.mac));
 }
 
-function accessText(r) {
-	if (!r) return E('span', { 'class': 'nb6-pill nb6-ok' }, _('Allowed'));
-	if (r.start && r.stop)
-		return E('span', { 'class': 'nb6-pill nb6-sched' },
-			_('Blocked %s-%s').format(r.start.substr(0, 5), r.stop.substr(0, 5)) + (r.days ? ' · ' + r.days : ''));
-	return E('span', { 'class': 'nb6-pill nb6-off' }, _('Blocked'));
+function accessText(p) {
+	if (!p || !p.enabled) return E('span', { 'class': 'nb6-pill nb6-ok' }, _('Allowed'));
+	if (p.blocked) return E('span', { 'class': 'nb6-pill nb6-off' }, _('No internet now (%s)').format(p.name));
+	return E('span', { 'class': 'nb6-pill nb6-sched' }, _('Parental controls: %s').format(p.name));
 }
 
 const STYLE = `
@@ -95,19 +86,19 @@ const STYLE = `
 .nb6-head h2 { margin:0; }
 .nb6-dev td { vertical-align:middle; }
 .nb6-dev .nb6-name { font-weight:700; }
-.nb6-dev small { color:#6d6d78; }
+.nb6-dev small { color:var(--nb-muted,#6d6d78); }
 .nb6-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
 .nb6-pill { display:inline-block; padding:2px 10px; border-radius:11px; font-size:12px; font-weight:600; white-space:nowrap; }
 .nb6-ok { background:#e6f7ea; color:#13793a; }
 .nb6-off { background:#fde6e9; color:#b90016; }
-.nb6-sched { background:#f3edf8; color:#5c2483; }
+.nb6-sched { background:var(--nb-purple-soft,#f3edf8); color:var(--nb-accent,#5c2483); }
 .nb6-guest { background:#e5f4fb; color:#0b5f86; }
 .nb6-days label { margin-right:10px; white-space:nowrap; }
 `;
 
 return view.extend({
 	load() {
-		return L.resolveDefault(callDevices(), {});
+		return Promise.all([L.resolveDefault(callDevices(), {}), L.resolveDefault(callParental(), {})]);
 	},
 
 	hostDialog(e) {
@@ -138,46 +129,6 @@ return view.extend({
 		]);
 	},
 
-	accessDialog(e) {
-		const r = e.rule || {};
-		const mode = r.start ? 'schedule' : (e.rule ? 'block' : 'allow');
-		const radio = (v, label) => E('label', { 'style': 'display:block;margin:.3em 0' }, [
-			E('input', { 'type': 'radio', 'name': 'nb6mode', 'value': v, 'checked': v == mode ? '' : null }), ' ', label
-		]);
-		const start = E('input', { 'type': 'time', 'value': (r.start || '21:00').substr(0, 5) });
-		const stop = E('input', { 'type': 'time', 'value': (r.stop || '07:00').substr(0, 5) });
-		const days = DAYS.map(([v, l]) => E('label', {}, [
-			E('input', { 'type': 'checkbox', 'value': v, 'checked': (!r.days || r.days.indexOf(v) >= 0) ? '' : null }), ' ', l
-		]));
-
-		ui.showModal(_('Internet access: %s').format(e.name || e.mac), [
-			radio('allow', _('Allowed')),
-			radio('block', _('Blocked')),
-			radio('schedule', _('Blocked during these hours (for example at night)')),
-			E('div', { 'style': 'margin:.5em 0 0 1.6em' }, [
-				E('div', {}, [_('From') + ' ', start, ' ' + _('to') + ' ', stop]),
-				E('div', { 'class': 'nb6-days', 'style': 'margin-top:.5em' }, days),
-				E('small', {}, _('The time window may cross midnight. The device stays on the local network.'))
-			]),
-			E('div', { 'class': 'right', 'style': 'margin-top:1em' }, [
-				E('button', { 'class': 'btn', 'click': ui.hideModal }, _('Cancel')), ' ',
-				E('button', {
-					'class': 'btn cbi-button-action',
-					'click': ui.createHandlerFn(this, () => {
-						const m = document.querySelector('input[name="nb6mode"]:checked').value;
-						const d = days.map(l => l.firstChild).filter(c => c.checked).map(c => c.value);
-						return callAccess(e.mac, m, start.value, stop.value, d.length == 7 ? '' : d.join(' '), e.name || '')
-							.then(res => {
-								ui.hideModal();
-								if (res && res.error) ui.addNotification(null, E('p', _(res.error)), 'danger');
-								return this.refresh();
-							});
-					})
-				}, _('Save'))
-			])
-		]);
-	},
-
 	table(list) {
 		const rows = list.map(e => E('tr', { 'class': 'tr' }, [
 			E('td', { 'class': 'td' }, [
@@ -189,10 +140,10 @@ return view.extend({
 			E('td', { 'class': 'td' }, e.wifi ? [e.guest ? _('Guest Wi-Fi') : _('Wi-Fi'), E('br'), E('small', {}, signalText(e.signal))]
 				: (e.online ? (e.guest ? _('Guest, wired') : _('Wired')) : '-')),
 			E('td', { 'class': 'td' }, e.down != null ? '↓ %s · ↑ %s'.format(bytes(e.down), bytes(e.up)) : '-'),
-			E('td', { 'class': 'td' }, e.guest ? E('span', { 'class': 'nb6-pill nb6-guest' }, _('Guest network')) : accessText(e.rule)),
+			E('td', { 'class': 'td' }, e.guest ? E('span', { 'class': 'nb6-pill nb6-guest' }, _('Guest network')) : accessText(e.profile)),
 			E('td', { 'class': 'td' }, e.guest ? E('small', {}, _('Internet only, managed on the Guest network page')) : [
 				E('button', { 'class': 'btn cbi-button', 'click': ui.createHandlerFn(this, () => this.hostDialog(e)) }, _('Name')), ' ',
-				E('button', { 'class': 'btn cbi-button', 'click': ui.createHandlerFn(this, () => this.accessDialog(e)) }, _('Internet access')), ' ',
+				E('a', { 'class': 'btn cbi-button', 'href': L.url('admin/nb6/parental') + '?mac=' + encodeURIComponent(e.mac) }, _('Internet access')), ' ',
 				E('button', {
 					'class': 'btn cbi-button', 'title': _('Wake-on-LAN: start this device from the network'),
 					'click': ui.createHandlerFn(this, () => callWake(e.mac).then(r =>
@@ -215,13 +166,13 @@ return view.extend({
 	},
 
 	refresh() {
-		return callDevices().then(d => {
+		return Promise.all([callDevices(), L.resolveDefault(callParental(), {})]).then(([d, pc]) => {
 			const old = document.getElementById('nb6-devices');
-			if (old) old.replaceWith(this.table(merge(d)));
+			if (old) old.replaceWith(this.table(merge(d, pc)));
 		});
 	},
 
-	render(d) {
+	render([d, pc]) {
 		poll.add(() => this.refresh(), 15);
 		return E([], [
 			E('style', {}, STYLE),
@@ -230,10 +181,10 @@ return view.extend({
 				E('div', {}, [
 					E('h2', {}, _('Devices')),
 					E('div', { 'class': 'cbi-map-descr' },
-						_('Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, block its internet access (always or during set hours) or wake it up.'))
+						_('Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, set its internet hours (parental controls) or wake it up.'))
 				])
 			]),
-			E('div', { 'class': 'cbi-section' }, this.table(merge(d)))
+			E('div', { 'class': 'cbi-section' }, this.table(merge(d, pc)))
 		]);
 	},
 

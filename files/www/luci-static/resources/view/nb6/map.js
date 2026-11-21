@@ -14,7 +14,17 @@ const callHome = rpc.declare({ object: 'luci.nb6', method: 'home', expect: { '':
 const callDevices = rpc.declare({ object: 'luci.nb6', method: 'devices', expect: { '': {} } });
 
 const NS = 'http://www.w3.org/2000/svg';
-const C = { ok: '#28cd46', warn: '#ff8c00', bad: '#eb2323', off: '#b5b5bf', line: '#cfc8dc', purple: '#5c2483', ink: '#2b2b33', mute: '#6d6d78' };
+/* colours: the neutral ones follow the theme (light or dark), read when the map is drawn */
+const tok = (name, light) => (getComputedStyle(document.documentElement).getPropertyValue(name) || '').trim() || light;
+const C = { ok: '#28cd46', warn: '#ff8c00', bad: '#eb2323', off: '#b5b5bf', line: '#cfc8dc', purple: '#5c2483', ink: '#2b2b33', mute: '#6d6d78',
+	card: '#fff', edge: '#e4e4ea', soft: '#f3edf8', guestSoft: '#e5f4fb' };
+function themeColours() {
+	Object.assign(C, {
+		line: tok('--nb-map-line', '#cfc8dc'), purple: tok('--nb-accent', '#5c2483'), ink: tok('--nb-text', '#2b2b33'),
+		mute: tok('--nb-muted', '#6d6d78'), card: tok('--nb-card', '#fff'), edge: tok('--nb-line', '#e4e4ea'),
+		soft: tok('--nb-purple-soft', '#f3edf8'), guestSoft: tok('--nb-guest-soft', '#e5f4fb')
+	});
+}
 
 function el(tag, attrs, children) {
 	const n = document.createElementNS(NS, tag);
@@ -69,6 +79,7 @@ function tunnelColor(w) {
 }
 
 function draw(h, d) {
+	themeColours();
 	const g = devices(d), v = h.vpn || {}, w = h.wan || {}, l = h.leds || {};
 	const W = 1100, cols = [['wired', 200, _('Wired')], ['wifi', 550, _('Wi-Fi')], ['guest', 900, _('Guests')]];
 	const rows = Math.max(1, ...cols.map(c => g[c[0]].length));
@@ -91,7 +102,7 @@ function draw(h, d) {
 	});
 
 	/* internet */
-	svg.appendChild(el('rect', { 'x': 470, 'y': 28, 'width': 160, 'height': 64, 'rx': 32, 'fill': '#fff', 'stroke': inetColor, 'stroke-width': 3 }));
+	svg.appendChild(el('rect', { 'x': 470, 'y': 28, 'width': 160, 'height': 64, 'rx': 32, 'fill': C.card, 'stroke': inetColor, 'stroke-width': 3 }));
 	svg.appendChild(el('text', { 'x': 550, 'y': 57, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 700, 'fill': C.ink }, [_('Internet')]));
 	svg.appendChild(el('text', { 'x': 550, 'y': 78, 'text-anchor': 'middle', 'font-size': 12, 'fill': C.mute }, [short(inetText, 26)]));
 
@@ -99,13 +110,13 @@ function draw(h, d) {
 	[['tailnet', 250, _('Tailnet')], ['commercial', 850, _('Commercial VPN')]].forEach(([k, x, label]) => {
 		const st = v[k] || 'unconfigured';
 		const txt = st == 'up' ? _('Connected') : st == 'connecting' ? _('Connecting') : st == 'off' ? _('Off') : _('Not configured');
-		svg.appendChild(el('rect', { 'x': x - 95, 'y': 34, 'width': 190, 'height': 52, 'rx': 12, 'fill': '#fff', 'stroke': tunnelColor(st), 'stroke-width': 2, 'stroke-dasharray': st == 'up' ? '' : '5 4' }));
+		svg.appendChild(el('rect', { 'x': x - 95, 'y': 34, 'width': 190, 'height': 52, 'rx': 12, 'fill': C.card, 'stroke': tunnelColor(st), 'stroke-width': 2, 'stroke-dasharray': st == 'up' ? '' : '5 4' }));
 		svg.appendChild(el('text', { 'x': x, 'y': 56, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, 'fill': C.ink }, [label]));
 		svg.appendChild(el('text', { 'x': x, 'y': 75, 'text-anchor': 'middle', 'font-size': 12, 'fill': tunnelColor(st) == C.off ? C.mute : tunnelColor(st) }, [txt]));
 	});
 
 	/* the box */
-	svg.appendChild(el('rect', { 'x': 415, 'y': 176, 'width': 270, 'height': 86, 'rx': 16, 'fill': C.purple }));
+	svg.appendChild(el('rect', { 'x': 415, 'y': 176, 'width': 270, 'height': 86, 'rx': 16, 'fill': '#5c2483' }));	/* the box: brand purple in both themes */
 	svg.appendChild(el('image', { 'href': L.resource('nb6/box.png'), 'x': 427, 'y': 182, 'width': 74, 'height': 74, 'preserveAspectRatio': 'xMidYMid meet' }));
 	svg.appendChild(el('text', { 'x': 511, 'y': 212, 'font-size': 17, 'font-weight': 700, 'fill': '#fff' }, ['Neufbox 6']));
 	svg.appendChild(el('text', { 'x': 511, 'y': 234, 'font-size': 12, 'fill': '#e9dff2' }, [short((h.box || {}).release ? (h.box.release.replace(/^neufbox6-openwrt /, 'v').replace(/ .*/, '')) : '', 20)]));
@@ -113,7 +124,7 @@ function draw(h, d) {
 
 	/* groups and devices */
 	cols.forEach(([k, x, label]) => {
-		svg.appendChild(el('rect', { 'x': x - 80, 'y': 330, 'width': 160, 'height': 34, 'rx': 17, 'fill': k == 'guest' ? '#e5f4fb' : '#f3edf8', 'stroke': k == 'guest' ? '#0b5f86' : C.purple, 'stroke-width': 1.5 }));
+		svg.appendChild(el('rect', { 'x': x - 80, 'y': 330, 'width': 160, 'height': 34, 'rx': 17, 'fill': k == 'guest' ? C.guestSoft : C.soft, 'stroke': k == 'guest' ? '#0b5f86' : C.purple, 'stroke-width': 1.5 }));
 		svg.appendChild(el('text', { 'x': x, 'y': 352, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700, 'fill': k == 'guest' ? '#0b5f86' : C.purple }, ['%s (%d)'.format(label, g[k].length)]));
 		if (!g[k].length)
 			svg.appendChild(el('text', { 'x': x, 'y': 400, 'text-anchor': 'middle', 'font-size': 13, 'font-style': 'italic', 'fill': C.mute }, [_('nothing connected')]));
@@ -121,7 +132,7 @@ function draw(h, d) {
 			const y = 400 + i * 58;
 			const a = el('a', { 'href': L.url('admin/nb6/devices') });
 			a.appendChild(el('path', { 'd': 'M%d %d H%d'.format(x - 150, y + 23, x - 125), 'stroke': C.line, 'stroke-width': 2 }));
-			a.appendChild(el('rect', { 'x': x - 125, 'y': y, 'width': 260, 'height': 46, 'rx': 10, 'fill': '#fff', 'stroke': '#e4e4ea', 'stroke-width': 1.5 }));
+			a.appendChild(el('rect', { 'x': x - 125, 'y': y, 'width': 260, 'height': 46, 'rx': 10, 'fill': C.card, 'stroke': C.edge, 'stroke-width': 1.5 }));
 			a.appendChild(el('circle', { 'cx': x - 107, 'cy': y + 23, 'r': 6, 'fill': e.blocked ? C.bad : C.ok }));
 			a.appendChild(el('text', { 'x': x - 93, 'y': y + 20, 'font-size': 14, 'font-weight': 700, 'fill': C.ink }, [short(e.name || _('Unnamed device'), 26)]));
 			a.appendChild(el('text', { 'x': x - 93, 'y': y + 37, 'font-size': 12, 'fill': C.mute }, [(e.ips[0] || '') + (e.blocked ? ' · ' + _('internet blocked or scheduled') : '')]));
@@ -131,7 +142,7 @@ function draw(h, d) {
 
 	return E('div', { 'id': 'nb6-map' }, [
 		svg,
-		E('p', { 'style': 'text-align:center;color:#6d6d78;margin-top:.5em' }, [
+		E('p', { 'style': 'text-align:center;color:var(--nb-muted,#6d6d78);margin-top:.5em' }, [
 			g.offline ? _('%d other device(s) seen recently, now offline.').format(g.offline) + ' ' : '',
 			E('a', { 'href': L.url('admin/nb6/devices') }, _('All devices and their settings'))
 		])

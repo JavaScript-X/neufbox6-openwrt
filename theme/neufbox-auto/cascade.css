@@ -1,0 +1,6 @@
+/*
+ * LuCI theme "Neufbox automatic": light, or dark when the phone or computer is set to dark mode.
+ * Licensed under the Apache License 2.0, like the bootstrap theme it builds on.
+ */
+@import url("../neufbox/cascade.css");
+@import url("../neufbox-dark/dark.css") (prefers-color-scheme: dark);

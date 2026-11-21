@@ -39,14 +39,14 @@ function quality(sig) {
 const STYLE = `
 .nb6-head { display:flex; align-items:center; gap:1.2em; margin-bottom:1em; }
 .nb6-head h2 { margin:0; }
-.nb6-chart { display:flex; align-items:flex-end; gap:6px; height:150px; margin:1em 0 .3em; padding:0 4px; border-bottom:2px solid #e4e4ea; }
-.nb6-bar { flex:1; text-align:center; font-size:11px; color:#6d6d78; display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
-.nb6-bar > div { background:#c9c3d6; border-radius:6px 6px 0 0; min-height:3px; }
+.nb6-chart { display:flex; align-items:flex-end; gap:6px; height:150px; margin:1em 0 .3em; padding:0 4px; border-bottom:2px solid var(--nb-line,#e4e4ea); }
+.nb6-bar { flex:1; text-align:center; font-size:11px; color:var(--nb-muted,#6d6d78); display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+.nb6-bar > div { background:var(--nb-bar,#c9c3d6); border-radius:6px 6px 0 0; min-height:3px; }
 .nb6-bar.nb6-cur > div { background:#5c2483; }
 .nb6-bar.nb6-best > div { background:#28cd46; }
-.nb6-axis { display:flex; gap:6px; padding:0 4px; font-size:12px; color:#4a4a55; }
+.nb6-axis { display:flex; gap:6px; padding:0 4px; font-size:12px; color:var(--nb-text2,#4a4a55); }
 .nb6-axis span { flex:1; text-align:center; }
-.nb6-legend { font-size:12px; color:#6d6d78; margin:.4em 0 1em; }
+.nb6-legend { font-size:12px; color:var(--nb-muted,#6d6d78); margin:.4em 0 1em; }
 .nb6-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 4px 0 12px; vertical-align:middle; }
 .nb6-wps { display:flex; align-items:center; gap:1em; flex-wrap:wrap; }
 `;

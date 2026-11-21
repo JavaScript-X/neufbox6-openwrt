@@ -37,7 +37,7 @@ const STYLE = `
 .nb6-head h2 { margin:0; }
 .nb6-bk { display:grid; grid-template-columns: 1fr 1fr; gap:22px; }
 .nb6-bk .cbi-section { margin:0; }
-.nb6-bk p { color:#4a4a55; }
+.nb6-bk p { color:var(--nb-text2,#4a4a55); }
 .nb6-sum code { font-size:11px; word-break:break-all; }
 @media (max-width: 900px) { .nb6-bk { grid-template-columns: 1fr; } }
 `;

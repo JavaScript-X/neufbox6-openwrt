@@ -25,7 +25,7 @@ The Neufbox 6 was SFR's ADSL/fibre box in the 2010s. Thousands ended up as e-was
 **23.05**, then dropped the whole `bcm63xx` target. This project moves the box to the modern **`bmips`** target and
 goes further than both SFR's own firmware and the official port:
 
-| | SFR firmware (original) | OpenWrt 23.05 (official, last) | **neufbox6-openwrt 2.6** |
+| | SFR firmware (original) | OpenWrt 23.05 (official, last) | **neufbox6-openwrt 2.7** |
 |---|:---:|:---:|:---:|
 | System / Linux | SFR R3.5.15 / 2.6.30 | OpenWrt 23.05 / 5.15 | **OpenWrt 25.12 / 6.12** |
 | Security updates | ❌ ended with the service | ❌ end of life | ✅ follows the 25.12 branch |
@@ -42,7 +42,10 @@ goes further than both SFR's own firmware and the official port:
 | Wi-Fi channel scan, port forwarding and UPnP made simple | - | ❌ | ✅ |
 | French interface | ✅ | ✅ | ✅ |
 | Network map, scheduled maintenance | - | ❌ | ✅ |
-| Ad blocking, parental control per device | - | ❌ | ✅ |
+| Ad blocking | - | ❌ | ✅ |
+| Parental controls (hours, pause, extra time) | - | ❌ | ✅ cuts open connections at once |
+| Setup wizard on first login | - | ❌ | ✅ |
+| Dark theme | - | ✅ bootstrap (grey) | ✅ Neufbox dark, or automatic |
 | Updates | pushed by SFR, ended | manual | ✅ one click from the web interface |
 | Gigabit switch, USB, WAN "Fibre" port | ✅ | ✅ | ✅ |
 | ADSL / VDSL, telephony | ✅ | ❌ | ❌ closed Broadcom drivers |
@@ -80,10 +83,12 @@ provider (Mullvad, Proton VPN, NordVPN, ...). → **[docs/VPN.md](docs/VPN.md)**
 
 ## Web interface
 
-LuCI uses its own **Neufbox** theme (white pages, purple menus, red actions, always light). After login, the
+LuCI uses its own **Neufbox** theme (white pages, purple menus, red actions), with a **dark** version (near-black
+pages, the same purple and red) and an **automatic** one that follows the dark mode of the phone or computer. On a
+new box, the first login opens a **setup wizard** (language, password, Wi-Fi, time zone). After login, the
 **Home** page shows the connection, the Wi-Fi (with a QR code to join), the box, the VPN and the connected devices,
 with a photo of the box and the current state of its ring LEDs. The pages follow the browser language (English or French). The **Neufbox** menu draws a map of the network, lists the devices (names, fixed
-addresses, internet blocking), picks the Wi-Fi channel, opens ports for games and servers, runs the guest network and ad blocking, shows both VPN tunnels, sets the LEDs and eco mode, keeps the box healthy (scheduled maintenance), and makes backups. The standard bootstrap theme and overview stay available.
+addresses), runs **parental controls** (hours without internet, pause, extra time), picks the Wi-Fi channel, opens ports for games and servers, runs the guest network and ad blocking, shows both VPN tunnels, sets the LEDs and eco mode, keeps the box healthy (scheduled maintenance), and makes backups. The standard bootstrap theme and overview stay available.
 
 <p align="center"><img src="assets/luci-home.png" alt="LuCI home page with the Neufbox theme" width="100%"></p>
 
@@ -93,7 +98,7 @@ addresses, internet blocking), picks the Wi-Fi channel, opens ports for games an
 </p>
 
 <p align="center">
-  <img src="assets/luci-guest.png" alt="LuCI: Neufbox > Guest network, with a QR code for guests" width="49%">
+  <img src="assets/luci-guest.png" alt="LuCI: Neufbox > Guest network, with a QR code for guests and a timer" width="49%">
   <img src="assets/luci-backup.png" alt="LuCI: Neufbox > Backup, settings and full flash copy" width="49%">
 </p>
 
@@ -105,6 +110,18 @@ addresses, internet blocking), picks the Wi-Fi channel, opens ports for games an
 <p align="center">
   <img src="assets/luci-map.png" alt="LuCI: Neufbox > Network map" width="49%">
   <img src="assets/luci-maint.png" alt="LuCI: Neufbox > Maintenance" width="49%">
+</p>
+
+<p align="center">
+  <img src="assets/luci-parental.png" alt="LuCI: Neufbox > Parental controls, profiles with hours, pause and extra time" width="49%">
+  <img src="assets/luci-setup-5.png" alt="Setup wizard, last step: summary and Wi-Fi QR code" width="49%">
+</p>
+
+<p align="center"><img src="assets/luci-dark-home.png" alt="The Home page with the Neufbox dark theme" width="80%"></p>
+
+<p align="center">
+  <img src="assets/luci-dark-parental.png" alt="Parental controls with the Neufbox dark theme" width="49%">
+  <img src="assets/luci-dark-map.png" alt="Network map with the Neufbox dark theme" width="49%">
 </p>
 
 <p align="center"><img src="assets/luci-home-fr.png" alt="The Home page in French" width="80%"></p>
@@ -127,11 +144,11 @@ recovered from the SFR firmware. 2.4 GHz access point, WPA2, 802.11g rates, 0 % 
 
 More out of 64 MB of RAM: **zram** compressed swap, hardware **watchdog**, **graphs** of temperature, 12 V,
 CPU, RAM and traffic, **per-device traffic** (nlbwmon), **Wi-Fi schedule**, LED **brightness and night mode**,
-**Wake-on-LAN** and a **web terminal** in LuCI, a **devices** page with per-device internet blocking and schedules,
+**Wake-on-LAN** and a **web terminal** in LuCI, a **devices** page, **parental controls** with profiles, a **setup wizard**,
 **ad blocking** for the whole network, **one-click updates** from GitHub, a **guest network** with its own
-Wi-Fi password, a **Wi-Fi QR code**, **names and fixed addresses** for devices, a **full flash backup** in one click, a **Wi-Fi
+Wi-Fi password and a timer, a **Wi-Fi QR code**, **names and fixed addresses** for devices, a **full flash backup** in one click, a **Wi-Fi
 channel scan** with WPS, a **games and servers** page (ports, UPnP), a **network map**, **scheduled maintenance**
-(health check, weekly restart), and a **French interface**. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
+(health check, weekly restart), a **French interface** and **dark themes**. → **[docs/EXTRAS.md](docs/EXTRAS.md)**
 
 ## Getting started
 
@@ -173,7 +190,7 @@ The image therefore ships a small **lzma-loader** that CFE unpacks first, which 
 | [docs/WIFI.md](docs/WIFI.md) | integrated Wi-Fi: driver, firmware, calibration |
 | [docs/LEDS-BUTTONS.md](docs/LEDS-BUTTONS.md) | LEDs, buttons, sensors |
 | [docs/VPN.md](docs/VPN.md) | tailnet and commercial VPN on the SFR button |
-| [docs/EXTRAS.md](docs/EXTRAS.md) | devices, guest network, Wi-Fi QR code, backup, ad blocking, updates, zram, statistics, night mode |
+| [docs/EXTRAS.md](docs/EXTRAS.md) | setup wizard, devices, parental controls, guest network, Wi-Fi QR code, backup, ad blocking, updates, themes, zram, statistics, night mode |
 | [docs/PORTING.md](docs/PORTING.md) | how the port was done, bring-up problems, test results |
 | [CHANGELOG.md](CHANGELOG.md) | changes per version |
 

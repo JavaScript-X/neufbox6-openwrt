@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.7 (2026-11-21)
+### Added
+- **Setup wizard** (Neufbox > Setup wizard): opens by itself the first time someone logs in on a new
+  box. Language, administrator password, Wi-Fi name and password (an open or turned-off Wi-Fi gets WPA2
+  and is turned on), time zone (the one of the computer is suggested), then a summary with the QR code
+  of the Wi-Fi. The Wi-Fi changes are applied at the very end, so a visitor on Wi-Fi does not lose the
+  page halfway. Boxes upgraded from an earlier version already have a password and skip it.
+- **Parental controls** (Neufbox > Parental controls): profiles that group devices, with hours without
+  internet per day (they may cross midnight), *Pause now* (30 minutes, 1 or 2 hours, until tomorrow
+  07:00, until resumed) and extra time (30 minutes or 1 hour more) while the schedule applies.
+- **Guest network timer**: turn the guest network on for 2 hours, 1 day or 1 week. When the time is up
+  it turns off by itself and gets a new password, so the guests cannot come back without asking.
+- **Dark themes**: "Neufbox dark" (near-black pages, the same purple header and red buttons, not the
+  grey of the bootstrap dark theme) and "Neufbox automatic" (follows the dark mode of the phone or
+  computer), in System > System > Language and Style.
+
+### Changed
+- Blocking a device now cuts its connections at once: the per-device rules of 2.6 sat after the
+  firewall rule that keeps established connections, so a video started before the blocked hours kept
+  playing. The rules of earlier versions become parental-controls profiles during the upgrade.
+- The Devices page shows the parental-controls state of each device; *Internet access* opens its
+  profile.
+
 ## 2.6.1 (2026-11-15)
 ### Fixed
 - WPS is refused while the guest network is on. With the guest network, hostapd uses a multi-password

@@ -1,6 +1,6 @@
 {
 	"luci-app-nb6": {
-		"description": "Neufbox 6: home page, network map, devices, Wi-Fi and guests, games and servers, VPN, LEDs, ad blocking, maintenance, updates, backup",
+		"description": "Neufbox 6: setup wizard, home page, network map, devices, parental controls, Wi-Fi and guests, games and servers, VPN, LEDs, ad blocking, maintenance, updates, backup",
 		"read": {
 			"ubus": {
 				"luci.nb6": [
@@ -16,7 +16,12 @@
 					"backup_info",
 					"wps_status",
 					"forwards",
-					"maint"
+					"maint",
+					"parental",
+					"setup"
+				],
+				"luci": [
+					"getTimezones"
 				]
 			},
 			"uci": [
@@ -37,7 +42,6 @@
 					"set_tunnel",
 					"import_commercial",
 					"eco",
-					"device_access",
 					"device_wake",
 					"adblock_set",
 					"adblock_update",
@@ -53,7 +57,15 @@
 					"forward_set",
 					"upnp_set",
 					"maint_set",
-					"maint_reboot"
+					"maint_reboot",
+					"parental_set",
+					"parental_delete",
+					"parental_pause",
+					"parental_extra",
+					"setup_lang",
+					"setup_password",
+					"setup_time",
+					"setup_done"
 				]
 			},
 			"uci": [

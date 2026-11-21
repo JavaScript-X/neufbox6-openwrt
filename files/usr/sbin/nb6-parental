@@ -1,0 +1,150 @@
+#!/bin/sh
+# Parental controls (LuCI > Neufbox > Parental controls), settings in /etc/config/nb6:
+#
+#   config profile 'p_<id>'
+#   	option name 'Kids'
+#   	option enabled '1'
+#   	list mac 'aa:bb:cc:dd:ee:ff'          devices of the profile
+#   	list window 'Mon,Tue,Sun/21:00-07:00'  no internet during these hours; may cross midnight
+#   	option pause_until '0'                epoch: no internet until then; 'forever' = until resumed
+#   	option allow_until '0'                epoch: extra time, internet allowed despite the windows
+#
+#   nb6-parental apply    cron entry and firewall set from the settings
+#   nb6-parental tick     (cron, every minute) put the devices that must be offline now in the set
+#   nb6-parental status   JSON for LuCI
+#
+# The devices without internet are kept in the nftables set inet fw4 nb6_blocked. The rule that uses
+# it sits at the top of the forward chain, before "established connections are accepted", so a device
+# loses the internet at once, even in the middle of a video. The set is also written into the firewall
+# include, so a firewall restart keeps it.
+
+CRON=/etc/crontabs/root
+TAG='# nb6-parental'
+NFT=/usr/share/nftables.d/table-post/30-nb6-parental.nft
+STATE=/tmp/nb6-parental.state
+ALL=Mon,Tue,Wed,Thu,Fri,Sat,Sun
+
+profiles() { uci -q show nb6 | sed -n 's/^nb6\.\([^.=]*\)=profile$/\1/p'; }
+
+mins() { local h=${1%%:*} m=${1#*:}; echo $(( ${h#0} * 60 + ${m#0} )); }	# HH:MM -> minutes
+
+clock() { NOW=$(date +%s); HM=$(date +%H:%M); DOW=$(date +%a); YDOW=$(date -d @$((NOW - 86400)) +%a); N=$(mins "$HM"); }
+
+valid_window() { echo "$1" | grep -qE '^((Mon|Tue|Wed|Thu|Fri|Sat|Sun),?)+/([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$'; }
+
+# one window "days/HH:MM-HH:MM": inside it now? sets STOP
+in_window() {
+	local days=",${1%/*}," t=${1#*/} a b
+	a=$(mins "${t%-*}"); b=$(mins "${t#*-}"); STOP=${t#*-}
+	if [ $a -lt $b ]; then
+		case "$days" in *",$DOW,"*) [ $N -ge $a ] && [ $N -lt $b ] && return 0 ;; esac
+	elif [ $a -gt $b ]; then
+		# crosses midnight: the evening belongs to the listed day, the morning to the day after
+		case "$days" in *",$DOW,"*) [ $N -ge $a ] && return 0 ;; esac
+		case "$days" in *",$YDOW,"*) [ $N -lt $b ] && return 0 ;; esac
+	else
+		case "$days" in *",$DOW,"*) return 0 ;; esac	# same start and end: the whole day
+	fi
+	return 1
+}
+
+# profile $1 offline now? sets REASON (pause|extra|schedule|none), UNTIL (epoch) and STOP (HH:MM)
+check() {
+	local s=$1 w pause allow
+	REASON=none; UNTIL=0; STOP=
+	pause=$(uci -q get nb6.$s.pause_until); allow=$(uci -q get nb6.$s.allow_until)
+	if [ "$pause" = forever ]; then REASON=pause; return 0; fi
+	if [ "${pause:-0}" -gt "$NOW" ] 2>/dev/null; then REASON=pause; UNTIL=$pause; return 0; fi
+	if [ "${allow:-0}" -gt "$NOW" ] 2>/dev/null; then REASON=extra; UNTIL=$allow; return 1; fi
+	for w in $(uci -q get nb6.$s.window); do
+		valid_window "$w" && in_window "$w" && { REASON=schedule; return 0; }
+	done
+	STOP=
+	return 1
+}
+
+blocked_macs() {
+	local s m
+	for s in $(profiles); do
+		[ "$(uci -q get nb6.$s.enabled)" = 0 ] && continue
+		check $s || continue
+		for m in $(uci -q get nb6.$s.mac); do echo "$m"; done
+	done | tr 'A-F' 'a-f' | grep -E '^([0-9a-f]{2}:){5}[0-9a-f]{2}$' | sort -u | tr '\n' ' ' | sed 's/ $//'
+}
+
+write_nft() { # $* = MAC addresses -> the firewall include
+	{
+		echo 'set nb6_blocked {'
+		echo '	type ether_addr'
+		echo '	comment "Neufbox parental controls: devices without internet right now"'
+		[ $# -gt 0 ] && echo "	elements = { $(echo "$*" | sed 's/ /, /g') }"
+		echo '}'
+	} > $NFT.tmp
+	if cmp -s $NFT.tmp $NFT; then rm -f $NFT.tmp; else mv $NFT.tmp $NFT; fi
+}
+
+tick() {
+	local macs old
+	clock
+	macs=$(blocked_macs)
+	old=$(cat $STATE 2>/dev/null)
+	[ "$macs" = "$old" ] && [ "$1" != force ] && return 0
+	write_nft $macs
+	if nft list set inet fw4 nb6_blocked >/dev/null 2>&1; then
+		nft flush set inet fw4 nb6_blocked
+		[ -n "$macs" ] && nft add element inet fw4 nb6_blocked "{ $(echo "$macs" | sed 's/ /, /g') }"
+	fi
+	echo "$macs" > $STATE
+	[ "$macs" != "$old" ] && logger -t nb6-parental "devices without internet: ${macs:-none}"
+	return 0
+}
+
+apply() {
+	mkdir -p /etc/crontabs; touch $CRON
+	if [ -n "$(profiles)" ]; then
+		grep -q "$TAG" $CRON || {
+			echo "* * * * * /usr/sbin/nb6-parental tick $TAG" >> $CRON
+			/etc/init.d/cron enable; /etc/init.d/cron restart >/dev/null 2>&1
+		}
+	elif grep -q "$TAG" $CRON; then
+		grep -v "$TAG" $CRON > $CRON.tmp; mv $CRON.tmp $CRON
+		/etc/init.d/cron restart >/dev/null 2>&1
+	fi
+	tick force
+}
+
+status() {
+	local s m w
+	. /usr/share/libubox/jshn.sh
+	clock
+	json_init
+	json_add_int now "$NOW"
+	json_add_string time "$HM"
+	json_add_array profiles
+	for s in $(profiles); do
+		json_add_object
+		json_add_string id "$s"
+		json_add_string name "$(uci -q get nb6.$s.name)"
+		json_add_boolean enabled "$([ "$(uci -q get nb6.$s.enabled)" = 0 ] && echo 0 || echo 1)"
+		json_add_array macs
+		for m in $(uci -q get nb6.$s.mac); do json_add_string '' "$m"; done
+		json_close_array
+		json_add_array windows
+		for w in $(uci -q get nb6.$s.window); do json_add_string '' "$w"; done
+		json_close_array
+		if [ "$(uci -q get nb6.$s.enabled)" != 0 ] && check $s; then json_add_boolean blocked 1; else json_add_boolean blocked 0; fi
+		json_add_string reason "$REASON"
+		json_add_int until "${UNTIL:-0}"
+		json_add_string stop "$STOP"
+		json_close_object
+	done
+	json_close_array
+	json_dump
+}
+
+case "$1" in
+	apply) apply ;;
+	tick) tick "$2" ;;
+	status) status ;;
+	*) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

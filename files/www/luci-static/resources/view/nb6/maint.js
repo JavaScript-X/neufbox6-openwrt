@@ -31,7 +31,7 @@ const STYLE = `
 .nb6-grid2 .cbi-section { margin:0; }
 .nb6-field { margin:.8em 0; }
 .nb6-field > div:first-child { font-weight:600; margin-bottom:.3em; }
-.nb6-ev td:first-child { white-space:nowrap; color:#6d6d78; width:12em; }
+.nb6-ev td:first-child { white-space:nowrap; color:var(--nb-muted,#6d6d78); width:12em; }
 @media (max-width: 900px) { .nb6-grid2 { grid-template-columns: 1fr; } }
 `;
 

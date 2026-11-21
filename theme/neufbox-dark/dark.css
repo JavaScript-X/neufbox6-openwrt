@@ -1,0 +1,112 @@
+/*
+ * LuCI theme "Neufbox dark": the colours of the dark version, over the "Neufbox" theme.
+ * Same purple header, red actions and purple accents; near-black pages instead of grey.
+ * Used by "Neufbox dark" (always) and "Neufbox automatic" (when the device prefers dark).
+ * Licensed under the Apache License 2.0, like the bootstrap theme it builds on.
+ */
+
+:root, :root[data-darkmode="true"], :root[data-darkmode="false"] {
+	--nb-page: #07060b;
+	--nb-card: #121019;
+	--nb-line: #2a2534;
+	--nb-line-soft: #1e1a26;
+	--nb-text: #f1eef6;
+	--nb-text2: #cbc4d8;
+	--nb-muted: #9f98ae;
+	--nb-accent: #c99cf2;
+	--nb-purple-soft: #241a33;
+	--nb-chip: #221e2b;
+	--nb-bar: #3d3550;
+	--nb-map-line: #4b4359;
+	--nb-guest-soft: #0d2532;
+
+	/* the bootstrap palette, near black with a touch of purple (bootstrap dark is a grey) */
+	--background-color-delta-l-sign: 1;
+	--background-color-h: 268;
+	--background-color-s: 22%;
+	--background-color-l: 7%;
+	--text-color-delta-l-sign: -1;
+	--text-color-h: 268;
+	--text-color-s: 10%;
+	--text-color-l: 96%;
+	--border-color-delta-l-sign: 1;
+	--error-color-high-rgb: 255, 92, 110;
+	--success-color-high-rgb: 64, 214, 104;
+	color-scheme: dark;
+}
+
+body { background: var(--nb-page); color: var(--nb-text); }
+a, footer a { color: var(--nb-accent); }
+#maincontent h2, .modal > h4 { color: var(--nb-accent); }
+h3, legend { color: var(--nb-text); }
+
+/* header: the same purple bar, a deeper shadow */
+header { box-shadow: 0 2px 16px rgba(0, 0, 0, .6); }
+.nav .dropdown-menu {
+	background: var(--nb-card);
+	border-color: var(--nb-line);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, .6);
+}
+.nav .dropdown-menu a.menu, .nav .dropdown-menu li a { color: var(--nb-text2); }
+
+/* cards */
+.cbi-section, .cbi-page-actions {
+	background: var(--nb-card);
+	border-color: var(--nb-line);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, .02), 0 2px 10px rgba(0, 0, 0, .35);
+}
+.cbi-section .cbi-section, .cbi-tblsection .cbi-section, .modal .cbi-section { background: transparent; box-shadow: none; }
+
+/* tables */
+.table .tr.table-titles .th, .table .tr.cbi-section-table-titles .th {
+	background: var(--nb-purple-soft);
+	color: var(--nb-accent);
+}
+.table .tr:not(.table-titles):hover .td { background: #1a1623; }
+.table .tr .td, .table .tr .th { border-color: var(--nb-line-soft); }
+
+/* buttons: red stays red; the outlined ones need light lines */
+.cbi-page-actions .cbi-button-apply + .cbi-button-save,
+.cbi-page-actions .cbi-button-negative + .cbi-button-save {
+	--on-color: var(--nb-accent);
+	color: var(--nb-accent);
+	background: transparent;
+	border-color: var(--nb-accent);
+}
+.cbi-button-positive:not(.important), .cbi-button-add, .cbi-button-fieldadd {
+	--on-color: var(--nb-accent);
+	border-color: var(--nb-accent);
+}
+.cbi-button-negative:not(.important), .cbi-button-reset, .cbi-button-remove, .cbi-section-remove .cbi-button {
+	--on-color: #ff8896;
+	border-color: #6b2a35;
+}
+
+/* inputs */
+input, select, textarea, .cbi-dropdown:not(.btn):not(.cbi-button) {
+	background-color: #0d0b12;
+	border-color: var(--nb-line);
+	color: var(--nb-text);
+}
+
+/* dialogs */
+#modal_overlay { background: rgba(0, 0, 0, .7); }
+.modal { background: var(--nb-card); color: var(--nb-text); box-shadow: 0 18px 50px rgba(0, 0, 0, .7); }
+#modal_overlay > .modal.login hr { border-color: var(--nb-line); }
+
+/* tabs */
+.tabs, .cbi-tabmenu { border-bottom-color: var(--nb-line); }
+
+/* the Neufbox pages: coloured labels made for a white page */
+:root .nb6-pill.nb6-ok { background: rgba(40, 205, 70, .16); color: #6ee68a; }
+:root .nb6-pill.nb6-off { background: rgba(226, 0, 26, .2); color: #ff7d8c; }
+:root .nb6-pill.nb6-sched { background: var(--nb-purple-soft); color: var(--nb-accent); }
+:root .nb6-pill.nb6-guest { background: rgba(31, 182, 236, .16); color: #78d4f6; }
+:root .nb6-pill:not(.nb6-ok):not(.nb6-off):not(.nb6-sched):not(.nb6-guest) { background: var(--nb-chip); color: var(--nb-text2); }
+/* help bubbles: a lighter purple on the dark pages */
+.cbi-value-description:not(:empty)::before { background: #8b55c9; }
+/* QR codes keep their white frame: phone cameras read black on white */
+:root .nb6-qr, :root .nb6-qrbox { background: #fff; color: #2b2b33; border-color: #fff; }
+:root .nb6-qr small, :root .nb6-qrbox small { color: #4a4a55; }
+:root .alert-message.notice { background: #1b1630; border-color: #3a2c55; color: var(--nb-text); }
+:root .alert-message.warning { background: #2b2210; border-color: #5a4720; color: #f4dc9c; }

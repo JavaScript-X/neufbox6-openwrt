@@ -128,27 +128,6 @@ msgstr "SHA-256 (pour vérifier une copie)"
 msgid "The flash copy is these three parts in order: cfe, firmware, nvram. Its first 64 KB and its last 64 KB must match the checksums above."
 msgstr "La copie de la flash contient ces trois parties dans l'ordre : cfe, firmware, nvram. Ses 64 premiers Ko et ses 64 derniers Ko doivent correspondre aux sommes ci-dessus."
 
-msgid "Mon"
-msgstr "Lun"
-
-msgid "Tue"
-msgstr "Mar"
-
-msgid "Wed"
-msgstr "Mer"
-
-msgid "Thu"
-msgstr "Jeu"
-
-msgid "Fri"
-msgstr "Ven"
-
-msgid "Sat"
-msgstr "Sam"
-
-msgid "Sun"
-msgstr "Dim"
-
 msgid "excellent"
 msgstr "excellent"
 
@@ -164,11 +143,11 @@ msgstr "faible"
 msgid "Allowed"
 msgstr "Autorisé"
 
-msgid "Blocked %s-%s"
-msgstr "Bloqué %s-%s"
+msgid "No internet now (%s)"
+msgstr "Pas d'internet en ce moment (%s)"
 
-msgid "Blocked"
-msgstr "Bloqué"
+msgid "Parental controls: %s"
+msgstr "Contrôle parental : %s"
 
 msgid "for example laptop-anna"
 msgstr "par exemple portable-anna"
@@ -193,21 +172,6 @@ msgstr "Annuler"
 
 msgid "Save"
 msgstr "Enregistrer"
-
-msgid "Internet access: %s"
-msgstr "Accès à internet : %s"
-
-msgid "Blocked during these hours (for example at night)"
-msgstr "Bloqué pendant ces heures (par exemple la nuit)"
-
-msgid "From"
-msgstr "De"
-
-msgid "to"
-msgstr "à"
-
-msgid "The time window may cross midnight. The device stays on the local network."
-msgstr "La plage horaire peut passer minuit. L'appareil reste sur le réseau local."
 
 msgid "Unnamed device"
 msgstr "Appareil sans nom"
@@ -269,8 +233,32 @@ msgstr "Aucun appareil vu pour l'instant."
 msgid "Devices"
 msgstr "Appareils"
 
-msgid "Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, block its internet access (always or during set hours) or wake it up."
-msgstr "Les appareils vus sur le réseau local, avec leur connexion et leur trafic. Donnez un nom et une adresse fixe à un appareil, bloquez son accès à internet (toujours ou à certaines heures) ou réveillez-le."
+msgid "Devices seen on the local network, with their connection and traffic. Give a device a name and a fixed address, set its internet hours (parental controls) or wake it up."
+msgstr "Appareils vus sur le réseau local, avec leur connexion et leur trafic. Donnez un nom et une adresse fixe à un appareil, réglez ses horaires d'internet (contrôle parental) ou réveillez-le."
+
+msgid "in %d d %d h"
+msgstr "dans %d j %d h"
+
+msgid "in %d h %d min"
+msgstr "dans %d h %d min"
+
+msgid "in %d min"
+msgstr "dans %d min"
+
+msgid "keep: off at %s"
+msgstr "garder : arrêt à %s"
+
+msgid "until I turn it off"
+msgstr "jusqu'à ce que je le désactive"
+
+msgid "2 hours"
+msgstr "2 heures"
+
+msgid "1 day"
+msgstr "1 jour"
+
+msgid "1 week"
+msgstr "1 semaine"
 
 msgid "guest password: %s"
 msgstr "mot de passe invités : %s"
@@ -290,6 +278,15 @@ msgstr "Nom du Wi-Fi"
 msgid "Guests connected"
 msgstr "Invités connectés"
 
+msgid "Turns off"
+msgstr "S'arrête"
+
+msgid "at %s (%s), then gets a new password"
+msgstr "à %s (%s), puis prend un nouveau mot de passe"
+
+msgid "when you turn it off"
+msgstr "quand vous le désactivez"
+
 msgid "Ethernet port 4"
 msgstr "Port Ethernet 4"
 
@@ -301,6 +298,12 @@ msgstr "réseau de la maison"
 
 msgid "Guest network on"
 msgstr "Réseau invités activé"
+
+msgid "How long"
+msgstr "Durée"
+
+msgid "When the time is up, the guest network turns off by itself and gets a new password, so the guests cannot come back without asking."
+msgstr "À la fin de la durée, le réseau invités s'arrête tout seul et prend un nouveau mot de passe : les invités ne peuvent pas revenir sans demander."
 
 msgid "Guest password"
 msgstr "Mot de passe invités"
@@ -323,8 +326,8 @@ msgstr "Enregistré. Le Wi-Fi redémarre quelques secondes."
 msgid "The main Wi-Fi has no password: give it one first (Home page, Wi-Fi card), the guest network uses a password of its own."
 msgstr "Le Wi-Fi principal n'a pas de mot de passe : donnez-lui-en un d'abord (page Accueil, carte Wi-Fi), le réseau invités utilise un mot de passe à lui."
 
-msgid "How it works: "
-msgstr "Comment ça marche : "
+msgid "How it works:"
+msgstr "Comment ça marche :"
 
 msgid "this Wi-Fi chip has a single access point, so guests join the same Wi-Fi name as you, with the guest password. That password puts them on a separate network (192.168.30.x) that reaches the internet, and the commercial VPN when it is on, but not your devices, the tailnet or the box settings."
 msgstr "cette puce Wi-Fi n'a qu'un seul point d'accès, les invités se connectent donc au même nom de Wi-Fi que vous, avec le mot de passe invités. Ce mot de passe les place sur un réseau séparé (192.168.30.x) qui a accès à internet, et au VPN commercial quand il est actif, mais pas à vos appareils, au tailnet ni aux réglages de la box."
@@ -581,6 +584,9 @@ msgstr "1 (faible) à 31 (maximum)."
 msgid "Night dimming"
 msgstr "Atténuation de nuit"
 
+msgid "From"
+msgstr "De"
+
 msgid "HH:MM, 24 h. The window may cross midnight."
 msgstr "HH:MM, sur 24 h. La plage peut passer minuit."
 
@@ -749,6 +755,147 @@ msgstr "Tous les appareils et leurs réglages"
 msgid "The box, its internet connection and VPN tunnels, and the devices connected right now."
 msgstr "La box, sa connexion internet et ses tunnels VPN, et les appareils connectés en ce moment."
 
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Wed"
+msgstr "Mer"
+
+msgid "Thu"
+msgstr "Jeu"
+
+msgid "Fri"
+msgstr "Ven"
+
+msgid "Sat"
+msgstr "Sam"
+
+msgid "Sun"
+msgstr "Dim"
+
+msgid "every day"
+msgstr "tous les jours"
+
+msgid "Monday to Friday"
+msgstr "du lundi au vendredi"
+
+msgid "weekend"
+msgstr "le week-end"
+
+msgid "No internet until %s (paused)"
+msgstr "Pas d'internet jusqu'à %s (pause)"
+
+msgid "No internet (paused until you resume)"
+msgstr "Pas d'internet (en pause jusqu'à la reprise)"
+
+msgid "No internet until %s (schedule)"
+msgstr "Pas d'internet jusqu'à %s (horaires)"
+
+msgid "Extra time until %s"
+msgstr "Temps en plus jusqu'à %s"
+
+msgid "Internet on"
+msgstr "Internet autorisé"
+
+msgid "No internet from"
+msgstr "Pas d'internet de"
+
+msgid "to"
+msgstr "à"
+
+msgid "Remove"
+msgstr "Retirer"
+
+msgid "for example Kids, or Anna"
+msgstr "par exemple Enfants, ou Anna"
+
+msgid "online"
+msgstr "en ligne"
+
+msgid "Edit %s"
+msgstr "Modifier %s"
+
+msgid "New profile"
+msgstr "Nouveau profil"
+
+msgid "No device seen yet on the home network."
+msgstr "Aucun appareil vu pour l'instant sur le réseau de la maison."
+
+msgid "Give the devices a name on the Devices page to find them easily. Phones may use a private address per Wi-Fi network: it stays the same for this box."
+msgstr "Donnez un nom aux appareils sur la page Appareils pour les retrouver facilement. Les téléphones peuvent utiliser une adresse privée par réseau Wi-Fi : elle reste la même pour cette box."
+
+msgid "Hours without internet"
+msgstr "Heures sans internet"
+
+msgid "Add a time slot"
+msgstr "Ajouter une plage horaire"
+
+msgid "A time slot may cross midnight: Monday 21:00 to 07:00 ends on Tuesday morning. Without any slot, the devices only lose the internet when you pause them."
+msgstr "Une plage peut passer minuit : lundi de 21:00 à 07:00 se termine le mardi matin. Sans aucune plage, les appareils ne perdent internet que quand vous les mettez en pause."
+
+msgid "Profile active"
+msgstr "Profil actif"
+
+msgid "30 minutes"
+msgstr "30 minutes"
+
+msgid "1 hour"
+msgstr "1 heure"
+
+msgid "until tomorrow 07:00"
+msgstr "jusqu'à demain 07:00"
+
+msgid "until I resume"
+msgstr "jusqu'à la reprise"
+
+msgid "Resume internet"
+msgstr "Rétablir internet"
+
+msgid "30 minutes more"
+msgstr "30 minutes de plus"
+
+msgid "1 hour more"
+msgstr "1 heure de plus"
+
+msgid "End the extra time"
+msgstr "Arrêter le temps en plus"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Pause now"
+msgstr "Mettre en pause"
+
+msgid "none, only when paused"
+msgstr "aucune, seulement en pause"
+
+msgid "Delete the profile %s? Its devices get the internet back."
+msgstr "Supprimer le profil %s ? Ses appareils retrouvent internet."
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Time on the box: %s"
+msgstr "Heure de la box : %s"
+
+msgid "Add a profile"
+msgstr "Ajouter un profil"
+
+msgid "No profile yet."
+msgstr "Aucun profil pour l'instant."
+
+msgid "Create one for a child: choose their devices and the hours without internet, for example school nights from 21:00 to 07:00."
+msgstr "Créez-en un pour un enfant : choisissez ses appareils et les heures sans internet, par exemple les soirs d'école de 21:00 à 07:00."
+
+msgid "Parental controls"
+msgstr "Contrôle parental"
+
+msgid "Internet hours for a child's devices, a pause at any time and extra time when needed. The devices stay on the home network; they lose the internet at once, even in the middle of a video."
+msgstr "Des horaires d'internet pour les appareils d'un enfant, une pause à tout moment et du temps en plus si besoin. Les appareils restent sur le réseau de la maison ; ils perdent internet tout de suite, même au milieu d'une vidéo."
+
 msgid "Other (choose the ports)"
 msgstr "Autre (choisir les ports)"
 
@@ -797,14 +944,8 @@ msgstr "Ouvert"
 msgid "Paused"
 msgstr "En pause"
 
-msgid "Pause"
-msgstr "Pause"
-
 msgid "Resume"
 msgstr "Reprendre"
-
-msgid "Delete"
-msgstr "Supprimer"
 
 msgid "The box is behind another router (its internet address is a private one). Open the same ports on that router too, towards this box, or nothing will reach your devices."
 msgstr "La box est derrière un autre routeur (son adresse internet est une adresse privée). Ouvrez aussi les mêmes ports sur ce routeur, vers cette box, sinon rien n'atteindra vos appareils."
@@ -841,6 +982,114 @@ msgstr "Jeux et serveurs"
 
 msgid "Open ports towards a device, and automatic opening for consoles."
 msgstr "Ouvrir des ports vers un appareil, et ouverture automatique pour les consoles."
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Time zone"
+msgstr "Fuseau horaire"
+
+msgid "Finish"
+msgstr "Terminer"
+
+msgid "Setup wizard"
+msgstr "Assistant de configuration"
+
+msgid "Step %d of %d"
+msgstr "Étape %d sur %d"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Skip the wizard"
+msgstr "Passer l'assistant"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Welcome to your Neufbox"
+msgstr "Bienvenue sur votre Neufbox"
+
+msgid "A few steps to make it yours: a password to protect the settings, the Wi-Fi name and password, and the time zone. It takes two minutes."
+msgstr "Quelques étapes pour l'adopter : un mot de passe pour protéger les réglages, le nom et le mot de passe du Wi-Fi, et le fuseau horaire. Cela prend deux minutes."
+
+msgid "Language of the interface"
+msgstr "Langue de l'interface"
+
+msgid "Automatic"
+msgstr "Automatique"
+
+msgid "the language of your browser"
+msgstr "la langue de votre navigateur"
+
+msgid "Administrator password"
+msgstr "Mot de passe administrateur"
+
+msgid "A password already protects the settings. Leave the fields empty to keep it, or type a new one."
+msgstr "Un mot de passe protège déjà les réglages. Laissez les champs vides pour le garder, ou tapez-en un nouveau."
+
+msgid "Choose the password that protects the settings of the box. You will need it to open this interface again (user name: root)."
+msgstr "Choisissez le mot de passe qui protège les réglages de la box. Il vous sera demandé pour rouvrir cette interface (nom d'utilisateur : root)."
+
+msgid "At least 8 characters. A short sentence is easy to remember and hard to guess."
+msgstr "Au moins 8 caractères. Une courte phrase est facile à retenir et difficile à deviner."
+
+msgid "Type it again"
+msgstr "Retapez-le"
+
+msgid "Choose a password: without one, anyone on the network can change the settings."
+msgstr "Choisissez un mot de passe : sans lui, n'importe qui sur le réseau peut changer les réglages."
+
+msgid "The password needs at least 8 characters."
+msgstr "Le mot de passe doit faire au moins 8 caractères."
+
+msgid "The two passwords are different."
+msgstr "Les deux mots de passe sont différents."
+
+msgid "The name your devices see and the password to join. The password printed on the label of the box belongs to the SFR firmware and does not apply here."
+msgstr "Le nom que voient vos appareils et le mot de passe pour s'y connecter. Le mot de passe imprimé sur l'étiquette de la box appartient au firmware SFR et ne s'applique pas ici."
+
+msgid "The Wi-Fi is off or has no password for now: it is turned on with this name and password at the end of the wizard."
+msgstr "Le Wi-Fi est éteint ou sans mot de passe pour l'instant : il est activé avec ce nom et ce mot de passe à la fin de l'assistant."
+
+msgid "Wi-Fi password"
+msgstr "Mot de passe Wi-Fi"
+
+msgid "8 to 63 characters (letters, digits, symbols)."
+msgstr "8 à 63 caractères (lettres, chiffres, symboles)."
+
+msgid "The Wi-Fi name needs 1 to 32 characters."
+msgstr "Le nom du Wi-Fi doit faire de 1 à 32 caractères."
+
+msgid "The Wi-Fi password needs 8 to 63 characters (letters, digits, symbols)."
+msgstr "Le mot de passe Wi-Fi doit faire de 8 à 63 caractères (lettres, chiffres, symboles)."
+
+msgid "The box uses it for the Wi-Fi schedule, parental controls, the night mode of the LEDs and the statistics. It is already set to the one of this computer."
+msgstr "La box l'utilise pour les horaires du Wi-Fi, le contrôle parental, le mode nuit des LED et les statistiques. Il est déjà réglé sur celui de cet ordinateur."
+
+msgid "Ready"
+msgstr "C'est prêt"
+
+msgid "set"
+msgstr "défini"
+
+msgid "not set"
+msgstr "non défini"
+
+msgid "%d characters"
+msgstr "%d caractères"
+
+msgid "The Wi-Fi restarts with its new name and password. If this computer uses the Wi-Fi, join the new network (or scan the code with a phone), then open this page again."
+msgstr "Le Wi-Fi redémarre avec son nouveau nom et son nouveau mot de passe. Si cet ordinateur utilise le Wi-Fi, connectez-le au nouveau réseau (ou scannez le code avec un téléphone), puis rouvrez cette page."
+
+msgid "The Wi-Fi stays as it is."
+msgstr "Le Wi-Fi reste tel quel."
+
+msgid "Scan to join the Wi-Fi"
+msgstr "Scannez pour rejoindre le Wi-Fi"
+
+msgid "The box is set up."
+msgstr "La box est configurée."
 
 msgid "SFR button, short press"
 msgstr "Bouton SFR, appui court"
@@ -1103,12 +1352,6 @@ msgstr "Neufbox"
 msgid "Home"
 msgstr "Accueil"
 
-msgid "invalid MAC address"
-msgstr "adresse MAC invalide"
-
-msgid "invalid time"
-msgstr "heure invalide"
-
 msgid "the Wi-Fi name needs 1 to 32 characters"
 msgstr "le nom du Wi-Fi doit faire de 1 à 32 caractères"
 
@@ -1117,6 +1360,9 @@ msgstr "le mot de passe Wi-Fi doit faire de 8 à 63 caractères (lettres, chiffr
 
 msgid "the Wi-Fi password must differ from the guest password"
 msgstr "le mot de passe Wi-Fi doit être différent du mot de passe invités"
+
+msgid "invalid MAC address"
+msgstr "adresse MAC invalide"
 
 msgid "invalid IP address"
 msgstr "adresse IP invalide"
@@ -1157,11 +1403,38 @@ msgstr "règle inconnue"
 msgid "UPnP is not installed"
 msgstr "UPnP n'est pas installé"
 
+msgid "the password needs 8 to 64 characters (letters, digits, symbols)"
+msgstr "le mot de passe doit faire de 8 à 64 caractères (lettres, chiffres, symboles)"
+
+msgid "the password could not be changed"
+msgstr "le mot de passe n'a pas pu être changé"
+
+msgid "invalid time zone"
+msgstr "fuseau horaire non valide"
+
+msgid "give the profile a name (up to 40 characters)"
+msgstr "donnez un nom au profil (40 caractères au plus)"
+
+msgid "choose at least one device"
+msgstr "choisissez au moins un appareil"
+
+msgid "invalid time"
+msgstr "heure invalide"
+
+msgid "unknown profile"
+msgstr "profil inconnu"
+
+msgid "invalid duration"
+msgstr "durée non valide"
+
 msgid "wake failed"
 msgstr "échec du réveil"
 
 msgid "invalid day"
 msgstr "jour invalide"
+
+msgid "unknown language"
+msgstr "langue inconnue"
 
 msgid "the guest password needs 8 to 63 characters (letters, digits, symbols)"
 msgstr "le mot de passe invités doit faire de 8 à 63 caractères (lettres, chiffres, symboles)"

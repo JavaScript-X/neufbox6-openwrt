@@ -3,6 +3,8 @@
 #
 #   nb6-guest on <wifi-password> [port4]   turn it on; "port4" also puts Ethernet port 4 in it
 #   nb6-guest off                          turn it off (the settings are kept)
+#   nb6-guest timer <hours>                turn it off by itself after that time (0 = never)
+#   nb6-guest expire                       (cron, every minute) time is up: off, with a new password
 #   nb6-guest status                       JSON
 #
 # The b43 Wi-Fi chip has a single access point, so the guests join the same Wi-Fi name with
@@ -12,6 +14,8 @@
 
 NET=192.168.30.1
 VID=3
+CRON=/etc/crontabs/root
+TAG='# nb6-guest'
 
 valid_key() { [ ${#1} -ge 8 ] && [ ${#1} -le 63 ] && ! printf '%s' "$1" | grep -q '[^ -~]'; }
 
@@ -106,7 +110,55 @@ on() {
 	commit
 }
 
+# readable random password, like the one the Guest network page offers (no 0/O, 1/l/I)
+random_key() {
+	tr -dc 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' < /dev/urandom 2>/dev/null | head -c 12 | sed 's/\(....\)\(....\)/\1-\2-/'
+}
+
+cron_entry() { # $1 = 1 to have the expiry check
+	mkdir -p /etc/crontabs; touch $CRON
+	if [ "$1" = 1 ]; then
+		grep -q "$TAG" $CRON && return
+		echo "* * * * * /usr/sbin/nb6-guest expire $TAG" >> $CRON
+	else
+		grep -q "$TAG" $CRON || return
+		grep -v "$TAG" $CRON > $CRON.tmp; mv $CRON.tmp $CRON
+	fi
+	/etc/init.d/cron enable; /etc/init.d/cron restart >/dev/null 2>&1
+}
+
+timer() {
+	local h=$1
+	case "$h" in ''|*[!0-9]*) echo "invalid duration" >&2; exit 1 ;; esac
+	[ "$h" -le 720 ] || { echo "invalid duration" >&2; exit 1; }
+	uci -q get nb6.guest >/dev/null || uci set nb6.guest=guest
+	if [ "$h" = 0 ]; then
+		uci -q delete nb6.guest.until
+		cron_entry 0
+	else
+		uci set nb6.guest.until=$(( $(date +%s) + h * 3600 ))
+		cron_entry 1
+	fi
+	uci commit nb6
+}
+
+expire() {
+	local u=$(uci -q get nb6.guest.until)
+	[ -n "$u" ] || { cron_entry 0; return 0; }
+	[ "$(date +%s)" -ge "$u" ] || return 0
+	if [ "$(uci -q get nb6.guest.enabled)" = 1 ]; then
+		# the next guests get a new password: the current ones cannot come back
+		uci set nb6.guest.key="$(random_key)"
+		off
+		logger -t nb6-guest "time is up: guest network off, new password for the next time"
+	else
+		uci -q delete nb6.guest.until; uci commit nb6; cron_entry 0
+	fi
+}
+
 off() {
+	uci -q delete nb6.guest.until
+	cron_entry 0
 	uci -q delete network.guest_vlan
 	ports_lan 0
 	uci -q get network.guest >/dev/null && uci set network.guest.disabled=1
@@ -127,17 +179,20 @@ commit() {
 status() {
 	local n
 	n=$(awk -v ip=192.168.30. 'index($3, ip) == 1' /tmp/dhcp.leases 2>/dev/null | grep -c .)
-	printf '{"enabled":%s,"port4":%s,"ssid":"%s","key":"%s","encryption":"%s","address":"%s","clients":%s}\n' \
+	printf '{"enabled":%s,"port4":%s,"ssid":"%s","key":"%s","encryption":"%s","address":"%s","clients":%s,"until":%s,"now":%s}\n' \
 		"$([ "$(uci -q get nb6.guest.enabled)" = 1 ] && echo true || echo false)" \
 		"$([ "$(uci -q get nb6.guest.port4)" = 1 ] && echo true || echo false)" \
 		"$(uci -q get wireless.default_radio0.ssid | tr -d '"\\')" \
 		"$(uci -q get nb6.guest.key | sed 's/\\/\\\\/g; s/"/\\"/g')" \
-		"$(uci -q get wireless.default_radio0.encryption)" "$NET" "${n:-0}"
+		"$(uci -q get wireless.default_radio0.encryption)" "$NET" "${n:-0}" \
+		"$(uci -q get nb6.guest.until || echo 0)" "$(date +%s)"
 }
 
 case "$1" in
 	on) on "$2" "$3" ;;
 	off) off ;;
+	timer) timer "$2" ;;
+	expire) expire ;;
 	status) status ;;
-	*) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+	*) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

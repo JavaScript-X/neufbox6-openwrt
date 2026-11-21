@@ -1,0 +1,23 @@
+#!/bin/sh
+# Parental controls: the per-device rules of 2.6 and earlier (firewall rules nb6_block_<mac>, which
+# did not cut connections already open) become profiles in /etc/config/nb6, one per device.
+for sec in $(uci -q show firewall | sed -n 's/^firewall\.\(nb6_block_[0-9a-f]*\)=rule$/\1/p'); do
+	mac=$(uci -q get firewall.$sec.src_mac | tr 'A-F' 'a-f')
+	id=p_$(echo "$mac" | tr -d ':' | cut -c1-12)
+	name=$(uci -q get firewall.$sec.name | sed 's/^Neufbox: no internet for //')
+	uci set nb6.$id=profile
+	uci set nb6.$id.name="${name:-$mac}"
+	uci set nb6.$id.enabled=1
+	uci add_list nb6.$id.mac="$mac"
+	start=$(uci -q get firewall.$sec.start_time | cut -c1-5); stop=$(uci -q get firewall.$sec.stop_time | cut -c1-5)
+	if [ -n "$start" ] && [ -n "$stop" ]; then
+		days=$(uci -q get firewall.$sec.weekdays | tr -s ' ' ',')
+		uci add_list nb6.$id.window="${days:-Mon,Tue,Wed,Thu,Fri,Sat,Sun}/$start-$stop"
+	else
+		uci set nb6.$id.pause_until=forever
+	fi
+	uci delete firewall.$sec
+done
+uci commit nb6; uci commit firewall
+/usr/sbin/nb6-parental apply
+exit 0

@@ -60,7 +60,7 @@ const STYLE = `
 .nb6-row > div { flex:1; }
 .nb6-pill { display:inline-block; padding:2px 10px; border-radius:11px; font-size:12px; font-weight:600; }
 .nb6-ok { background:#e6f7ea; color:#13793a; }
-.nb6-off { background:#ececf1; color:#6d6d78; }
+.nb6-off { background:var(--nb-chip,#ececf1); color:var(--nb-muted,#6d6d78); }
 `;
 
 return view.extend({

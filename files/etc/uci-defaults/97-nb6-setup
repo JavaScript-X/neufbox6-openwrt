@@ -1,0 +1,8 @@
+#!/bin/sh
+# Setup wizard (LuCI > Neufbox > Setup wizard): opens by itself on a new box, the first time someone
+# logs in. A box upgraded from an earlier version already has a password: it is marked as set up.
+uci -q get nb6.setup >/dev/null && exit 0
+uci set nb6.setup=setup
+if grep -q '^root:[^:!*]' /etc/shadow; then uci set nb6.setup.done=1; else uci set nb6.setup.done=0; fi
+uci commit nb6
+exit 0

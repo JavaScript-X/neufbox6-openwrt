@@ -82,9 +82,8 @@ Per device:
 - **Name**: a name, and optionally an address that is always the same (a DHCP host named
   `nb6_host_<mac>`). The name also resolves on the local network. The device gets the address at its
   next connection.
-- **Internet access**: allowed, blocked, or blocked during set hours on chosen days (parental control).
-  It is a firewall rule named `nb6_block_<mac>` (`src_mac`, `start_time`, `stop_time`, `weekdays`);
-  the device keeps its access to the local network.
+- **Internet access**: opens the device's profile in [Parental controls](#parental-controls) (or starts one);
+  the column shows whether the device has the internet right now.
 - **Wake up**: sends a Wake-on-LAN packet.
 
 Guest devices are listed too, marked *Guest network*, without these actions.
@@ -119,6 +118,26 @@ without typing the password. It is generated in the browser by `nb6/qr.js` (byte
 password goes to no other program. *Edit* changes the name, the password, or turns the Wi-Fi off; the Wi-Fi
 restarts for a few seconds.
 
+## Parental controls
+LuCI > Neufbox > Parental controls cuts the internet of chosen devices during set hours. A **profile** groups
+devices (a child's phone, tablet and console) and has:
+- **hours without internet**: time slots per day of the week, which may cross midnight (Monday 21:00 to
+  07:00 ends on Tuesday morning);
+- **Pause now**: 30 minutes, 1 or 2 hours, until tomorrow 07:00, or until resumed;
+- **extra time** while the schedule applies: 30 minutes or 1 hour more.
+
+The devices stay on the local network (printer, NAS, games between them). The settings are `profile`
+sections in `/etc/config/nb6` (`list mac`, `list window 'Mon,Tue,Sun/21:00-07:00'`, `pause_until`,
+`allow_until`). `/usr/sbin/nb6-parental tick` runs every minute from cron and puts the devices that must be
+offline right now in the nftables set `inet fw4 nb6_blocked`. The rule that uses it is a firewall include at
+the top of the forward chain (`/usr/share/nftables.d/chain-pre/forward/30-nb6-parental.nft`), **before** the
+rule that accepts established connections, so a device loses the internet at once, even in the middle of a
+video. The set is also written into the include, so a firewall restart keeps it. The per-device rules of
+2.6 and earlier (`nb6_block_<mac>`, which let open connections run on) become profiles during the upgrade.
+
+Phones can use a private MAC address per Wi-Fi network; it stays the same for this box, so the profile keeps
+working. A child who turns that option off and on again gets a new address and has to be added again.
+
 ## Guest network
 LuCI > Neufbox > Guest network gives visitors internet access, kept apart from your devices.
 
@@ -135,8 +154,29 @@ Wi-Fi name with their own password** (hostapd multi-PSK: a `wifi-station` with i
 
 *Ethernet port 4 also goes to the guest network* moves that port into VLAN 3 (switch VLAN 1 keeps ports 1-3).
 A computer plugged into port 4 then no longer reaches the home network.
-Turning the guest network off keeps its password for next time. From the command line:
-`nb6-guest on <password> [port4]`, `nb6-guest off`, `nb6-guest status`.
+Turning the guest network off keeps its password for next time.
+
+**How long**: the guest network can stay on until you turn it off, or for 2 hours, 1 day or 1 week. When the
+time is up it turns off by itself and gets a new random password, so the guests cannot come back without
+asking (`nb6.guest.until`, checked every minute by `nb6-guest expire` from cron).
+
+From the command line: `nb6-guest on <password> [port4]`, `nb6-guest timer <hours>` (0 = no timer),
+`nb6-guest off`, `nb6-guest status`.
+
+## Setup wizard
+On a new box, the first login opens LuCI > Neufbox > Setup wizard (the Home page sends there while
+`nb6.setup.done` is 0). Five steps:
+1. **Language**: French, English, or the language of the browser; the page reloads in it.
+2. **Administrator password** for root, applied at once. A box that already has one can keep it.
+3. **Wi-Fi** name and password. A new OpenWrt box has its Wi-Fi turned off and open: the wizard gives it WPA2
+   and turns it on.
+4. **Time zone**: the one of the computer is suggested. The Wi-Fi schedule, parental controls, the night mode
+   and the statistics use it.
+5. **Summary** with the QR code of the Wi-Fi, then *Finish* applies the time zone and the Wi-Fi.
+
+The Wi-Fi changes come last, so someone doing the setup over Wi-Fi does not lose the page halfway. A box
+upgraded from an earlier version already has a password and is marked as set up; the wizard stays in the
+menu to run it again.
 
 ## Backup
 LuCI > Neufbox > Backup offers two downloads, streamed by `/cgi-bin/nb6-backup` (which checks the LuCI
@@ -176,6 +216,17 @@ LuCI > Neufbox > Games and servers:
 - **UPnP** (`miniupnpd`, off by default): consoles and some games open the ports they need themselves
   (open NAT type). The page lists the ports opened this way. Any program on the home network can then open
   ports, which is why it is off until you turn it on.
+
+## Themes
+Three LuCI themes, in System > System > Language and Style:
+- **Neufbox** (default): white pages, purple header, red actions;
+- **Neufbox dark**: the same purple header and red actions on near-black pages (a touch of purple in
+  the black), not the grey of the bootstrap dark theme;
+- **Neufbox automatic**: light or dark, following the dark mode of the phone or computer.
+
+The dark version is one stylesheet (`theme/neufbox-dark/dark.css`) over the light theme. The Neufbox pages
+take their neutral colours from theme variables (`--nb-card`, `--nb-line`, `--nb-text`, `--nb-muted`,
+`--nb-accent`), so they follow; QR codes keep their white frame for phone cameras.
 
 ## French interface
 The Neufbox pages, their menu entries and the messages from the box are translated in

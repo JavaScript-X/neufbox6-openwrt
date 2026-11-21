@@ -1,5 +1,5 @@
 #!/bin/sh
-# rpcd backend for the LuCI "Neufbox" pages (Home, Devices, Wi-Fi and guests, VPN, LEDs, backup).
+# rpcd backend for the LuCI "Neufbox" pages (Home, Devices, parental controls, Wi-Fi and guests, VPN, LEDs, backup).
 # Private keys are never returned: only public keys and tunnel status.
 
 . /usr/share/libubox/jshn.sh
@@ -116,15 +116,7 @@ devices_json() {
 		END { if (mac) out() }'
 	printf '],"traffic":'
 	nlbw -c json -g mac 2>/dev/null || printf 'null'
-	printf ',"rules":['
-	first=1
-	for sec in $(uci -q show firewall | sed -n 's/^firewall\.\(nb6_block_[0-9a-f]*\)=rule$/\1/p'); do
-		[ $first = 1 ] || printf ','; first=0
-		printf '{"mac":"%s","start":"%s","stop":"%s","days":"%s"}' \
-			"$(uci -q get firewall.$sec.src_mac)" "$(uci -q get firewall.$sec.start_time)" \
-			"$(uci -q get firewall.$sec.stop_time)" "$(uci -q get firewall.$sec.weekdays)"
-	done
-	printf '],"hosts":['
+	printf ',"hosts":['
 	first=1
 	for sec in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^.=]*\)=host$/\1/p'); do
 		[ -n "$(uci -q get dhcp.$sec.mac)" ] || continue
@@ -136,33 +128,6 @@ devices_json() {
 }
 
 valid_mac() { echo "$1" | grep -qiE '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'; }
-
-device_access() { # mac mode(allow|block|schedule) start stop days name
-	local mac=$(echo "$1" | tr 'A-F' 'a-f') sec
-	valid_mac "$mac" || { echo '{"error":"invalid MAC address"}'; return; }
-	sec=nb6_block_$(echo "$mac" | tr -d ':')
-	uci -q delete firewall.$sec
-	case "$2" in
-	block|schedule)
-		uci set firewall.$sec=rule
-		uci set firewall.$sec.name="Neufbox: no internet for $(echo "${6:-$mac}" | strip)"
-		uci set firewall.$sec.src=lan
-		uci set firewall.$sec.dest='*'
-		uci set firewall.$sec.src_mac="$mac"
-		uci set firewall.$sec.proto=all
-		uci set firewall.$sec.target=REJECT
-		if [ "$2" = schedule ]; then
-			echo "$3$4" | grep -qE '^([01][0-9]|2[0-3]):[0-5][0-9]([01][0-9]|2[0-3]):[0-5][0-9]$' \
-				|| { uci revert firewall; echo '{"error":"invalid time"}'; return; }
-			uci set firewall.$sec.start_time="$3:00"
-			uci set firewall.$sec.stop_time="$4:00"
-			[ -n "$5" ] && uci set firewall.$sec.weekdays="$(echo "$5" | tr -cd 'A-Za-z ')"
-		fi ;;
-	esac
-	uci commit firewall
-	/etc/init.d/firewall reload >/dev/null 2>&1
-	echo '{"ok":true}'
-}
 
 adblock_json() {
 	local f=/var/run/adblock-fast/dnsmasq.servers n=0 t=0
@@ -192,8 +157,12 @@ wifi_json() {
 	json_dump
 }
 
-wifi_set() { # ssid key enabled
+wifi_set() { # ssid key enabled secure(1 = an open Wi-Fi gets WPA2 with that key: setup wizard)
 	local enc=$(uci -q get wireless.default_radio0.encryption)
+	if [ "$4" = 1 ] && [ "$3" != 0 ] && [ "${enc:-none}" = none ]; then
+		enc=psk2
+		uci set wireless.default_radio0.encryption=psk2
+	fi
 	if [ "$3" = 0 ]; then
 		uci set wireless.default_radio0.disabled=1
 	else
@@ -380,10 +349,89 @@ upnp_set() {
 	echo '{"ok":true}'
 }
 
+setup_json() {
+	json_init
+	json_add_boolean done "$([ "$(uci -q get nb6.setup.done)" = 0 ] && echo 0 || echo 1)"
+	json_add_boolean password "$(grep -q '^root:[^:!*]' /etc/shadow && echo 1 || echo 0)"
+	json_add_string lang "$(uci -q get luci.main.lang)"
+	json_add_string zonename "$(uci -q get system.@system[0].zonename)"
+	json_dump
+}
+
+setup_password() { # new root password; it comes on stdin (JSON), never on a command line
+	{ [ ${#1} -ge 8 ] && [ ${#1} -le 64 ] && ! printf '%s' "$1" | grep -q '[^ -~]'; } \
+		|| { echo '{"error":"the password needs 8 to 64 characters (letters, digits, symbols)"}'; return; }
+	if printf '%s\n%s\n' "$1" "$1" | passwd root >/dev/null 2>&1; then
+		logger -t nb6-setup "administrator password changed"
+		echo '{"ok":true}'
+	else
+		echo '{"error":"the password could not be changed"}'
+	fi
+}
+
+setup_time() { # zonename tzstring (from luci getTimezones)
+	echo "$1" | grep -qE '^[A-Za-z0-9_+/-]{2,40}$' || { echo '{"error":"invalid time zone"}'; return; }
+	echo "$2" | grep -qE '^[A-Za-z0-9<>+,./:-]{3,60}$' || { echo '{"error":"invalid time zone"}'; return; }
+	uci set system.@system[0].zonename="$1"
+	uci set system.@system[0].timezone="$2"
+	uci commit system
+	/etc/init.d/system reload >/dev/null 2>&1
+	echo '{"ok":true}'
+}
+
+parental_id() { echo "$1" | grep -qE '^p_[0-9a-z]{1,16}$' && uci -q get nb6.$1 >/dev/null; }
+
+parental_set() { # id(empty = new) name macs windows enabled
+	local id=$1 m w
+	[ -n "$2" ] && [ ${#2} -le 40 ] || { echo '{"error":"give the profile a name (up to 40 characters)"}'; return; }
+	[ -n "$3" ] || { echo '{"error":"choose at least one device"}'; return; }
+	for m in $3; do valid_mac "$m" || { echo '{"error":"invalid MAC address"}'; return; }; done
+	for w in $4; do
+		echo "$w" | grep -qE '^((Mon|Tue|Wed|Thu|Fri|Sat|Sun),?)+/([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$' 			|| { echo '{"error":"invalid time"}'; return; }
+	done
+	if [ -z "$id" ]; then
+		id=p_$(tr -dc '0-9a-f' < /proc/sys/kernel/random/uuid | cut -c1-8)
+		uci set nb6.$id=profile
+	else
+		parental_id "$id" || { echo '{"error":"unknown profile"}'; return; }
+	fi
+	uci set nb6.$id.name="$(echo "$2" | strip)"
+	uci set nb6.$id.enabled="$([ "$5" = 0 ] && echo 0 || echo 1)"
+	uci -q delete nb6.$id.mac; uci -q delete nb6.$id.window
+	for m in $3; do uci add_list nb6.$id.mac="$(echo "$m" | tr 'A-F' 'a-f')"; done
+	for w in $4; do uci add_list nb6.$id.window="$w"; done
+	uci commit nb6
+	/usr/sbin/nb6-parental apply
+	echo "{\"ok\":true,\"id\":\"$id\"}"
+}
+
+parental_time() { # id field(pause_until|allow_until) minutes|morning|forever|0
+	local id=$1 v now=$(date +%s)
+	parental_id "$id" || { echo '{"error":"unknown profile"}'; return; }
+	case "$3" in
+	0) v=0 ;;
+	forever) v=forever ;;
+	morning) # tomorrow at 07:00 (today if it is still before 07:00)
+		v=$(date -d "$(date +%Y-%m-%d) 07:00" +%s 2>/dev/null)
+		[ -n "$v" ] && [ "$v" -le "$now" ] && v=$((v + 86400)) ;;
+	*) [ "$3" -ge 1 ] 2>/dev/null && [ "$3" -le 10080 ] && v=$((now + $3 * 60)) ;;
+	esac
+	[ -n "$v" ] || { echo '{"error":"invalid duration"}'; return; }
+	[ "$2" = allow_until ] && [ "$v" = forever ] && { echo '{"error":"invalid duration"}'; return; }
+	uci set nb6.$id.$2="$v"
+	# a pause ends the extra time and the other way round
+	if [ "$v" != 0 ]; then
+		[ "$2" = pause_until ] && uci set nb6.$id.allow_until=0 || uci set nb6.$id.pause_until=0
+	fi
+	uci commit nb6
+	/usr/sbin/nb6-parental tick
+	echo '{"ok":true}'
+}
+
 case "$1" in
 list)
 	cat <<'EOF'
-{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_access": { "mac": "str", "mode": "str", "start": "str", "stop": "str", "days": "str", "name": "str" }, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {}, "wifi": {}, "wifi_set": { "ssid": "str", "key": "str", "enabled": true }, "guest": {}, "guest_set": { "enabled": true, "key": "str", "port4": true }, "host_set": { "mac": "str", "name": "str", "ip": "str" }, "backup_info": {}, "wifi_scan": {}, "wifi_channel": { "channel": "str" }, "wps_start": {}, "wps_cancel": {}, "wps_status": {}, "forwards": {}, "forward_add": { "name": "str", "proto": "str", "ext": "str", "int": "str", "ip": "str", "mac": "str" }, "forward_set": { "id": "str", "action": "str" }, "upnp_set": { "enabled": true }, "maint": {}, "maint_set": { "health": true, "reboot": true, "day": "str", "time": "str" }, "maint_reboot": {} }
+{ "status": {}, "home": {}, "pubkey": {}, "rekey": {}, "init": {}, "set_tunnel": { "iface": "str", "enabled": true }, "eco": { "enabled": true }, "import_commercial": { "private_key": "str", "addresses": "str", "dns": "str", "public_key": "str", "preshared_key": "str", "endpoint_host": "str", "endpoint_port": "str", "provider": "str" }, "devices": {}, "device_wake": { "mac": "str" }, "adblock_status": {}, "adblock_set": { "enabled": true }, "adblock_update": {}, "update_check": { "force": true }, "update_install": {}, "update_status": {}, "wifi": {}, "wifi_set": { "ssid": "str", "key": "str", "enabled": true, "secure": true }, "guest": {}, "guest_set": { "enabled": true, "key": "str", "port4": true, "hours": "str" }, "host_set": { "mac": "str", "name": "str", "ip": "str" }, "backup_info": {}, "wifi_scan": {}, "wifi_channel": { "channel": "str" }, "wps_start": {}, "wps_cancel": {}, "wps_status": {}, "forwards": {}, "forward_add": { "name": "str", "proto": "str", "ext": "str", "int": "str", "ip": "str", "mac": "str" }, "forward_set": { "id": "str", "action": "str" }, "upnp_set": { "enabled": true }, "maint": {}, "maint_set": { "health": true, "reboot": true, "day": "str", "time": "str" }, "maint_reboot": {}, "setup": {}, "setup_lang": { "lang": "str" }, "setup_password": { "password": "str" }, "setup_time": { "zonename": "str", "timezone": "str" }, "setup_done": {}, "parental": {}, "parental_set": { "id": "str", "name": "str", "macs": "str", "windows": "str", "enabled": true }, "parental_delete": { "id": "str" }, "parental_pause": { "id": "str", "minutes": "str" }, "parental_extra": { "id": "str", "minutes": "str" } }
 EOF
 	;;
 call)
@@ -404,12 +452,6 @@ call)
 		;;
 	devices)
 		devices_json
-		;;
-	device_access)
-		read -r input; json_load "$input"
-		json_get_var mac mac; json_get_var mode mode; json_get_var start start
-		json_get_var stop stop; json_get_var days days; json_get_var name name
-		device_access "$mac" "$mode" "$start" "$stop" "$days" "$name"
 		;;
 	device_wake)
 		read -r input; json_load "$input"; json_get_var mac mac
@@ -448,17 +490,19 @@ call)
 		;;
 	wifi_set)
 		read -r input; json_load "$input"
-		json_get_var ssid ssid; json_get_var key key; json_get_var enabled enabled
-		wifi_set "$ssid" "$key" "${enabled:-1}"
+		json_get_var ssid ssid; json_get_var key key; json_get_var enabled enabled; json_get_var secure secure
+		wifi_set "$ssid" "$key" "${enabled:-1}" "$secure"
 		;;
 	guest)
 		/usr/sbin/nb6-guest status
 		;;
 	guest_set)
 		read -r input; json_load "$input"
-		json_get_var enabled enabled; json_get_var key key; json_get_var port4 port4
+		json_get_var enabled enabled; json_get_var key key; json_get_var port4 port4; json_get_var hours hours
 		if [ "$enabled" = 1 ]; then
 			err=$(/usr/sbin/nb6-guest on "$key" $([ "$port4" = 1 ] && echo port4) 2>&1 >/dev/null)
+			# hours: empty = keep the current timer, 0 = no timer, N = off after N hours
+			[ -z "$err" ] && [ -n "$hours" ] && err=$(/usr/sbin/nb6-guest timer "$hours" 2>&1 >/dev/null)
 		else
 			err=$(/usr/sbin/nb6-guest off 2>&1 >/dev/null)
 		fi
@@ -520,6 +564,52 @@ call)
 		uci commit nb6
 		/usr/sbin/nb6-maint apply
 		echo '{"ok":true}'
+		;;
+	setup)
+		setup_json
+		;;
+	setup_lang)
+		read -r input; json_load "$input"; json_get_var lang lang
+		case "$lang" in auto|en|fr) uci set luci.main.lang="$lang"; uci commit luci; echo '{"ok":true}' ;;
+		*) echo '{"error":"unknown language"}' ;; esac
+		;;
+	setup_password)
+		read -r input; json_load "$input"; json_get_var password password
+		setup_password "$password"
+		;;
+	setup_time)
+		read -r input; json_load "$input"; json_get_var zonename zonename; json_get_var timezone timezone
+		setup_time "$zonename" "$timezone"
+		;;
+	setup_done)
+		uci -q get nb6.setup >/dev/null || uci set nb6.setup=setup
+		uci set nb6.setup.done=1; uci commit nb6
+		echo '{"ok":true}'
+		;;
+	parental)
+		/usr/sbin/nb6-parental status
+		;;
+	parental_set)
+		read -r input; json_load "$input"
+		json_get_var id id; json_get_var name name; json_get_var macs macs
+		json_get_var windows windows; json_get_var enabled enabled
+		parental_set "$id" "$name" "$macs" "$windows" "${enabled:-1}"
+		;;
+	parental_delete)
+		read -r input; json_load "$input"; json_get_var id id
+		if parental_id "$id"; then
+			uci delete nb6.$id; uci commit nb6; /usr/sbin/nb6-parental apply; echo '{"ok":true}'
+		else
+			echo '{"error":"unknown profile"}'
+		fi
+		;;
+	parental_pause)
+		read -r input; json_load "$input"; json_get_var id id; json_get_var minutes minutes
+		parental_time "$id" pause_until "$minutes"
+		;;
+	parental_extra)
+		read -r input; json_load "$input"; json_get_var id id; json_get_var minutes minutes
+		parental_time "$id" allow_until "$minutes"
 		;;
 	maint_reboot)
 		logger -t nb6-maint "restart requested from the web interface"
